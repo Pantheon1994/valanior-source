@@ -164,9 +164,6 @@ class spell_activate_specialization : public SpellScript
                 player->removeSpell(spellId, SPEC_MASK_ALL, false, true);
                 player->RemoveAura(spellId);
             }
-
-            PlayerSpecialization::LearnSpecSpellOnSpecChange(player);
-            PlayerSpecialization::RemoveSpellsAndAuras(player);
         }
 
         if (currentSpecId == WARRIOR_HOPLITE || currentSpecId == WARRIOR_FURY) {
@@ -185,6 +182,8 @@ class spell_activate_specialization : public SpellScript
             }
         }
 
+        PlayerSpecialization::LearnSpecSpellOnSpecChange(player);
+        PlayerSpecialization::RemoveSpellsAndAurasOnSpecChange(player);
 
         if (newSpec.powerType != POWER_ALL) {
             player->setPowerType(newSpec.powerType);

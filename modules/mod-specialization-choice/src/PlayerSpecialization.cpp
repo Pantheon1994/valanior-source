@@ -199,7 +199,7 @@ void PlayerSpecialization::LearnSpecSpellOnSpecChange(Player* player)
         player->learnSpell(SPELL_WARRIOR_WARBREAKER);
 }
 
-void PlayerSpecialization::RemoveSpellsAndAuras(Player* player)
+void PlayerSpecialization::RemoveSpellsAndAurasOnSpecChange(Player* player)
 {
     if (player->HasAura(SPELL_HUNTER_LONE_WOLF))
         player->RemoveAura(SPELL_HUNTER_LONE_WOLF);
