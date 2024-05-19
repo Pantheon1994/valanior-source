@@ -172,6 +172,7 @@ class spell_activate_specialization : public SpellScript
                 player->RemoveAura(spellId);
             }
 
+            PlayerSpecialization::LearnSpecSpellOnSpecChange(player);
             PlayerSpecialization::RemoveSpellsAndAuras(player);
         }
 
@@ -191,7 +192,6 @@ class spell_activate_specialization : public SpellScript
             }
         }
 
-        PlayerSpecialization::LearnSpecSpellOnSpecChange(player);
 
         if (newSpec.powerType != POWER_ALL) {
             player->setPowerType(newSpec.powerType);
