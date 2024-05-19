@@ -158,22 +158,22 @@ uint32 PlayerSpecialization::GetSpellException(Player* player, uint32 spellId)
 {
     if (player->HasAura(SPELL_DRUID_AVATAR_OF_ASHAMANE_REPLACER) && spellId == SPELL_DRUID_BERSERK_CAT)
     {
-        return SPELL_DRUID_AVATAR_OF_ASHAMANE_REPLACER;
+        return SPELL_DRUID_AVATAR_OF_ASHAMANE;
     }
 
     if (player->HasAura(SPELL_DRUID_GUARDIAN_OF_URSOC_REPLACER) && spellId == SPELL_DRUID_BERSERK_BEAR)
     {
-        return SPELL_DRUID_GUARDIAN_OF_URSOC_REPLACER;
+        return SPELL_DRUID_GUARDIAN_OF_URSOC;
     }
 
     if (player->HasAura(SPELL_WARRIOR_WARBREAKER_REPLACER) && spellId == SPELL_WARRIOR_COLOSSUS_SMASH)
     {
-        return SPELL_WARRIOR_WARBREAKER_REPLACER;
+        return SPELL_WARRIOR_WARBREAKER;
     }
 
     if (player->HasAura(SPELL_DRUID_RAZE_REPLACER) && spellId == SPELL_DRUID_MAUL)
     {
-        return SPELL_DRUID_RAZE_REPLACER;
+        return SPELL_DRUID_RAZE;
     }
 }
 
@@ -184,20 +184,6 @@ void PlayerSpecialization::RemoveSpellWhenTalentChange(Player* player)
         player->removeSpell(RUNE_DRUID_ORBITAL_STRIKE, SPEC_MASK_ALL, false);
 }
 
-void PlayerSpecialization::LearnSpecSpellOnSpecChange(Player* player)
-{
-    if (player->HasAura(SPELL_DRUID_AVATAR_OF_ASHAMANE_REPLACER) && player->HasSpell(SPELL_DRUID_BERSERK_CAT))
-        player->learnSpell(SPELL_DRUID_AVATAR_OF_ASHAMANE);
-
-    if (player->HasAura(SPELL_DRUID_GUARDIAN_OF_URSOC_REPLACER) && player->HasSpell(SPELL_DRUID_BERSERK_BEAR))
-        player->learnSpell(SPELL_DRUID_GUARDIAN_OF_URSOC);
-
-    if (player->HasAura(SPELL_DRUID_RAZE_REPLACER) && player->HasSpell(SPELL_DRUID_MAUL))
-        player->learnSpell(SPELL_DRUID_RAZE);
-
-    if (player->HasAura(SPELL_WARRIOR_WARBREAKER_REPLACER) && GetCurrentSpecId(player) == WARRIOR_ARMS)
-        player->learnSpell(SPELL_WARRIOR_WARBREAKER);
-}
 
 void PlayerSpecialization::RemoveSpellsAndAurasOnSpecChange(Player* player)
 {

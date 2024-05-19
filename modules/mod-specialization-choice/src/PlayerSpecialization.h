@@ -126,7 +126,6 @@ public:
     static bool Exception(Player* player, uint32 spellId);
     static uint32 GetSpellException(Player* player, uint32 spellId);
     static void RemoveSpellWhenTalentChange(Player* player);
-    static void LearnSpecSpellOnSpecChange(Player* player);
     static void RemoveSpellsAndAurasOnSpecChange(Player* player);
     static uint32 GetCurrentSpecId(Player* player);
     static uint32 GetPreferredSpecId(Player* player);
