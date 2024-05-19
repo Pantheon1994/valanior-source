@@ -2554,7 +2554,7 @@ class rune_dk_fulfilling_strike : public AuraScript
 
         if (!target || target->isDead())
             return false;
-
+            
         return (GetCaster() && GetCaster()->IsAlive());
     }
 

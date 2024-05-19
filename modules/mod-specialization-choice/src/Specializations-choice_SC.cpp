@@ -63,13 +63,6 @@ public:
         player->SetMaxPower(POWER_ENERGY, 25);
         player->SetPower(POWER_ENERGY, 0);
 
-        player->AddAura(SPELL_MINION_INCREASE_DREAD_STALKER, player);
-        player->AddAura(SPELL_MINION_INCREASE_WILD_IMP, player);
-        player->AddAura(SPELL_MINION_INCREASE_DARKGLARE, player);
-        player->AddAura(SPELL_MINION_INCREASE_VILEFIEND, player);
-        player->AddAura(SPELL_MINION_INCREASE_DEMONIC_TYRANT, player);
-        player->AddAura(SPELL_MINION_INCREASE_BOMBER, player);
-
         player->SetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER + POWER_ENERGY, -10.f);
         player->SetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + POWER_ENERGY, -10.f);
 
@@ -149,12 +142,12 @@ class spell_activate_specialization : public SpellScript
     PrepareSpellScript(spell_activate_specialization);
 
 
-    void HandleProc()
+    void HandleCast()
     {
         Player* player = GetCaster()->ToPlayer();
 
         if (player->getLevel() < 10) {
-            RunesManager::SendPlayerMessage(player, "You can't do that under level 10");
+            RunesManager::SendPlayerMessage(player, "You cannot do that under level 10");
             return;
         }
 
@@ -223,7 +216,7 @@ class spell_activate_specialization : public SpellScript
 
     void Register() override
     {
-        OnCast += SpellCastFn(spell_activate_specialization::HandleProc);
+        OnCast += SpellCastFn(spell_activate_specialization::HandleCast);
     }
 };
 

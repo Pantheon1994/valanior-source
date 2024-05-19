@@ -77,6 +77,8 @@ enum DruidSpells
     SPELL_YSERAS_GIFT = 80584,
     SPELL_YSERAS_GIFT_SELF_HEAL = 80585,
     SPELL_YSERAS_GIFT_GROUP_HEAL = 80586,
+    SPELL_DRUID_CELESTIAL_ALIGNMENT = 80531,
+    SPELL_DRUID_STELLAR_FLARE = 80528,
 
     //Talents
     SPELL_ECLIPSE_SOLAR = 80502,
@@ -107,7 +109,6 @@ enum DruidSpells
     RUNE_DRUID_BURNING_ATTACKS_DAMAGE = 700596,
     RUNE_DRUID_BALANCE_OF_ALL_THINGS_ARCANE_BUFF = 700630,
     RUNE_DRUID_BALANCE_OF_ALL_THINGS_NATURE_BUFF = 700631,
-    RUNE_DRUID_BALANCE_OF_ALL_THINGS_REMOVE_BUFF = 700632,
     RUNE_DRUID_LUNAR_SHRAPNEL_DAMAGE = 700652,
     RUNE_DRUID_AETHERIAL_KINDLING_LISTENER_MOONFIRE = 700666,
     RUNE_DRUID_AETHERIAL_KINDLING_LISTENER_SUNFIRE = 700667,
@@ -172,6 +173,7 @@ enum DruidSpells
     RUNE_DRUID_I_IS_GROOT_HEAL = 701900,
     RUNE_DRUID_I_IS_GROOT_DEBUFF = 701901,
     RUNE_DRUID_INVIGORATING_WOUNDS_COOLDOWN = 80678,
+    RUNE_DRUID_ORBITAL_STRIKE = 700840,
 };
 
 class rune_druid_lycara_fleeting_glimpse : public AuraScript
@@ -762,7 +764,7 @@ class rune_druid_guardians_wrath : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!victim || victim->isDead())
             return;
@@ -1613,7 +1615,7 @@ class rune_druid_skin_shredder : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!victim || victim->isDead())
             return;
@@ -1643,19 +1645,18 @@ class rune_druid_improved_sunfire_proc : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return false;
+
+        if (!eventInfo.GetActionTarget() || eventInfo.GetActionTarget()->isDead())
+            return false;
+
         return eventInfo.GetDamageInfo();
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
-
-        if (!victim || victim->isDead())
-            return;
-
-        float damageDealt = eventInfo.GetDamageInfo()->GetDamage();
-
-        GetCaster()->CastSpell(victim, RUNE_DRUID_IMPROVED_SUNFIRE_AOE, TRIGGERED_FULL_MASK);
+        GetCaster()->CastSpell(eventInfo.GetActionTarget(), RUNE_DRUID_IMPROVED_SUNFIRE_AOE, TRIGGERED_FULL_MASK);
     }
 
     void Register()
@@ -1743,16 +1744,18 @@ class rune_druid_natural_smolder : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return false;
+
+        if (!eventInfo.GetActionTarget() || eventInfo.GetActionTarget()->isDead())
+            return false;
+
         return eventInfo.GetDamageInfo();
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
-
-        if (!victim || victim->isDead())
-            return;
-
+        Unit* victim = eventInfo.GetActionTarget();
         float damageDealt = eventInfo.GetDamageInfo()->GetDamage();
 
         if (damageDealt <= 0)
@@ -1761,16 +1764,6 @@ class rune_druid_natural_smolder : public AuraScript
         float damage = CalculatePct(int32(damageDealt), aurEff->GetAmount());
         int32 maxTicks = sSpellMgr->GetSpellInfo(RUNE_DRUID_NATURAL_SMOLDER_DOT)->GetMaxTicks();
         int32 amount = damage / maxTicks;
-
-        if (AuraEffect* protEff = victim->GetAuraEffect(RUNE_DRUID_NATURAL_SMOLDER_DOT, 0))
-        {
-            int32 remainingTicks = maxTicks - protEff->GetTickNumber();
-            int32 remainingAmount = protEff->GetAmount() * remainingTicks;
-            int32 remainingAmountPerTick = remainingAmount / maxTicks;
-
-            amount += remainingAmountPerTick;
-            victim->RemoveAura(RUNE_DRUID_NATURAL_SMOLDER_DOT);
-        }
 
         GetCaster()->CastCustomSpell(RUNE_DRUID_NATURAL_SMOLDER_DOT, SPELLVALUE_BASE_POINT0, amount, victim, TRIGGERED_FULL_MASK);
     }
@@ -1840,7 +1833,7 @@ class rune_druid_trail_of_blood : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = eventInfo.GetActor();
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* target = eventInfo.GetActionTarget();
 
         if (!caster->HasAura(FORM_CAT_FORM) && !caster->HasAura(SPELL_INCARNATION_AVATAR_OF_ASHAMANE))
             return;
@@ -1893,7 +1886,7 @@ class rune_druid_merciless_claws : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* target = eventInfo.GetActionTarget();
 
         if (!target || target->isDead())
             return;
@@ -1947,7 +1940,7 @@ class rune_druid_burning_attacks : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* target = eventInfo.GetActionTarget();
 
         if (!target || target->isDead())
             return;
@@ -2088,18 +2081,12 @@ class rune_druid_balance_of_all_things_buffs : public AuraScript
         int32 stackAmount = GetRuneAura(caster)->GetEffect(EFFECT_0)->GetAmount();
 
         if (caster->HasAura(SPELL_ECLIPSE_SOLAR) || caster->HasAura(SPELL_CELESTIAL_ALIGNMENT_ECLIPSE_SOLAR))
-        {
-            caster->AddAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_NATURE_BUFF, caster);
-            caster->GetAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_NATURE_BUFF)->SetStackAmount(stackAmount);
-            caster->AddAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_REMOVE_BUFF, caster);
-        }
+            if (Aura* natureBuff = caster->AddAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_NATURE_BUFF, caster))
+                natureBuff->SetStackAmount(stackAmount);
 
         if (caster->HasAura(SPELL_ECLIPSE_LUNAR) || caster->HasAura(SPELL_CELESTIAL_ALIGNMENT_ECLIPSE_LUNAR))
-        {
-            caster->AddAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_ARCANE_BUFF, caster);
-            caster->GetAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_ARCANE_BUFF)->SetStackAmount(stackAmount);
-            caster->AddAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_REMOVE_BUFF, caster);
-        }
+            if (Aura* arcaneBuff = caster->AddAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_ARCANE_BUFF, caster))
+                arcaneBuff->SetStackAmount(stackAmount);
     }
 
     void Register() override
@@ -2108,50 +2095,18 @@ class rune_druid_balance_of_all_things_buffs : public AuraScript
     }
 };
 
-class rune_druid_balance_of_all_things_listener : public AuraScript
+class rune_druid_balance_of_all_things_periodic : public AuraScript
 {
-    PrepareAuraScript(rune_druid_balance_of_all_things_listener);
+    PrepareAuraScript(rune_druid_balance_of_all_things_periodic);
 
     void HandleProc(AuraEffect const* aurEff)
     {
-        Player* caster = GetCaster()->ToPlayer();
-
-        if (!caster || caster->isDead())
-        {
-            GetAura()->Remove();
-            return;
-        }
-
-        if (Aura* natureBuff = caster->GetAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_NATURE_BUFF))
-        {
-            if (natureBuff->GetStackAmount() == 1)
-            {
-                natureBuff->Remove();
-
-                if (!caster->HasAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_ARCANE_BUFF))
-                {
-                    GetAura()->Remove();
-                    return;
-                }
-            }
-            natureBuff->ModStackAmount(-1);
-        }
-
-        if (Aura* arcaneBuff = caster->GetAura(RUNE_DRUID_BALANCE_OF_ALL_THINGS_ARCANE_BUFF))
-        {
-            if (arcaneBuff->GetStackAmount() == 1)
-            {
-                arcaneBuff->Remove();
-                GetAura()->Remove();
-                return;
-            }
-            arcaneBuff->ModStackAmount(-1);
-        }
+        GetAura()->ModStackAmount(-1);
     }
 
     void Register()
     {
-        OnEffectPeriodic += AuraEffectPeriodicFn(rune_druid_balance_of_all_things_listener::HandleProc, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+        OnEffectPeriodic += AuraEffectPeriodicFn(rune_druid_balance_of_all_things_periodic::HandleProc, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
 
@@ -2167,7 +2122,7 @@ class rune_druid_lunar_shrapnel : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* target = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -2197,26 +2152,26 @@ class rune_druid_lunar_rain : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return false;
+
+        if (!eventInfo.GetActionTarget() || eventInfo.GetActionTarget()->isDead())
+            return false;
+
         return eventInfo.GetDamageInfo();
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
-
-        if (!caster || caster->isDead())
-            return;
-
-        if (!target || target->isDead())
-            return;
+        Unit* target = eventInfo.GetActionTarget();
 
         int32 rand = urand(0, 1);
 
         if (rand == 0)
-            caster->CastSpell(target, SPELL_MOONFIRE, TRIGGERED_FULL_MASK);
+            caster->AddAura(SPELL_MOONFIRE, target);
         else
-            caster->CastSpell(target, SPELL_SUNFIRE, TRIGGERED_FULL_MASK);
+            caster->AddAura(SPELL_SUNFIRE, target);
     }
 
     void Register()
@@ -2232,138 +2187,40 @@ class rune_druid_aetherial_kindling : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return false;
+
+        if (!eventInfo.GetActionTarget() || eventInfo.GetActionTarget()->isDead())
+            return false;
+
         return eventInfo.GetDamageInfo();
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
-
-        if (!caster || caster->isDead())
-            return;
-
-        if (!target || target->isDead())
-            return;
-
-        if (!target->HasAura(SPELL_MOONFIRE) && !target->HasAura(SPELL_SUNFIRE))
-            return;
-
-        int32 maxIncrease = GetAura()->GetEffect(EFFECT_1)->GetAmount();
+        Unit* target = eventInfo.GetActionTarget();
         int32 increase = aurEff->GetAmount();
 
-        if (Aura* moonfire = target->GetAura(SPELL_MOONFIRE))
+        if (Aura* moonfire = target->GetAura(SPELL_MOONFIRE, caster->GetGUID()))
         {
-            if (Aura* listener = target->GetAura(RUNE_DRUID_AETHERIAL_KINDLING_LISTENER_MOONFIRE)) {
-                int32 increasedAmount = listener->GetEffect(EFFECT_0)->GetAmount();
-
-                if (increasedAmount < maxIncrease)
-                {
-                    if ((increasedAmount + increase) > maxIncrease)
-                        increase = maxIncrease - increasedAmount;
-
-                    int32 duration = moonfire->GetDuration();
-                    moonfire->SetDuration(duration + increase);
-                    moonfire->GetEffect(EFFECT_0)->ResetTicks();
-
-                    listener->GetEffect(EFFECT_0)->SetAmount(increasedAmount + increase);
-                }
-            }
+            int32 duration = moonfire->GetDuration();
+            moonfire->SetDuration(duration + increase);
+            moonfire->GetEffect(EFFECT_0)->ResetTicks();
         }
 
-        if (Aura* sunfire = target->GetAura(SPELL_SUNFIRE))
+        if (Aura* sunfire = target->GetAura(SPELL_SUNFIRE, caster->GetGUID()))
         {
-            if (Aura* listener = target->GetAura(RUNE_DRUID_AETHERIAL_KINDLING_LISTENER_SUNFIRE)) {
-                int32 increasedAmount = listener->GetEffect(EFFECT_0)->GetAmount();
-
-                if (increasedAmount >= maxIncrease)
-                    return;
-
-                if ((increasedAmount + increase) > maxIncrease)
-                    increase = maxIncrease - increasedAmount;
-
-                int32 duration = sunfire->GetDuration();
-                sunfire->SetDuration(duration + increase);
-                sunfire->GetEffect(EFFECT_0)->ResetTicks();
-
-                listener->GetEffect(EFFECT_0)->SetAmount(increasedAmount + increase);
-            }
+            int32 duration = sunfire->GetDuration();
+            sunfire->SetDuration(duration + increase);
+            sunfire->GetEffect(EFFECT_0)->ResetTicks();
         }
-
     };
 
     void Register()
     {
         DoCheckProc += AuraCheckProcFn(rune_druid_aetherial_kindling::CheckProc);
         OnEffectProc += AuraEffectProcFn(rune_druid_aetherial_kindling::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
-    }
-};
-
-class rune_druid_aetherial_kindling_listener : public AuraScript
-{
-    PrepareAuraScript(rune_druid_aetherial_kindling_listener);
-
-    Aura* GetRuneAura(Unit* caster)
-    {
-        for (size_t i = 700660; i < 700666; i++)
-        {
-            if (caster->HasAura(i))
-                return caster->GetAura(i);
-        }
-
-        return nullptr;
-    }
-
-    void HandleProc(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        Unit* caster = GetAura()->GetCaster();
-
-        WorldObject* owner = GetAura()->GetOwner();
-
-        if (!owner)
-            return;
-
-        Unit* target = owner->ToUnit();
-
-        if (!caster || caster->isDead())
-            return;
-
-        if (!target || target->isDead())
-            return;
-
-        if (!GetRuneAura(caster))
-            return;
-
-        if (GetAura()->GetId() == SPELL_MOONFIRE)
-            caster->AddAura(RUNE_DRUID_AETHERIAL_KINDLING_LISTENER_MOONFIRE, target);
-
-        if (GetAura()->GetId() == SPELL_SUNFIRE)
-            caster->AddAura(RUNE_DRUID_AETHERIAL_KINDLING_LISTENER_SUNFIRE, target);
-    }
-
-    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        WorldObject* owner = GetAura()->GetOwner();
-
-        if (!owner)
-            return;
-
-        Unit* target = owner->ToUnit();
-
-        if (!target || target->isDead())
-            return;
-
-        if (GetAura()->GetId() == SPELL_MOONFIRE && target->HasAura(RUNE_DRUID_AETHERIAL_KINDLING_LISTENER_MOONFIRE))
-            target->RemoveAura(RUNE_DRUID_AETHERIAL_KINDLING_LISTENER_MOONFIRE);
-
-        if (GetAura()->GetId() == SPELL_SUNFIRE && target->HasAura(RUNE_DRUID_AETHERIAL_KINDLING_LISTENER_SUNFIRE))
-            target->RemoveAura(RUNE_DRUID_AETHERIAL_KINDLING_LISTENER_SUNFIRE);
-    }
-
-    void Register() override
-    {
-        OnEffectApply += AuraEffectApplyFn(rune_druid_aetherial_kindling_listener::HandleProc, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(rune_druid_aetherial_kindling_listener::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -2416,7 +2273,7 @@ class rune_druid_balance_of_power : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* target = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -2495,16 +2352,18 @@ class rune_druid_arcanic_smolder : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return false;
+
+        if (!eventInfo.GetActionTarget() || eventInfo.GetActionTarget()->isDead())
+            return false;
+
         return eventInfo.GetDamageInfo();
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
-
-        if (!victim || victim->isDead())
-            return;
-
+        Unit* victim = eventInfo.GetActionTarget();
         float damageDealt = eventInfo.GetDamageInfo()->GetDamage();
 
         if (damageDealt <= 0)
@@ -2513,16 +2372,6 @@ class rune_druid_arcanic_smolder : public AuraScript
         float damage = CalculatePct(int32(damageDealt), aurEff->GetAmount());
         int32 maxTicks = sSpellMgr->GetSpellInfo(RUNE_DRUID_ARCANIC_SMOLDER_DOT)->GetMaxTicks();
         int32 amount = damage / maxTicks;
-
-        if (AuraEffect* protEff = victim->GetAuraEffect(RUNE_DRUID_ARCANIC_SMOLDER_DOT, 0))
-        {
-            int32 remainingTicks = maxTicks - protEff->GetTickNumber();
-            int32 remainingAmount = protEff->GetAmount() * remainingTicks;
-            int32 remainingAmountPerTick = remainingAmount / maxTicks;
-
-            amount += remainingAmountPerTick;
-            victim->RemoveAura(RUNE_DRUID_ARCANIC_SMOLDER_DOT);
-        }
 
         GetCaster()->CastCustomSpell(RUNE_DRUID_ARCANIC_SMOLDER_DOT, SPELLVALUE_BASE_POINT0, amount, victim, TRIGGERED_FULL_MASK);
     }
@@ -2591,16 +2440,18 @@ class rune_druid_astral_smolder : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return false;
+
+        if (!eventInfo.GetActionTarget() || eventInfo.GetActionTarget()->isDead())
+            return false;
+
         return eventInfo.GetDamageInfo();
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
-
-        if (!victim || victim->isDead())
-            return;
-
+        Unit* victim = eventInfo.GetActionTarget();
         float damageDealt = eventInfo.GetDamageInfo()->GetDamage();
 
         if (damageDealt <= 0)
@@ -2609,16 +2460,6 @@ class rune_druid_astral_smolder : public AuraScript
         float damage = CalculatePct(int32(damageDealt), aurEff->GetAmount());
         int32 maxTicks = sSpellMgr->GetSpellInfo(RUNE_DRUID_ASTRAL_SMOLDER_DOT)->GetMaxTicks();
         int32 amount = damage / maxTicks;
-
-        if (AuraEffect* protEff = victim->GetAuraEffect(RUNE_DRUID_ASTRAL_SMOLDER_DOT, 0))
-        {
-            int32 remainingTicks = maxTicks - protEff->GetTickNumber();
-            int32 remainingAmount = protEff->GetAmount() * remainingTicks;
-            int32 remainingAmountPerTick = remainingAmount / maxTicks;
-
-            amount += remainingAmountPerTick;
-            victim->RemoveAura(RUNE_DRUID_ASTRAL_SMOLDER_DOT);
-        }
 
         GetCaster()->CastCustomSpell(RUNE_DRUID_ASTRAL_SMOLDER_DOT, SPELLVALUE_BASE_POINT0, amount, victim, TRIGGERED_FULL_MASK);
     }
@@ -2636,7 +2477,7 @@ class rune_druid_power_of_goldrinn : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* target = eventInfo.GetActionTarget();
         Player* caster = GetCaster()->ToPlayer();
 
         if (!caster || caster->isDead())
@@ -2712,8 +2553,8 @@ class rune_druid_orbit_breaker : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
-        Unit* caster = eventInfo.GetDamageInfo()->GetAttacker();
+        Unit* victim = eventInfo.GetActionTarget();
+        Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
             return;
@@ -3016,7 +2857,7 @@ class rune_druid_fungal_growth : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!victim || victim->isDead())
             return;
@@ -3098,7 +2939,7 @@ class rune_druid_druid_of_the_flame : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -3189,7 +3030,7 @@ class rune_druid_lacerating_claws : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -3238,26 +3079,29 @@ class rune_druid_berserks_frenzy : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return false;
+
+        Unit* victim = eventInfo.GetActionTarget();
+
+        if (!victim || victim->isDead())
+            return false;
+
+        if (!caster->HasAura(FORM_CAT_FORM) && !caster->HasAura(SPELL_INCARNATION_AVATAR_OF_ASHAMANE))
+            return false;
+
+        if (!caster->HasAura(SPELL_BERSERK))
+            return false;
+
         return eventInfo.GetDamageInfo();
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
-
-        if (!caster || caster->isDead())
-            return;
-
-        if (!victim || victim->isDead())
-            return;
-
-        if (!caster->HasAura(FORM_CAT_FORM) && !caster->HasAura(SPELL_INCARNATION_AVATAR_OF_ASHAMANE))
-            return;
-
-        if (!caster->HasAura(SPELL_BERSERK))
-            return;
-
+        Unit* victim = eventInfo.GetActionTarget();
         float damageDealt = eventInfo.GetDamageInfo()->GetDamage();
 
         if (damageDealt <= 0)
@@ -3322,7 +3166,7 @@ class rune_druid_ripping_bite : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -3351,7 +3195,7 @@ class rune_druid_ashamanes_bite : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -3365,7 +3209,6 @@ class rune_druid_ashamanes_bite : public AuraScript
             rip->GetEffect(EFFECT_0)->ResetTicks();
             caster->AddAura(RUNE_DRUID_ASHAMANES_BITE_DOT, victim);
         }
-
     }
 
     void Register()
@@ -3504,15 +3347,11 @@ class rune_druid_predators_fury : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Player* caster = GetCaster()->ToPlayer();
-        Unit* victim = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
 
-        if (!victim || victim->isDead())
-            return;
-
-        auto targetAuras = victim->GetAppliedAuras();
+        auto targetAuras = eventInfo.GetActionTarget()->GetAppliedAuras();
         for (auto itr = targetAuras.begin(); itr != targetAuras.end(); ++itr)
         {
             if (Aura* aura = itr->second->GetBase())
@@ -3715,16 +3554,22 @@ class rune_druid_ashamanes_guidance : public AuraScript
 {
     PrepareAuraScript(rune_druid_ashamanes_guidance);
 
-    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    bool CheckProc(ProcEventInfo& eventInfo)
     {
-        Unit* caster = eventInfo.GetActor();
+        Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
-            return;
+            return false;
 
-        if (!GetCaster()->HasAura(FORM_CAT_FORM))
-            return;
+        if (caster->GetShapeshiftForm() != FORM_CAT)
+            return false;
 
+        return false;
+    }
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        Unit* caster = GetCaster();
         int32 ashamaneDuration = GetAura()->GetEffect(EFFECT_0)->GetAmount();
 
         if (Aura* ashamane = caster->GetAura(SPELL_INCARNATION_AVATAR_OF_ASHAMANE))
@@ -3734,14 +3579,13 @@ class rune_druid_ashamanes_guidance : public AuraScript
             ashamane->SetDuration(duration + ashamaneDuration);
         }
         else
-        {
-            caster->AddAura(SPELL_INCARNATION_AVATAR_OF_ASHAMANE, caster);
-            caster->GetAura(SPELL_INCARNATION_AVATAR_OF_ASHAMANE)->SetDuration(ashamaneDuration);
-        }
+            if (Aura* ashamane = caster->AddAura(SPELL_INCARNATION_AVATAR_OF_ASHAMANE, caster))
+                ashamane->SetDuration(ashamaneDuration);
     }
 
     void Register() override
     {
+        DoCheckProc += AuraCheckProcFn(rune_druid_ashamanes_guidance::CheckProc);
         OnEffectProc += AuraEffectProcFn(rune_druid_ashamanes_guidance::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
     }
 };
@@ -3758,7 +3602,7 @@ class rune_druid_tear_open_wounds : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -3895,7 +3739,7 @@ class rune_druid_primal_claws : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -4009,7 +3853,7 @@ class rune_druid_primal_fury : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -4059,7 +3903,7 @@ class rune_druid_bloody_mess : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -4108,9 +3952,8 @@ class rune_druid_guardian_of_elune : public AuraScript
 
         if (Aura* ironFur = caster->GetAura(SPELL_IRONFUR_AURA))
         {
-            int32 duration = ironFur->GetDuration();
-            int32 increase = aurEff->GetAmount();
-            ironFur->SetDuration(duration + increase);
+            int32 increase = aurEff->GetAmount() + ironFur->GetDuration();
+            ironFur->SetDuration(increase);
         }
     }
 
@@ -4341,7 +4184,7 @@ class rune_druid_moonless_night : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* victim = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* victim = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -4740,7 +4583,7 @@ class rune_druid_blood_frenzy : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* target = eventInfo.GetActionTarget();
 
         if (!caster || caster->isDead())
             return;
@@ -6798,12 +6641,7 @@ class rune_druid_ironwood_thorns_reflect : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        WorldObject* owner = GetAura()->GetOwner();
-
-        if (!owner)
-            return;
-
-        Unit* caster = caster->ToUnit();
+        Unit* caster = GetUnitOwner();
         Unit* attacker = eventInfo.GetDamageInfo()->GetAttacker();
 
         if (!caster || caster->isDead())
@@ -7097,6 +6935,73 @@ class rune_druid_waking_dream_apply : public AuraScript
     }
 };
 
+class rune_druid_orbital_strike : public AuraScript
+{
+    PrepareAuraScript(rune_druid_orbital_strike);
+
+    void HandleLearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Player* target = GetCaster()->ToPlayer();
+
+        if (target->HasTalent(SPELL_DRUID_CELESTIAL_ALIGNMENT, TALENT_TREE_DRUID_BALANCE))
+        {
+            target->learnSpell(RUNE_DRUID_ORBITAL_STRIKE);
+            target->removeSpell(SPELL_DRUID_CELESTIAL_ALIGNMENT, SPEC_MASK_ALL, false);
+        }
+    }
+
+    void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Player* target = GetCaster()->ToPlayer();
+
+        if (target->HasTalent(SPELL_DRUID_CELESTIAL_ALIGNMENT, TALENT_TREE_DRUID_BALANCE))
+            target->learnSpell(SPELL_DRUID_CELESTIAL_ALIGNMENT);
+
+        target->removeSpell(RUNE_DRUID_ORBITAL_STRIKE, SPEC_MASK_ALL, false);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(rune_druid_orbital_strike::HandleLearn, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(rune_druid_orbital_strike::HandleUnlearn, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+class rune_druid_orbital_strike_oncast : public SpellScript
+{
+    PrepareSpellScript(rune_druid_orbital_strike_oncast);
+
+    void HandleCast()
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        caster->AddAura(SPELL_DRUID_CELESTIAL_ALIGNMENT, caster);
+    }
+
+    void HandleHit(SpellEffIndex /*effIndex*/)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+        Unit* target = GetHitUnit();
+
+        if (!target || target->isDead())
+            return;
+        if (caster->HasSpell(SPELL_DRUID_STELLAR_FLARE))
+            caster->AddAura(SPELL_DRUID_STELLAR_FLARE, target);
+    }
+
+    void Register() override
+    {
+        OnCast += SpellCastFn(rune_druid_orbital_strike_oncast::HandleCast);
+        OnEffectHitTarget += SpellEffectFn(rune_druid_orbital_strike_oncast::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
 void AddSC_druid_rune_scripts()
 {
     RegisterSpellScript(rune_druid_lycara_fleeting_glimpse);
@@ -7140,11 +7045,10 @@ void AddSC_druid_rune_scripts()
     RegisterSpellScript(rune_druid_astral_generation);
     RegisterSpellScript(rune_druid_natures_grace);
     RegisterSpellScript(rune_druid_balance_of_all_things_buffs);
-    RegisterSpellScript(rune_druid_balance_of_all_things_listener);
+    RegisterSpellScript(rune_druid_balance_of_all_things_periodic);
     RegisterSpellScript(rune_druid_lunar_shrapnel);
     RegisterSpellScript(rune_druid_lunar_rain);
     RegisterSpellScript(rune_druid_aetherial_kindling);
-    RegisterSpellScript(rune_druid_aetherial_kindling_listener);
     RegisterSpellScript(rune_druid_starlord);
     RegisterSpellScript(rune_druid_balance_of_power);
     RegisterSpellScript(rune_druid_nightsong_regalia_remove);
@@ -7259,4 +7163,6 @@ void AddSC_druid_rune_scripts()
     RegisterSpellScript(rune_druid_i_is_groot);
     RegisterSpellScript(rune_druid_waking_dream);
     RegisterSpellScript(rune_druid_waking_dream_apply);
+    RegisterSpellScript(rune_druid_orbital_strike);
+    RegisterSpellScript(rune_druid_orbital_strike_oncast);
 }

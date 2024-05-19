@@ -133,8 +133,7 @@ enum DruidSpells
     SPELL_DRUID_REGROWTH                    = 48443,
     SPELL_DRUID_NATURES_CURE                = 80573,
     SPELL_DRUID_YSERAS_GIFT                 = 80584,
-    SPELL_DRUID_YSERAS_GIFT_SELF_HEAL       = 80585,
-    SPELL_DRUID_YSERAS_GIFT_ALLY_HEAL       = 80586,
+    SPELL_DRUID_YSERAS_GIFT_HEAL            = 80585,
     SPELL_DRUID_FLOURISH                    = 80587,
     SPELL_DRUID_STELLAR_INNERVATION_R1      = 48516,
     SPELL_DRUID_STELLAR_INNERVATION_R2      = 48521,
@@ -560,7 +559,7 @@ class spell_dru_enrage : public AuraScript
             target->CastSpell(target, SPELL_DRUID_ENRAGED_DEFENSE, true);
         }
 
-        RecalculateBaseArmor();
+        //RecalculateBaseArmor();
     }
 
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -568,7 +567,7 @@ class spell_dru_enrage : public AuraScript
         GetTarget()->RemoveAurasDueToSpell(SPELL_DRUID_ENRAGE_MOD_DAMAGE);
         GetTarget()->RemoveAurasDueToSpell(SPELL_DRUID_ENRAGED_DEFENSE);
 
-        RecalculateBaseArmor();
+        //RecalculateBaseArmor();
     }
 
     void Register() override
@@ -2483,17 +2482,27 @@ class spell_dru_ursine_adept : public AuraScript
     void HandleLearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Player* target = GetCaster()->ToPlayer();
+        target->removeSpell(SPELL_DRUID_BEAR_FORM, SPEC_MASK_ALL, false);
+
+        target->learnSpell(SPELL_DRUID_DIRE_BEAR_FORM);
         target->learnSpell(SPELL_DRUID_MOONFIRE_BEAR);
         target->learnSpell(SPELL_DRUID_SOOTHE_BEAR);
         target->learnSpell(SPELL_DRUID_REMOVE_CORRUPTION_BEAR);
+
+        //Normally Bear Form gets replaced by Dire Bear Form fine on the Shapeshift Bar,
+        //however after removing Dire Bear Form, the normal Bear Form will not show up
+        //on the bar unless you relog.
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Player* target = GetCaster()->ToPlayer();
+        target->removeSpell(SPELL_DRUID_DIRE_BEAR_FORM, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_DRUID_MOONFIRE_BEAR, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_DRUID_SOOTHE_BEAR, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_DRUID_REMOVE_CORRUPTION_BEAR, SPEC_MASK_ALL, false);
+
+        target->learnSpell(SPELL_DRUID_BEAR_FORM);
     }
 
     void Register() override
@@ -2872,63 +2881,32 @@ class spell_dru_dryad_adept : public AuraScript
     }
 };
 
-class spell_druid_yseras_gift : public AuraScript
+class spell_druid_yseras_gift : public SpellScript
 {
-    PrepareAuraScript(spell_druid_yseras_gift);
-
-    void HandlePeriodic(AuraEffect const* aurEff)
-    {
-        Unit* caster = GetCaster();
-
-        if (!caster || caster->isDead())
-            return;
-
-        int32 procPct = GetAura()->GetEffect(EFFECT_0)->GetAmount();
-        int32 amount = int32(CalculatePct(caster->GetMaxHealth(), procPct));
-
-        if (caster->GetHealthPct() < 100)
-            caster->CastCustomSpell(SPELL_DRUID_YSERAS_GIFT_SELF_HEAL, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
-        else
-            caster->CastCustomSpell(SPELL_DRUID_YSERAS_GIFT_ALLY_HEAL, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
-    }
-
-    void Register() override
-    {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_druid_yseras_gift::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-    }
-};
-
-class spell_druid_yseras_gift_target : public SpellScript
-{
-    PrepareSpellScript(spell_druid_yseras_gift_target);
+    PrepareSpellScript(spell_druid_yseras_gift);
 
     void FilterTargets(std::list<WorldObject*>& targets)
     {
-        if (!GetCaster()->ToPlayer()->GetGroup())
-            return;
-
+        targets.remove_if(Acore::RaidCheck(GetCaster(), false));
         uint32 const maxTargets = 1;
 
-        if (targets.size() > maxTargets)
+        if (GetCaster()->GetHealthPct() < 100)
         {
-            targets.sort(Acore::HealthPctOrderPred());
-            targets.resize(maxTargets);
+            targets.clear();
+            targets.push_back(GetCaster());
         }
-    }
-
-    void SetTargets(std::list<WorldObject*>& targets)
-    {
-        targets = _targets;
+        else
+            if (targets.size() > maxTargets)
+            {
+                targets.sort(Acore::HealthPctOrderPred());
+                targets.resize(maxTargets);
+            }
     }
 
     void Register() override
     {
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_druid_yseras_gift_target::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_druid_yseras_gift_target::SetTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_druid_yseras_gift::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
     }
-
-private:
-    std::list<WorldObject*> _targets;
 };
 
 class spell_dru_flourish : public SpellScript
@@ -3122,16 +3100,23 @@ class spell_dru_raze : public AuraScript
     {
         Player* target = GetCaster()->ToPlayer();
 
-        target->removeSpell(SPELL_DRUID_MAUL, SPEC_MASK_ALL, false);
-        target->learnSpell(SPELL_DRUID_RAZE);
+        if (target->HasSpell(SPELL_DRUID_MAUL))
+        {
+            target->removeSpell(SPELL_DRUID_MAUL, SPEC_MASK_ALL, false);
+            target->learnSpell(SPELL_DRUID_RAZE);
+        }
+        
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Player* target = GetCaster()->ToPlayer();
 
-        target->removeSpell(SPELL_DRUID_RAZE, SPEC_MASK_ALL, false);
-        target->learnSpell(SPELL_DRUID_MAUL);        
+        if (target->HasSpell(SPELL_DRUID_RAZE))
+        {
+            target->removeSpell(SPELL_DRUID_RAZE, SPEC_MASK_ALL, false);
+            target->learnSpell(SPELL_DRUID_MAUL);
+        }        
     }
 
     void Register() override
@@ -3198,6 +3183,51 @@ class spell_dru_replacer_ashamane : public AuraScript
     {
         OnEffectApply += AuraEffectApplyFn(spell_dru_replacer_ashamane::HandleLearn, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
         OnEffectRemove += AuraEffectRemoveFn(spell_dru_replacer_ashamane::HandleUnlearn, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+class spell_dru_starfire_aoe : public SpellScript
+{
+    PrepareSpellScript(spell_dru_starfire_aoe);
+
+    void FilterTargets(std::list<WorldObject*>& targets)
+    {
+        Unit* target = ObjectAccessor::GetUnit(*GetCaster(), GetCaster()->GetTarget());
+
+        if (!target || target->isDead())
+            return;
+
+        targets.remove(target);
+    }
+
+    void Register() override
+    {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dru_starfire_aoe::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+    }
+};
+
+class spell_dru_incapacitating_roar : public SpellScript
+{
+    PrepareSpellScript(spell_dru_incapacitating_roar);
+
+    void HandleCast()
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        int32 shiftForm = SPELL_DRUID_BEAR_FORM;
+
+        if (caster->HasAura(SPELL_DRUID_URSINE_ADEPT))
+            shiftForm = SPELL_DRUID_DIRE_BEAR_FORM;
+
+        caster->CastSpell(caster, shiftForm, TRIGGERED_FULL_MASK);
+    }
+
+    void Register() override
+    {
+        OnCast += SpellCastFn(spell_dru_incapacitating_roar::HandleCast);
     }
 };
 
@@ -3287,7 +3317,6 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_overgrowth);
     RegisterSpellScript(spell_dru_dryad_adept);
     RegisterSpellScript(spell_druid_yseras_gift);
-    RegisterSpellScript(spell_druid_yseras_gift_target);
     RegisterSpellScript(spell_dru_flourish);
     RegisterSpellScript(spell_dru_nature_balance);
     RegisterSpellScript(spell_dru_moonglow);
@@ -3299,4 +3328,6 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_replacer_ursoc);
     RegisterSpellScript(spell_dru_replacer_ashamane);
     RegisterSpellScript(spell_dru_raze);
+    RegisterSpellScript(spell_dru_starfire_aoe);
+    RegisterSpellScript(spell_dru_incapacitating_roar);
 }
