@@ -3167,16 +3167,22 @@ class spell_dru_replacer_ashamane : public AuraScript
     {
         Player* target = GetCaster()->ToPlayer();
 
-        target->removeSpell(SPELL_DRUID_BERSERK_CAT, SPEC_MASK_ALL, false);
-        target->learnSpell(SPELL_DRUID_AVATAR_OF_ASHAMANE);
+        if (target->HasSpell(SPELL_DRUID_BERSERK_CAT))
+        {
+            target->removeSpell(SPELL_DRUID_BERSERK_CAT, SPEC_MASK_ALL, false);
+            target->learnSpell(SPELL_DRUID_AVATAR_OF_ASHAMANE);
+        }
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Player* target = GetCaster()->ToPlayer();
 
-        target->removeSpell(SPELL_DRUID_AVATAR_OF_ASHAMANE, SPEC_MASK_ALL, false);
-        target->learnSpell(SPELL_DRUID_BERSERK_CAT);
+        if (target->HasSpell(SPELL_DRUID_AVATAR_OF_ASHAMANE))
+        {
+            target->removeSpell(SPELL_DRUID_AVATAR_OF_ASHAMANE, SPEC_MASK_ALL, false);
+            target->learnSpell(SPELL_DRUID_BERSERK_CAT);
+        }    
     }
 
     void Register() override
