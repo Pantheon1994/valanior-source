@@ -2065,36 +2065,42 @@ class spell_rog_amplifying_poison_replacer : public AuraScript
     {
         Player* target = GetCaster()->ToPlayer();
 
-        target->removeSpell(SPELL_ROGUE_INSTANT_POISON, SPEC_MASK_ALL, false);
-        target->learnSpell(SPELL_ROGUE_AMPLIFYING_POISON);
+        if (target->HasSpell(SPELL_ROGUE_INSTANT_POISON))
+        {
+            target->removeSpell(SPELL_ROGUE_INSTANT_POISON, SPEC_MASK_ALL, false);
+            target->learnSpell(SPELL_ROGUE_AMPLIFYING_POISON);
 
-        Item* itemMain = target->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-        if (uint32 mainEnchantID = target->GetItemEnchant(EQUIPMENT_SLOT_MAINHAND, SPELLFAMILY_ROGUE, DISPEL_POISON))
-            if (mainEnchantID == SPELL_ROGUE_INSTANT_POISON_PROC)
-                itemMain->ClearEnchantment(TEMP_ENCHANTMENT_SLOT);
+            Item* itemMain = target->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            if (uint32 mainEnchantID = target->GetItemEnchant(EQUIPMENT_SLOT_MAINHAND, SPELLFAMILY_ROGUE, DISPEL_POISON))
+                if (mainEnchantID == SPELL_ROGUE_INSTANT_POISON_PROC)
+                    itemMain->ClearEnchantment(TEMP_ENCHANTMENT_SLOT);
 
-        Item* itemOff = target->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-        if (uint32 offEnchantID = target->GetItemEnchant(EQUIPMENT_SLOT_OFFHAND, SPELLFAMILY_ROGUE, DISPEL_POISON))
-            if (offEnchantID == SPELL_ROGUE_INSTANT_POISON_PROC)
-                itemOff->ClearEnchantment(TEMP_ENCHANTMENT_SLOT);
+            Item* itemOff = target->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+            if (uint32 offEnchantID = target->GetItemEnchant(EQUIPMENT_SLOT_OFFHAND, SPELLFAMILY_ROGUE, DISPEL_POISON))
+                if (offEnchantID == SPELL_ROGUE_INSTANT_POISON_PROC)
+                    itemOff->ClearEnchantment(TEMP_ENCHANTMENT_SLOT);
+        }
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Player* target = GetCaster()->ToPlayer();
 
-        target->removeSpell(SPELL_ROGUE_AMPLIFYING_POISON, SPEC_MASK_ALL, false);
-        target->learnSpell(SPELL_ROGUE_INSTANT_POISON);
+        if (target->HasSpell(SPELL_ROGUE_AMPLIFYING_POISON))
+        {
+            target->removeSpell(SPELL_ROGUE_AMPLIFYING_POISON, SPEC_MASK_ALL, false);
+            target->learnSpell(SPELL_ROGUE_INSTANT_POISON);
 
-        Item* itemMain = target->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-        if (uint32 mainEnchantID = target->GetItemEnchant(EQUIPMENT_SLOT_MAINHAND, SPELLFAMILY_ROGUE, DISPEL_POISON))
-            if (mainEnchantID == SPELL_ROGUE_AMPLIFYING_POISON_PROC)
-                itemMain->ClearEnchantment(TEMP_ENCHANTMENT_SLOT);
+            Item* itemMain = target->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            if (uint32 mainEnchantID = target->GetItemEnchant(EQUIPMENT_SLOT_MAINHAND, SPELLFAMILY_ROGUE, DISPEL_POISON))
+                if (mainEnchantID == SPELL_ROGUE_AMPLIFYING_POISON_PROC)
+                    itemMain->ClearEnchantment(TEMP_ENCHANTMENT_SLOT);
 
-        Item* itemOff = target->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-        if (uint32 offEnchantID = target->GetItemEnchant(EQUIPMENT_SLOT_OFFHAND, SPELLFAMILY_ROGUE, DISPEL_POISON))
-            if (offEnchantID == SPELL_ROGUE_AMPLIFYING_POISON_PROC)
-                itemOff->ClearEnchantment(TEMP_ENCHANTMENT_SLOT);
+            Item* itemOff = target->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+            if (uint32 offEnchantID = target->GetItemEnchant(EQUIPMENT_SLOT_OFFHAND, SPELLFAMILY_ROGUE, DISPEL_POISON))
+                if (offEnchantID == SPELL_ROGUE_AMPLIFYING_POISON_PROC)
+                    itemOff->ClearEnchantment(TEMP_ENCHANTMENT_SLOT);
+        }
     }
 
     void Register() override

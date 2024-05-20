@@ -1239,59 +1239,72 @@ class spell_mastery_harmony : public AuraScript
 {
     PrepareAuraScript(spell_mastery_harmony);
 
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        Player* player = GetCaster()->ToPlayer();
+
+        if (!player || player->isDead())
+            return false;
+
+        Unit* target = eventInfo.GetActionTarget();
+
+        if (!target || target->isDead())
+            return false;
+
+        if (!eventInfo.GetHealInfo())
+            return false;
+
+        if (eventInfo.GetHealInfo()->GetSpellInfo()->Id == MASTERY_DRUID_HARMONY_HEAL)
+            return false;
+
+        return true;
+    }
+
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& procInfo)
     {
-        if (Player* caster = GetCaster()->ToPlayer())
+        Player* caster = GetCaster()->ToPlayer();
+        Unit* target = procInfo.GetActionTarget();
+
+        int32 defaultValue = aurEff->GetAmount();
+        int32 healPct = defaultValue + caster->GetMastery();   
+
+        int32 healAmount = procInfo.GetHealInfo()->GetHeal();
+
+        auto targetAuras = target->GetAppliedAuras();
+        std::list <Aura*> totalHots;
+        for (auto itr = targetAuras.begin(); itr != targetAuras.end(); ++itr)
         {
-            if (caster->IsAlive())
+            if (Aura* aura = itr->second->GetBase())
             {
-                int32 defaultValue = aurEff->GetAmount();
-                int32 healPct = defaultValue + caster->GetMastery();
+                if (caster->GetGUID() != aura->GetCasterGUID())
+                    continue;
 
-                if (!procInfo.GetHealInfo())
-                    return;
-
-                if (procInfo.GetHealInfo()->GetSpellInfo()->Id == MASTERY_DRUID_HARMONY_HEAL)
-                    return;
-
-                int32 healAmount = procInfo.GetHealInfo()->GetHeal();
-                Unit* target = procInfo.GetActionTarget();
-
-                if (!target)
-                    return;
-
-                auto targetAuras = target->GetAppliedAuras();
-                std::list <Aura*> totalHots;
-                for (auto itr = targetAuras.begin(); itr != targetAuras.end(); ++itr)
+                if (SpellInfo const* auraInfo = aura->GetSpellInfo())
                 {
-                    if (Aura* aura = itr->second->GetBase())
+                    if (auraInfo->SpellFamilyFlags[1] & 0x00400000 && auraInfo->SpellFamilyName == SPELLFAMILY_DRUID)
                     {
-                        if (GetCaster()->GetGUID() != aura->GetCasterGUID())
-                            continue;
-
-                        SpellInfo const* auraInfo = aura->GetSpellInfo();
-
-                        if (auraInfo->SpellFamilyFlags[1] & 0x00400000 && auraInfo->SpellFamilyName == SPELLFAMILY_DRUID)
-                        {
-                            totalHots.push_back(aura);
-                        }
+                        totalHots.push_back(aura);
                     }
-                }
-
-                int32 healMulti = healPct * totalHots.size();
-
-                int32 finalAmount = CalculatePct(healAmount, healMulti);
-
-                if (procInfo.GetHealInfo()->GetSpellInfo()->Id == 50464)
-                    finalAmount *= 3;
-
-                caster->CastCustomSpell(MASTERY_DRUID_HARMONY_HEAL, SPELLVALUE_BASE_POINT0, std::max(1, finalAmount), target, TRIGGERED_FULL_MASK);
+                } 
             }
         }
+
+        if (totalHots.size() <= 0)
+            return;
+
+        int32 healMulti = healPct * totalHots.size();
+
+        int32 finalAmount = CalculatePct(healAmount, healMulti);
+
+        if (procInfo.GetHealInfo()->GetSpellInfo()->Id == 50464)
+            finalAmount *= 3;
+
+        caster->CastCustomSpell(MASTERY_DRUID_HARMONY_HEAL, SPELLVALUE_BASE_POINT0, std::max(1, finalAmount), target, TRIGGERED_FULL_MASK);
     }
 
     void Register() override
     {
+        DoCheckProc += AuraCheckProcFn(spell_mastery_harmony::CheckProc);
         OnEffectProc += AuraEffectProcFn(spell_mastery_harmony::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
     }
 };
