@@ -79,6 +79,7 @@ enum DruidSpells
     SPELL_YSERAS_GIFT_GROUP_HEAL = 80586,
     SPELL_DRUID_CELESTIAL_ALIGNMENT = 80531,
     SPELL_DRUID_STELLAR_FLARE = 80528,
+    SPELL_DRUID_TRANQUILITY = 48447,
 
     //Talents
     SPELL_ECLIPSE_SOLAR = 80502,
@@ -174,6 +175,7 @@ enum DruidSpells
     RUNE_DRUID_I_IS_GROOT_DEBUFF = 701901,
     RUNE_DRUID_INVIGORATING_WOUNDS_COOLDOWN = 80678,
     RUNE_DRUID_ORBITAL_STRIKE = 700840,
+    RUNE_DRUID_TRANQUILITY_TRANQUIL_MIND = 701742,
 };
 
 class rune_druid_lycara_fleeting_glimpse : public AuraScript
@@ -759,16 +761,17 @@ class rune_druid_guardians_wrath : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return false;
+
+        if (!eventInfo.GetActionTarget() || eventInfo.GetActionTarget()->isDead())
+            return false;
+
         return eventInfo.GetDamageInfo();
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* victim = eventInfo.GetActionTarget();
-
-        if (!victim || victim->isDead())
-            return;
-
         float damageDealt = eventInfo.GetDamageInfo()->GetDamage();
 
         if (damageDealt <= 0)
@@ -778,7 +781,7 @@ class rune_druid_guardians_wrath : public AuraScript
         int32 maxTicks = sSpellMgr->GetSpellInfo(RUNE_DRUID_GUARDIANS_WRATH_DOT)->GetMaxTicks();
         int32 amount = damage / maxTicks;
 
-        GetCaster()->CastCustomSpell(RUNE_DRUID_GUARDIANS_WRATH_DOT, SPELLVALUE_BASE_POINT0, amount, victim, TRIGGERED_FULL_MASK);
+        GetCaster()->CastCustomSpell(RUNE_DRUID_GUARDIANS_WRATH_DOT, SPELLVALUE_BASE_POINT0, amount, eventInfo.GetActionTarget(), TRIGGERED_FULL_MASK);
     }
 
     void Register()
@@ -6261,7 +6264,7 @@ class rune_druid_embrace_the_dream : public SpellScript
         {
             Unit* target = object->ToUnit();
 
-            if (target->isDead() || !target->HasAura(SPELL_REJUVENATION) && !target->HasAura(SPELL_REGROWTH))
+            if (target->isDead() || !target->HasAura(SPELL_REJUVENATION) || !target->HasAura(SPELL_REGROWTH))
                 continue;
 
             int32 spellPower = caster->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL);
@@ -7002,6 +7005,39 @@ class rune_druid_orbital_strike_oncast : public SpellScript
     }
 };
 
+class rune_dru_tranquil_mind : public AuraScript
+{
+    PrepareAuraScript(rune_dru_tranquil_mind);
+
+    void HandleLearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Player* target = GetCaster()->ToPlayer();
+
+        if (target->HasSpell(SPELL_DRUID_TRANQUILITY))
+        {
+            target->removeSpell(SPELL_DRUID_TRANQUILITY, SPEC_MASK_ALL, false);
+            target->learnSpell(RUNE_DRUID_TRANQUILITY_TRANQUIL_MIND);
+        }
+    }
+
+    void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Player* target = GetCaster()->ToPlayer();
+
+        if (target->HasSpell(RUNE_DRUID_TRANQUILITY_TRANQUIL_MIND))
+        {
+            target->removeSpell(RUNE_DRUID_TRANQUILITY_TRANQUIL_MIND, SPEC_MASK_ALL, false);
+            target->learnSpell(SPELL_DRUID_TRANQUILITY);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(rune_dru_tranquil_mind::HandleLearn, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(rune_dru_tranquil_mind::HandleUnlearn, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 void AddSC_druid_rune_scripts()
 {
     RegisterSpellScript(rune_druid_lycara_fleeting_glimpse);
@@ -7165,4 +7201,5 @@ void AddSC_druid_rune_scripts()
     RegisterSpellScript(rune_druid_waking_dream_apply);
     RegisterSpellScript(rune_druid_orbital_strike);
     RegisterSpellScript(rune_druid_orbital_strike_oncast);
+    RegisterSpellScript(rune_dru_tranquil_mind);
 }

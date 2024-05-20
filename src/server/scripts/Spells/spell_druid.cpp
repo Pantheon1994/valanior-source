@@ -154,6 +154,7 @@ enum DruidSpells
     SPELL_DRUID_MAUL                        = 48480,
     SPELL_DRUID_RAZE                        = 80520,
     SPELL_DRUID_INCARNATION_TREE_OF_LIFE    = 80576,
+    SPELL_DRUID_NATURAL_LIFEFORM_BUFF       = 48538,
 
     // Rune Spell
     SPELL_DRUID_RADIANT_MOON_AURA           = 700910,
@@ -327,6 +328,9 @@ class spell_dru_omen_of_clarity : public AuraScript
         {
             return true;
         }
+
+        if (eventInfo.GetSpellInfo()->HasAttribute(SPELL_ATTR4_ALLOW_CAST_WHILE_CASTING))
+            return false;
 
         // Prevent passive spells to proc. (I.e shapeshift passives & passive talents)
         if (spellInfo->IsPassive())
@@ -3237,6 +3241,31 @@ class spell_dru_incapacitating_roar : public SpellScript
     }
 };
 
+class spell_dru_natural_lifeform : public AuraScript
+{
+    PrepareAuraScript(spell_dru_natural_lifeform);
+
+    void OnPeriodic(AuraEffect const* aurEff)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (caster->GetShapeshiftForm() == FORM_NONE || caster->GetShapeshiftForm() == FORM_TREE)
+        {
+            int32 armor = aurEff->GetAmount();
+            int32 sp = GetAura()->GetEffect(EFFECT_1)->GetAmount();
+            caster->CastCustomSpell(caster, SPELL_DRUID_NATURAL_LIFEFORM_BUFF, &armor, &sp, nullptr, TRIGGERED_FULL_MASK);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_natural_lifeform::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
 void AddSC_druid_spell_scripts()
 {
     RegisterSpellScript(spell_dru_bear_form_passive);
@@ -3336,4 +3365,5 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_raze);
     RegisterSpellScript(spell_dru_starfire_aoe);
     RegisterSpellScript(spell_dru_incapacitating_roar);
+    RegisterSpellScript(spell_dru_natural_lifeform);
 }
