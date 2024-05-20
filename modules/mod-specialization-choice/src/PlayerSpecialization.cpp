@@ -182,6 +182,9 @@ void PlayerSpecialization::RemoveSpellWhenTalentChange(Player* player)
     // Druid Orbital Strike
     if (player->HasSpell(RUNE_DRUID_ORBITAL_STRIKE))
         player->removeSpell(RUNE_DRUID_ORBITAL_STRIKE, SPEC_MASK_ALL, false);
+
+    if (player->HasSpell(RUNE_DRUID_TRANQUILITY_TRANQUIL_MIND))
+        player->removeSpell(RUNE_DRUID_TRANQUILITY_TRANQUIL_MIND, SPEC_MASK_ALL, false);
 }
 
 
