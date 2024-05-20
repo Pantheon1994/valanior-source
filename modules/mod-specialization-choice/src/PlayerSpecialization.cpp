@@ -175,6 +175,8 @@ uint32 PlayerSpecialization::GetSpellException(Player* player, uint32 spellId)
     {
         return SPELL_DRUID_RAZE;
     }
+
+    return 0;
 }
 
 void PlayerSpecialization::RemoveSpellWhenTalentChange(Player* player)
