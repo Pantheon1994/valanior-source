@@ -274,7 +274,7 @@ float AutoBalanceManager::GetPlayerSpecializationHealthValueForScaling(Player* p
         case WARLOCK_AFFLICTION: return 0.25;
         case WARLOCK_DEMONOLOGY: return 0.25;
         case WARLOCK_DESTRUCTION: return 0.25;
-        case WARLOCK_DEMONBOUND: return 0.25;
+        case WARLOCK_DEMONBOUND: return 0.15;
         case PRIEST_DISCI: return 0.10;
         case PRIEST_HOLY: return 0.10;
         case PRIEST_SHADOW: return 0.25;

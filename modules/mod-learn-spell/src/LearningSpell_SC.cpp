@@ -16,7 +16,9 @@
 
 enum spellMount {
     SPECTRAL_TIGER = 33225,
+    SPECTRAL_TIGER_SPELL = 42777,
     MAGIC_ROOSTER = 46778,
+    MAGIC_ROOSTER_SPELL = 65917,
 };
 
 class SpecialMount {
@@ -60,14 +62,14 @@ public:
         {
             auto it = std::find(playersFirstAlpha.begin(), playersFirstAlpha.end(), accountId);
 
-            if (it != playersFirstAlpha.end())
+            if (it != playersFirstAlpha.end()  && !player->HasSpell(SPECTRAL_TIGER_SPELL))
             {
                 player->AddItem(SPECTRAL_TIGER, 1);
             }
 
             auto ij = std::find(playersLastAlpha.begin(), playersLastAlpha.end(), accountId);
 
-            if (ij != playersLastAlpha.end())
+            if (ij != playersLastAlpha.end() && !player->HasSpell(MAGIC_ROOSTER_SPELL))
             {
                 player->AddItem(MAGIC_ROOSTER, 1);
             }
