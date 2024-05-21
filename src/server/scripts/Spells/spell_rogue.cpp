@@ -97,8 +97,11 @@ enum RogueSpells
     SPELL_ROGUE_VANISH = 26889,
     SPELL_ROGUE_SHADOWSTRIKE = 82016,
     SPELL_ROGUE_SHADOW_TECHNIQUE = 82069,
+    SPELL_ROGUE_PISTOL_SHOT = 82082,
+    SPELL_ROGUE_SEA_OF_STRIKES = 82087,
 
     // Talent
+    TALENT_ROGUE_AUDACITY = 82182,
     TALENT_ROGUE_AUDACITY_PROC = 82183,
     TALENT_ROGUE_GAMBLERS_LUCK = 82179,
     TALENT_ROGUE_IMPROVED_ADRENALINE_RUSH = 82165,
@@ -632,7 +635,7 @@ class spell_rog_prey_on_the_weak : public AuraScript
         if (!victim && target->GetTypeId() == TYPEID_PLAYER)
             victim = target->ToPlayer()->GetSelectedUnit();
 
-        if (victim && (target->GetHealthPct() > victim->GetHealthPct()))
+        if (victim && (target->GetHealthPct() >= victim->GetHealthPct()))
         {
             if (!target->HasAura(SPELL_ROGUE_PREY_ON_THE_WEAK))
             {
@@ -1739,7 +1742,7 @@ public:
         void HandleHit(SpellEffIndex effIndex)
         {
             int32 damageRatio = GetCaster()->GetComboPoints() * GetEffectValue();
-            int32 damage = CalculatePct(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK), damageRatio / 100);
+            int32 damage = CalculatePct(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK), damageRatio);
 
             if (Unit* target = GetHitUnit())
             {
@@ -1920,7 +1923,7 @@ class spell_rog_secret_technique_teacher : public AuraScript
         Player* target = GetCaster()->ToPlayer();
 
         target->learnSpell(SPELL_ROGUE_SECRET_TECHNIQUE);
-        target->CastSpell(target, SPELL_ROGUE_SECRET_TECHNIQUE_AURA, TRIGGERED_FULL_MASK);
+        target->learnSpell(SPELL_ROGUE_SECRET_TECHNIQUE_AURA);
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
@@ -1928,7 +1931,7 @@ class spell_rog_secret_technique_teacher : public AuraScript
         Player* target = GetCaster()->ToPlayer();
 
         target->removeSpell(SPELL_ROGUE_SECRET_TECHNIQUE, SPEC_MASK_ALL, false);
-        target->RemoveAura(SPELL_ROGUE_SECRET_TECHNIQUE_AURA);
+        target->removeSpell(SPELL_ROGUE_SECRET_TECHNIQUE_AURA, SPEC_MASK_ALL, false);
     }
 
     void Register() override
@@ -2374,38 +2377,6 @@ class spell_rog_sea_of_strikes : public AuraScript
 {
     PrepareAuraScript(spell_rog_sea_of_strikes);
 
-    Aura* GetPreciseStrikesAura(Unit* caster)
-    {
-        for (size_t i = 1101438; i < 1101444; i++)
-        {
-            if (caster->HasAura(i))
-                return caster->GetAura(i);
-        }
-
-        return nullptr;
-    }
-
-    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-    {
-        Unit* caster = GetCaster();
-
-        if (Aura* runeAura = GetPreciseStrikesAura(caster))
-        {
-            int32 procSpell = runeAura->GetEffect(EFFECT_0)->GetAmount();
-            caster->AddAura(procSpell, caster);
-        }
-    }
-
-    void Register() override
-    {
-        OnEffectApply += AuraEffectApplyFn(spell_rog_sea_of_strikes::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-class spell_rogue_sea_of_strikes : public AuraScript
-{
-    PrepareAuraScript(spell_rogue_sea_of_strikes);
-
     std::list <Unit*> FindTargets()
     {
         auto const& threatList = GetCaster()->getAttackers();
@@ -2433,10 +2404,8 @@ class spell_rogue_sea_of_strikes : public AuraScript
 
         DamageInfo* damageInfo = eventInfo.GetDamageInfo();
 
-        if (!damageInfo || !damageInfo->GetDamage() || damageInfo->GetDamage() == 0)
-        {
+        if (!damageInfo || !damageInfo->GetDamage() || damageInfo->GetDamage() <= 0)
             return false;
-        }
 
         return true;
     }
@@ -2455,8 +2424,8 @@ class spell_rogue_sea_of_strikes : public AuraScript
 
     void Register() override
     {
-        DoCheckProc += AuraCheckProcFn(spell_rogue_sea_of_strikes::CheckProc);
-        OnEffectProc += AuraEffectProcFn(spell_rogue_sea_of_strikes::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        DoCheckProc += AuraCheckProcFn(spell_rog_sea_of_strikes::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_rog_sea_of_strikes::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
     }
 };
 
@@ -2701,32 +2670,6 @@ class spell_rog_improved_adrenaline_rush : public AuraScript
     }
 };
 
-class spell_rog_audacity : public AuraScript
-{
-    PrepareAuraScript(spell_rog_audacity);
-
-    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-    {
-        if (!GetCaster() || GetCaster()->isDead())
-            return;
-
-        if (Aura* aura = GetCaster()->GetAura(TALENT_ROGUE_OPPORTUNITY))
-        {
-            Unit* caster = GetCaster();
-
-            uint32 chance = aura->GetSpellInfo()->ProcChance;
-
-            if (roll_chance_i(chance))
-                caster->CastSpell(caster, TALENT_ROGUE_AUDACITY_PROC, TRIGGERED_FULL_MASK);
-        }
-    }
-
-    void Register() override
-    {
-        OnEffectProc += AuraEffectProcFn(spell_rog_audacity::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
-    }
-};
-
 // 51723 - Fan of Knives
 class spell_rog_fan_of_knives : public SpellScript
 {
@@ -2867,7 +2810,16 @@ class spell_rog_ambush : public SpellScript
 
         // Remove Opportunity Buff
         if (caster->HasAura(TALENT_ROGUE_OPPORTUNITY_BUFF_AMBUSH))
+        {
             caster->RemoveAura(TALENT_ROGUE_OPPORTUNITY_BUFF_AMBUSH);
+            if (Aura* aura = caster->GetAura(TALENT_ROGUE_AUDACITY))
+            {
+                uint32 chance = aura->GetSpellInfo()->ProcChance;
+
+                if (roll_chance_i(chance))
+                    caster->CastSpell(caster, TALENT_ROGUE_AUDACITY_PROC, TRIGGERED_FULL_MASK);
+            }
+        }
 
         // Remove T1 2pc Buff
         if (caster->HasAura(T1_ROGUE_OUTLAW_2PC_BUFF))
@@ -3258,9 +3210,28 @@ class spell_rog_pistol_shot : public SpellScript
 
         // Remove Opportunity Buff
         if (caster->HasAura(TALENT_ROGUE_OPPORTUNITY_BUFF))
+        {
             caster->RemoveAura(TALENT_ROGUE_OPPORTUNITY_BUFF);
+            if (Aura* aura = caster->GetAura(TALENT_ROGUE_AUDACITY))
+            {
+                uint32 chance = aura->GetSpellInfo()->ProcChance;
+
+                if (roll_chance_i(chance))
+                    caster->CastSpell(caster, TALENT_ROGUE_AUDACITY_PROC, TRIGGERED_FULL_MASK);
+            }
+        }
+            
         if (caster->HasAura(TALENT_ROGUE_OPPORTUNITY_BUFF_AMBUSH))
+        {
             caster->RemoveAura(TALENT_ROGUE_OPPORTUNITY_BUFF_AMBUSH);
+            if (Aura* aura = caster->GetAura(TALENT_ROGUE_AUDACITY))
+            {
+                uint32 chance = aura->GetSpellInfo()->ProcChance;
+
+                if (roll_chance_i(chance))
+                    caster->CastSpell(caster, TALENT_ROGUE_AUDACITY_PROC, TRIGGERED_FULL_MASK);
+            }
+        }
 
         // Remove Precise Strikes Rune Buff
         for (size_t i = 1101444; i < 1101450; i++)
@@ -3312,6 +3283,37 @@ class spell_rog_deadly_poison_deactivator : public AuraScript
     {
         OnEffectApply += AuraEffectApplyFn(spell_rog_deadly_poison_deactivator::HandleLearn, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
         OnEffectRemove += AuraEffectRemoveFn(spell_rog_deadly_poison_deactivator::HandleUnlearn, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+class spell_rog_harbor_havoc : public AuraScript
+{
+    PrepareAuraScript(spell_rog_harbor_havoc);
+
+    void HandleLearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Player* target = GetCaster()->ToPlayer();
+
+        target->learnSpell(SPELL_ROGUE_PISTOL_SHOT);
+        target->learnSpell(SPELL_ROGUE_SCIMITAR_RUSH);
+        target->learnSpell(SPELL_ROGUE_SEA_OF_STRIKES);
+        target->learnSpell(SPELL_ROGUE_CAPTAIN_STRIKE);
+    }
+
+    void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Player* target = GetCaster()->ToPlayer();
+
+        target->removeSpell(SPELL_ROGUE_PISTOL_SHOT, SPEC_MASK_ALL, false);
+        target->removeSpell(SPELL_ROGUE_SCIMITAR_RUSH, SPEC_MASK_ALL, false);
+        target->removeSpell(SPELL_ROGUE_SEA_OF_STRIKES, SPEC_MASK_ALL, false);
+        target->removeSpell(SPELL_ROGUE_CAPTAIN_STRIKE, SPEC_MASK_ALL, false);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_rog_harbor_havoc::HandleLearn, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_rog_harbor_havoc::HandleUnlearn, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -3375,7 +3377,6 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_dreadblades);
     RegisterSpellScript(spell_rog_opportunity);
     RegisterSpellScript(spell_rog_sea_of_strikes);
-    RegisterSpellScript(spell_rogue_sea_of_strikes);
     RegisterSpellScript(spell_rog_roll_the_bones);
     RegisterSpellScript(spell_rog_roll_the_bones_skull_and_crossbones);
     RegisterSpellScript(spell_rog_roll_the_bones_true_bearing);
@@ -3383,7 +3384,6 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_relentless_attacks);
     RegisterSpellScript(spell_rog_ruthless);
     RegisterSpellScript(spell_rog_improved_adrenaline_rush);
-    RegisterSpellScript(spell_rog_audacity);
     RegisterSpellScript(spell_rog_fan_of_knives);
     RegisterSpellScript(spell_rog_ambush);
     RegisterSpellScript(spell_rog_shadow_dance);
@@ -3398,4 +3398,5 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_pistol_shot);
     RegisterSpellScript(spell_rog_master_of_shadows);
     RegisterSpellScript(spell_rog_deadly_poison_deactivator);
+    RegisterSpellScript(spell_rog_harbor_havoc);
 }

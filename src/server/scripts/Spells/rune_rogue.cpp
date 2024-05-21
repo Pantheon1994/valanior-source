@@ -54,7 +54,7 @@ enum RogueSpells
     SPELL_ROGUE_SYMBOLS_OF_DEATH = 82040,
     SPELL_ROGUE_VAMPIRIC_BURST = 82050,
     SPELL_ROGUE_VANISH = 26889,
-    
+
     // Poisons
     POISON_ROGUE_AMPLIFYING_POISON = 82005,
     POISON_ROGUE_AMPLIFYING_POISON_AURA = 82006,
@@ -91,6 +91,7 @@ enum RogueSpells
     RUNE_ROGUE_BLINDSIDE_BUFF = 1100880,
     RUNE_ROGUE_SHADOWED_FINISHERS_DAMAGE = 1101170,
     RUNE_ROGUE_WEAPONMASTER_PROC = 1101250,
+    RUNE_ROGUE_PISTOL_SHOT_FAN_THE_HAMMER = 1101410,
 };
 
 class rune_rog_venom_rush : public AuraScript
@@ -1871,7 +1872,7 @@ class rune_rog_count_the_odds : public AuraScript
 
 class rune_rog_fan_the_hammer : public AuraScript
 {
-    PrepareAuraScript(rune_rog_fan_the_hammer);
+    PrepareAuraScript(rune_rog_fan_the_hammer); 
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
@@ -1880,12 +1881,29 @@ class rune_rog_fan_the_hammer : public AuraScript
         if (!caster || caster->isDead())
             return false;
 
-        return caster->HasAura(TALENT_ROGUE_OPPORTUNITY_BUFF) || caster->HasAura(TALENT_ROGUE_OPPORTUNITY_BUFF_AMBUSH);
+        Unit* target = eventInfo.GetActionTarget();
+
+        if (!target || target->isDead())
+            return false;
+
+        return (caster->HasAura(TALENT_ROGUE_OPPORTUNITY_BUFF) || caster->HasAura(TALENT_ROGUE_OPPORTUNITY_BUFF_AMBUSH));
+    }
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        Player* caster = GetCaster()->ToPlayer();
+
+        if (!caster->HasSpellCooldown(RUNE_ROGUE_PISTOL_SHOT_FAN_THE_HAMMER))
+        {
+            caster->CastSpell(eventInfo.GetActionTarget(), RUNE_ROGUE_PISTOL_SHOT_FAN_THE_HAMMER, TRIGGERED_FULL_MASK);
+            caster->AddSpellCooldown(RUNE_ROGUE_PISTOL_SHOT_FAN_THE_HAMMER, 0, 100);
+        }
     }
 
     void Register()
     {
         DoCheckProc += AuraCheckProcFn(rune_rog_fan_the_hammer::CheckProc);
+        OnEffectProc += AuraEffectProcFn(rune_rog_fan_the_hammer::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
     }
 };
 
@@ -1915,6 +1933,38 @@ class rune_rog_quick_draw : public AuraScript
     {
         DoCheckProc += AuraCheckProcFn(rune_rog_quick_draw::CheckProc);
         OnEffectProc += AuraEffectProcFn(rune_rog_quick_draw::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
+
+class rune_rog_sea_of_strikes : public AuraScript
+{
+    PrepareAuraScript(rune_rog_sea_of_strikes);
+
+    Aura* GetPreciseStrikesAura(Unit* caster)
+    {
+        for (size_t i = 1101438; i < 1101444; i++)
+        {
+            if (caster->HasAura(i))
+                return caster->GetAura(i);
+        }
+
+        return nullptr;
+    }
+
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+
+        if (Aura* runeAura = GetPreciseStrikesAura(caster))
+        {
+            int32 procSpell = runeAura->GetEffect(EFFECT_0)->GetAmount();
+            caster->AddAura(procSpell, caster);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(rune_rog_sea_of_strikes::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -1974,4 +2024,5 @@ void AddSC_rogue_perks_scripts()
     RegisterSpellScript(rune_rog_count_the_odds);
     RegisterSpellScript(rune_rog_fan_the_hammer);
     RegisterSpellScript(rune_rog_quick_draw);
+    RegisterSpellScript(rune_rog_sea_of_strikes);
 }
