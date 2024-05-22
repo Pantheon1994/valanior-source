@@ -454,23 +454,26 @@ class rune_pri_expiation : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        return eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0;
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return false;
+
+        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+
+        if (!target || target->isDead())
+            return false;
+
+        if (!eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() <= 0)
+            return false;
+
+        return (target->HasAura(SPELL_PRIEST_SHADOW_WORD_PAIN) || target->HasAura(SPELL_PRIEST_PURGE_THE_WICKED));
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-
-        if (!caster || caster->isDead())
-            return;
-
         Unit* target = eventInfo.GetDamageInfo()->GetVictim();
-
-        if (!target || target->isDead())
-            return;
-
-        if (!target->HasAura(SPELL_PRIEST_SHADOW_WORD_PAIN) && !target->HasAura(SPELL_PRIEST_PURGE_THE_WICKED))
-            return;
 
         int32 durationConsumed = aurEff->GetAmount();
         int32 amount = 0;
@@ -486,8 +489,7 @@ class rune_pri_expiation : public AuraScript
             else
                 swPain->SetDuration(swPain->GetDuration() - durationConsumed);
         }
-
-        if (Aura* purge = target->GetAura(SPELL_PRIEST_PURGE_THE_WICKED))
+        else if (Aura* purge = target->GetAura(SPELL_PRIEST_PURGE_THE_WICKED))
         {
             int32 remainingTick = purge->GetEffect(EFFECT_0)->GetRemaningTicks();
             int32 multi = std::min<int32>(durationConsumed / 2000, remainingTick);
@@ -1806,9 +1808,9 @@ class rune_pri_phyrinxs_embrace : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* caster = GetCaster();
+        Player* player = GetCaster()->ToPlayer();
 
-        if (!caster || caster->isDead())
+        if (!player || player->isDead())
             return;
 
         int32 heal = eventInfo.GetHealInfo()->GetHeal();
@@ -1818,37 +1820,34 @@ class rune_pri_phyrinxs_embrace : public AuraScript
         if (!target || target->isDead())
             return;
 
-        if (Player* player = caster->ToPlayer())
+        Group* group = player->GetGroup();
+
+        if (group)
         {
-            Group* group = player->GetGroup();
+            auto const& allyList = player->GetGroup()->GetMemberSlots();
 
-            if (group)
+            for (auto const& ally : allyList)
             {
-                auto const& allyList = player->GetGroup()->GetMemberSlots();
+                Player* alliedPlayer = ObjectAccessor::FindPlayer(ally.guid);
 
-                for (auto const& ally : allyList)
-                {
-                    Player* alliedPlayer = ObjectAccessor::FindPlayer(ally.guid);
+                if (!alliedPlayer || alliedPlayer->isDead())
+                    continue;
 
-                    if (!alliedPlayer || alliedPlayer->isDead())
-                        continue;
+                if (alliedPlayer->GetGUID() == target->GetGUID())
+                    continue;
 
-                    if (alliedPlayer->GetGUID() == target->GetGUID())
-                        continue;
+                if (alliedPlayer->GetGUID() == player->GetGUID())
+                    continue;
 
-                    if (alliedPlayer->GetGUID() == caster->GetGUID())
-                        continue;
+                if (!alliedPlayer->HasAura(SPELL_PRIEST_GUARDIAN_SPIRIT))
+                    continue;
 
-                    if (!alliedPlayer->HasAura(SPELL_PRIEST_GUARDIAN_SPIRIT))
-                        continue;
-
-                    caster->CastCustomSpell(RUNE_PRIEST_PHYRINXS_EMBRACE_HEAL, SPELLVALUE_BASE_POINT0, amount, alliedPlayer, TRIGGERED_FULL_MASK);
-                }
+                player->CastCustomSpell(RUNE_PRIEST_PHYRINXS_EMBRACE_HEAL, SPELLVALUE_BASE_POINT0, amount, alliedPlayer, TRIGGERED_FULL_MASK);
             }
-
-            if (caster->HasAura(SPELL_PRIEST_GUARDIAN_SPIRIT) && target->GetGUID() != caster->GetGUID())
-                caster->CastCustomSpell(RUNE_PRIEST_PHYRINXS_EMBRACE_HEAL, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
         }
+
+        if (player->HasAura(SPELL_PRIEST_GUARDIAN_SPIRIT) && target->GetGUID() != player->GetGUID())
+            player->CastCustomSpell(RUNE_PRIEST_PHYRINXS_EMBRACE_HEAL, SPELLVALUE_BASE_POINT0, amount, player, TRIGGERED_FULL_MASK);
     }
 
     void Register()
@@ -2775,8 +2774,6 @@ class spell_pri_lights_protection : public AuraScript
     }
 };
 
-
-
 void AddSC_priest_perks_scripts()
 {
     RegisterSpellScript(rune_pri_faded);
@@ -2842,10 +2839,5 @@ void AddSC_priest_perks_scripts()
     RegisterSpellScript(rune_pri_velens_blessing_proc);
     RegisterSpellScript(rune_pri_fate_mirror);
     RegisterSpellScript(spell_pri_lights_protection);
-
-
-
-
-
 }
 

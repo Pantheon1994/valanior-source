@@ -11364,12 +11364,12 @@ float Unit::SpellPctDamageModsDone(Unit* victim, SpellInfo const* spellProto, Da
                     break;
                 }
             // Twisted Faith
-            case 7377:
+            /*case 7377:
                 {
                     if (victim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x8000, 0, 0, GetGUID()))
                         AddPct(DoneTotalMod, (*i)->GetAmount());
                     break;
-                }
+                }*/
             // Marked for Death
             case 7598:
             case 7599:
@@ -11447,7 +11447,7 @@ float Unit::SpellPctDamageModsDone(Unit* victim, SpellInfo const* spellProto, Da
             break;
         case SPELLFAMILY_PRIEST:
             // Mind Flay
-            if (spellProto->SpellFamilyFlags[0] & 0x800000)
+            /*if (spellProto->SpellFamilyFlags[0] & 0x800000)
             {
                 // Glyph of Shadow Word: Pain
                 if (AuraEffect* aurEff = GetAuraEffect(55687, 0))
@@ -11460,9 +11460,9 @@ float Unit::SpellPctDamageModsDone(Unit* victim, SpellInfo const* spellProto, Da
                     // Increase Mind Flay damage if Shadow Word: Pain present on target
                     if (victim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x8000, 0, 0, GetGUID()))
                         AddPct(DoneTotalMod, aurEff->GetAmount());
-            }
+            }*/
             // Smite
-            else if (spellProto->SpellFamilyFlags[0] & 0x80)
+            if (spellProto->SpellFamilyFlags[0] & 0x80)
             {
                 // Glyph of Smite
                 if (AuraEffect* aurEff = GetAuraEffect(55692, 0))

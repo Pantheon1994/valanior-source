@@ -80,45 +80,39 @@ class spell_medic_now : public AuraScript
 {
     PrepareAuraScript(spell_medic_now);
 
-    Aura* GetRuneAura()
+    bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (GetCaster()->HasAura(100034))
-            return GetCaster()->GetAura(100034);
+        if (!GetCaster() || GetCaster()->isDead())
+            return false;
 
-        if (GetCaster()->HasAura(100035))
-            return GetCaster()->GetAura(100035);
-
-        if (GetCaster()->HasAura(100036))
-            return GetCaster()->GetAura(100036);
-
-        if (GetCaster()->HasAura(100037))
-            return GetCaster()->GetAura(100037);
-
-        if (GetCaster()->HasAura(100038))
-            return GetCaster()->GetAura(100038);
-
-        if (GetCaster()->HasAura(100039))
-            return GetCaster()->GetAura(100039);
-
-        return nullptr;
+        return (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0);
     }
 
-    int GetProcPct()
+    void HandleProc(AuraEffect const*  aurEff, ProcEventInfo& eventInfo)
     {
-        return GetRuneAura()->GetSpellInfo()->GetEffect(EFFECT_0).BasePoints + 1;
-    }
-
-    void HandleProc(AuraEffect const*  /*aurEff*/, ProcEventInfo& eventInfo)
-    {
-        if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0) {
-            int32 amount = int32(CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), GetProcPct()));
-            GetCaster()->CastCustomSpell(100040, SPELLVALUE_BASE_POINT0, amount, GetCaster(), true);
-        }
+        int32 amount = int32(CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), aurEff->GetAmount()));
+        GetCaster()->CastCustomSpell(100040, SPELLVALUE_BASE_POINT0, amount, GetCaster(), true);
     }
 
     void Register() override
     {
+        DoCheckProc += AuraCheckProcFn(spell_medic_now::CheckProc);
         OnEffectProc += AuraEffectProcFn(spell_medic_now::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
+
+class spell_medic_now_target : public SpellScript
+{
+    PrepareSpellScript(spell_medic_now_target);
+
+    void FilterTargets(std::list<WorldObject*>& targets)
+    {
+        targets.remove(GetCaster());
+    }
+
+    void Register() override
+    {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_medic_now_target::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
     }
 };
 
@@ -498,16 +492,24 @@ class spell_blood_magic : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return false;
+
         if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->HasAttribute(SPELL_ATTR4_ALLOW_CAST_WHILE_CASTING))
             return false;
 
-        return (GetCaster() && GetCaster()->IsAlive());
+        if (eventInfo.GetSpellInfo()->IsPassive())
+            return false;
+
+        return true;
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         uint32 damage = GetCaster()->CountPctFromCurHealth(aurEff->GetAmount());
         GetCaster()->CastCustomSpell(RUNE_GENERAL_BLOOD_MAGIC_DAMAGE, SPELLVALUE_BASE_POINT0, damage, GetCaster(), TRIGGERED_FULL_MASK);
+
+        LOG_ERROR("ERROR", "SPELL IS {}", eventInfo.GetSpellInfo()->Id);
     }
 
     void Register() override
@@ -993,4 +995,5 @@ void AddSC_generals_perks_scripts()
     RegisterSpellScript(spell_mana_filled_wounds);
     RegisterSpellScript(rune_general_multi_element_boost);
     RegisterSpellScript(rune_general_school_vampirism);
+    RegisterSpellScript(spell_medic_now_target);
 }
