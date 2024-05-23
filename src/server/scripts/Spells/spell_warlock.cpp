@@ -133,6 +133,7 @@ enum WarlockSpells
     TALENT_WARLOCK_MOLTEN_HAND_BUFF_R1 = 47383,
     TALENT_WARLOCK_MOLTEN_HAND_BUFF_R2 = 71162,
     TALENT_WARLOCK_MOLTEN_HAND_BUFF_R3 = 71165,
+    TALENT_WARLOCK_NIGHTFALL_BUFF = 83223,
     TALENT_WARLOCK_DEMON_SPIKES_DAMAGE = 83197,
     TALENT_WARLOCK_FORCED_ASCENSION_COOLDOWN = 83199,
     TALENT_WARLOCK_ARCHDEMON_DAMAGE = 83201,
@@ -5371,6 +5372,39 @@ class spell_warlock_flame_nourish_target : public SpellScript
     }
 };
 
+// 83069 - 83070 - Nightfall cast time/activation time reduction
+class spell_warlock_nightfall_duration : public AuraScript
+{
+    PrepareAuraScript(spell_warlock_nightfall_duration);
+
+    void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        caster->AddAura(TALENT_WARLOCK_NIGHTFALL_BUFF, caster);
+    }
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (caster->HasAura(TALENT_WARLOCK_NIGHTFALL_BUFF))
+            caster->RemoveAura(TALENT_WARLOCK_NIGHTFALL_BUFF);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_warlock_nightfall_duration::HandleApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectRemove += AuraEffectRemoveFn(spell_warlock_nightfall_duration::HandleRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 
 
 void AddSC_warlock_spell_scripts()
@@ -5487,9 +5521,10 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warlock_improved_felhunter);
     RegisterSpellScript(spell_warlock_improved_felhunter_proc);
     RegisterSpellScript(spell_warlock_flame_nourish_target);
+    RegisterSpellScript(spell_warlock_nightfall_duration);
 
 
-
+    
 
 
 }
