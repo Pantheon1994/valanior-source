@@ -498,9 +498,6 @@ class spell_blood_magic : public AuraScript
         if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->HasAttribute(SPELL_ATTR4_ALLOW_CAST_WHILE_CASTING))
             return false;
 
-        if (eventInfo.GetSpellInfo()->IsPassive())
-            return false;
-
         return true;
     }
 
@@ -508,8 +505,6 @@ class spell_blood_magic : public AuraScript
     {
         uint32 damage = GetCaster()->CountPctFromCurHealth(aurEff->GetAmount());
         GetCaster()->CastCustomSpell(RUNE_GENERAL_BLOOD_MAGIC_DAMAGE, SPELLVALUE_BASE_POINT0, damage, GetCaster(), TRIGGERED_FULL_MASK);
-
-        LOG_ERROR("ERROR", "SPELL IS {}", eventInfo.GetSpellInfo()->Id);
     }
 
     void Register() override

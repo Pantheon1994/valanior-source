@@ -83,7 +83,6 @@ enum PriestSpells
     SPELL_PRIEST_PRAYER_OF_MENDING = 48113,
     SPELL_PRIEST_PRAYER_OF_MENDING_HEAL = 48111,
     SPELL_PRIEST_PRESCIENCE_SPELL = 86217,
-    SPELL_PRIEST_PRESCIENCE = 86307,
     SPELL_PRIEST_PURGE_THE_WICKED = 81017,
     SPELL_PRIEST_PURGE_THE_WICKED_AOE = 81018,
     SPELL_PRIEST_RAPTURE = 81019,
@@ -125,6 +124,7 @@ enum PriestSpells
     SPELL_PRIEST_HOLY_WORD_CHASTITE = 81026,
     SPELL_PRIEST_DESPERATE_PRAYER = 19243,
     SPELL_PRIEST_MIND_FLAY_DAMAGE = 58381,
+    SPELL_PRIEST_LIGHTS_FADE = 86216,
 
     // Passives
     SPELL_GENERIC_ARENA_DAMPENING = 74410,
@@ -148,6 +148,7 @@ enum PriestSpells
     TALENT_PRIEST_EMPOWERED_RENEW = 63534,
     TALENT_PRIEST_PAIN_AND_SUFFERING = 47580,
     TALENT_PRIEST_TWISTED_FAITH = 47573,
+    TALENT_PRIEST_HOLY_BURST = 86278,
 
     // Runes
     RUNE_PRIEST_CRYSTALLINE_REFLECTION_DAMAGE = 900366,
@@ -3089,7 +3090,6 @@ class spell_pri_holy_blossom : public SpellScript
 
         if (Player* player = caster->ToPlayer())
         {
-
             Group* group = player->GetGroup();
 
             if (!group)
@@ -3291,13 +3291,6 @@ class spell_pri_holy_might : public SpellScript
                 caster->CastCustomSpell(target, SPELL_PRIEST_HOLY_MIGHT_INTELLECT, &buffAmount, &speedAmount, nullptr, true, nullptr);
             else
                 caster->CastCustomSpell(target, SPELL_PRIEST_HOLY_MIGHT_SPIRIT, &buffAmount, &speedAmount, nullptr, true, nullptr);
-
-            if (caster->HasAura(TALENT_PRIEST_CELERITY_R1))
-                caster->AddAura(TALENT_PRIEST_CELERITY_R1_BUFF, caster);
-            if (caster->HasAura(TALENT_PRIEST_CELERITY_R2))
-                caster->AddAura(TALENT_PRIEST_CELERITY_R2_BUFF, caster);
-            if (caster->HasAura(TALENT_PRIEST_CELERITY_R3))
-                caster->AddAura(TALENT_PRIEST_CELERITY_R3_BUFF, caster);
         }
     }
 
@@ -3413,27 +3406,24 @@ class spell_pri_wave_of_light : public SpellScript
         }
     }
 
-    void HandleEffectHit(SpellEffIndex effIndex)
+    void Register() override
     {
-        Unit* caster = GetCaster();
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_wave_of_light::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+    }
+};
 
-        if (!caster || caster->isDead())
-            return;
+class spell_pri_wave_of_light_absorb : public AuraScript
+{
+    PrepareAuraScript(spell_pri_wave_of_light_absorb);
 
-        Unit* target = GetHitUnit();
-
-        if (!target || target->isDead())
-            return;
-
-        int32 amount = CalculatePct(GetSpellInfo()->GetEffect(EFFECT_2).CalcValue(caster), caster->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_HOLY));
-        
-        caster->CastCustomSpell(SPELL_PRIEST_WAVE_OF_LIGHT_SHIELD, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& canBeRecalculated)
+    {
+        amount = CalculatePct(GetCaster()->SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_HOLY), amount);
     }
 
     void Register() override
     {
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_wave_of_light::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
-        OnEffectHitTarget += SpellEffectFn(spell_pri_wave_of_light::HandleEffectHit, EFFECT_2, TARGET_UNIT_DEST_AREA_ALLY);
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pri_wave_of_light_absorb::CalculateAmount, EFFECT_2, SPELL_AURA_SCHOOL_ABSORB);
     }
 };
 
@@ -4425,7 +4415,7 @@ class spell_pri_blistering_barriers : public AuraScript
 
     void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
-        Unit* caster = GetCaster();
+        Player* caster = GetCaster()->ToPlayer();
 
         if (!caster || caster->isDead())
             return;
@@ -4436,22 +4426,24 @@ class spell_pri_blistering_barriers : public AuraScript
             return;
 
         if (Aura* runeAura = GetHolyBloodAura(caster))
-        {
-            int32 healthPct = caster->GetHealthPct();
-            int32 amountPct = runeAura->GetEffect(EFFECT_0)->GetAmount();
-            int32 amount = CalculatePct(caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY), amountPct);
-            int32 minimumThreshold = runeAura->GetEffect(EFFECT_1)->GetAmount();
-            float effectiveness;
+            if (!caster->HasSpellCooldown(RUNE_PRIEST_HOLY_BLOOD_SHIELD))
+            {
+                int32 healthPct = caster->GetHealthPct();
+                int32 amountPct = runeAura->GetEffect(EFFECT_0)->GetAmount();
+                int32 amount = CalculatePct(caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY), amountPct);
+                int32 minimumThreshold = runeAura->GetEffect(EFFECT_1)->GetAmount();
+                float effectiveness;
 
-            if (healthPct <= minimumThreshold)
-                effectiveness = 100;
-            if (healthPct > minimumThreshold)
-                effectiveness = 100 * (100 - healthPct) / (100 - minimumThreshold);
+                if (healthPct <= minimumThreshold)
+                    effectiveness = 100;
+                if (healthPct > minimumThreshold)
+                    effectiveness = 100 * (100 - healthPct) / (100 - minimumThreshold);
 
-            ApplyPct(amount, effectiveness);
+                ApplyPct(amount, effectiveness);
 
-            caster->CastCustomSpell(RUNE_PRIEST_HOLY_BLOOD_SHIELD, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
-        }
+                caster->CastCustomSpell(RUNE_PRIEST_HOLY_BLOOD_SHIELD, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
+                caster->AddSpellCooldown(RUNE_PRIEST_HOLY_BLOOD_SHIELD, 0, 12000);
+            }
     }
 
     void Absorb(AuraEffect* aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
@@ -4465,7 +4457,7 @@ class spell_pri_blistering_barriers : public AuraScript
         if (!caster || caster->isDead())
             return;
 
-        if (dmgInfo.GetAttackType() == BASE_ATTACK && !caster->HasSpellCooldown(SPELL_PRIEST_BLISTERING_BARRIER_PROC))
+        if (dmgInfo.GetAttackType() == BASE_ATTACK && dmgInfo.GetAttacker() != caster && !caster->HasSpellCooldown(SPELL_PRIEST_BLISTERING_BARRIER_PROC))
         {
             PreventDefaultAction();
             aurEff->GetBase()->ModCharges(-1);
@@ -4521,7 +4513,7 @@ class spell_pri_prescience_cast : public SpellScript
                     {
                         float distance = ally->GetDistance(casterPos);
 
-                        if (distance > maxDistance && ally->HasAura(SPELL_PRIEST_PRESCIENCE))
+                        if (distance > maxDistance && ally->HasAura(SPELL_PRIEST_PRESCIENCE_SPELL))
                             continue;
 
                         target = ally;
@@ -4585,10 +4577,13 @@ class spell_pri_prescience : public AuraScript
 
         if (Aura* runeAura = GetAnachronismAura(caster))
         {
-            int32 procChance = runeAura->GetEffect(EFFECT_0)->GetAmount();
+            if (Aura* talent = caster->GetAuraOfRankedSpell(TALENT_PRIEST_HOLY_BURST))
+            {
+                int32 procChance = runeAura->GetEffect(EFFECT_0)->GetAmount();
 
-            if (roll_chance_i(procChance))
-                caster->AddAura(TALENT_PRIEST_HOLY_BURST_PROC, caster);
+                if (roll_chance_i(procChance))
+                    caster->AddAura(TALENT_PRIEST_HOLY_BURST_PROC, caster);
+            }
         }
 
         if (Aura* set_T1_2pc = caster->GetAura(T1_PRIEST_ABSOLUTION_2PC))
@@ -4690,7 +4685,7 @@ class spell_pri_holy_eruption : public SpellScript
                     int32 number = 0;
                     int32 cooldown = tier1_4pc_buff->GetEffect(EFFECT_0)->GetAmount();
 
-                    if (caster->HasAura(SPELL_PRIEST_PRESCIENCE))
+                    if (caster->HasAura(SPELL_PRIEST_PRESCIENCE_SPELL))
                         number++;
 
                     if (Group* playerGroup = player->GetGroup())
@@ -4705,7 +4700,7 @@ class spell_pri_holy_eruption : public SpellScript
                             {
                                 float distance = ally->GetDistance(casterPos);
 
-                                if (distance <= 60 && ally->HasAura(SPELL_PRIEST_PRESCIENCE))
+                                if (distance <= 60 && ally->HasAura(SPELL_PRIEST_PRESCIENCE_SPELL))
                                     number++;
                             }
                         }
@@ -4816,6 +4811,37 @@ class spell_pri_scroll_of_divine_grace : public AuraScript
     }
 };
 
+class spell_pri_codex_of_radiant_authority : public AuraScript
+{
+    PrepareAuraScript(spell_pri_codex_of_radiant_authority);
+
+    void HandleLearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Player* target = GetCaster()->ToPlayer();
+
+        target->learnSpell(SPELL_PRIEST_PRESCIENCE_SPELL);
+        target->learnSpell(SPELL_PRIEST_LIGHTS_FADE);
+        target->learnSpell(SPELL_PRIEST_HOLY_STRIKE);
+        target->learnSpell(SPELL_PRIEST_HOLY_ERUPTION);
+    }
+
+    void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Player* target = GetCaster()->ToPlayer();
+
+        target->removeSpell(SPELL_PRIEST_PRESCIENCE_SPELL, SPEC_MASK_ALL, false);
+        target->removeSpell(SPELL_PRIEST_LIGHTS_FADE, SPEC_MASK_ALL, false);
+        target->removeSpell(SPELL_PRIEST_HOLY_STRIKE, SPEC_MASK_ALL, false);
+        target->removeSpell(SPELL_PRIEST_HOLY_ERUPTION, SPEC_MASK_ALL, false);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_pri_codex_of_radiant_authority::HandleLearn, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_pri_codex_of_radiant_authority::HandleUnlearn, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 // Death Tap
 class spell_pri_death_tap : public AuraScript
 {
@@ -4902,6 +4928,7 @@ void AddSC_priest_spell_scripts()
     RegisterSpellScript(spell_pri_holy_might_increase);
     RegisterSpellScript(spell_pri_wave_of_light);
     RegisterSpellScript(spell_pri_wave_of_light_accumulation);
+    RegisterSpellScript(spell_pri_wave_of_light_absorb);
     RegisterSpellScript(spell_pri_holy_weaving);
     RegisterSpellScript(spell_pri_regenerative_barrier);
     RegisterSpellScript(spell_pri_surprise_burst);
@@ -4931,6 +4958,7 @@ void AddSC_priest_spell_scripts()
     RegisterSpellScript(spell_pri_shadow_crash_damage);
     RegisterSpellScript(spell_pri_tome_of_sacred_virtues);
     RegisterSpellScript(spell_pri_scroll_of_divine_grace);
+    RegisterSpellScript(spell_pri_codex_of_radiant_authority);
     RegisterSpellScript(spell_pri_death_tap);
 
 
