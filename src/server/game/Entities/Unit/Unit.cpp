@@ -809,10 +809,6 @@ void Unit::DealDamageMods(Unit const* victim, uint32& damage, uint32* absorb)
 
 uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss, bool /*allowGM*/, Spell const* damageSpell /*= nullptr*/)
 {
-
-    if(attacker)
-        damage = attacker->UpgradeDamage(attacker, victim, damage);
-
     // Xinef: initialize damage done for rage calculations
     // Xinef: its rare to modify damage in hooks, however training dummy's sets damage to 0
     uint32 rage_damage = damage + ((cleanDamage != nullptr) ? cleanDamage->absorbed_damage : 0);
@@ -828,6 +824,9 @@ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage
 
     // Hook for OnDamage
     sScriptMgr->OnDamage(attacker, victim, damage, spellProto);
+
+    if (attacker)
+        damage = attacker->UpgradeDamage(attacker, victim, damage);
 
     if (victim->GetTypeId() == TYPEID_PLAYER && attacker != victim)
     {
@@ -1457,6 +1456,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
 
 void Unit::DealSpellDamage(SpellNonMeleeDamage* damageInfo, bool durabilityLoss, Spell const* spell /*= nullptr*/)
 {
+
     if (damageInfo == 0)
         return;
 
@@ -6247,6 +6247,9 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
 {
     AuraEffect const* aura = pInfo->auraEff;
     WorldPacket data(SMSG_PERIODICAURALOG, 30);
+    uint32 damage = pInfo->damage;
+    damage = UpgradeDamage(aura->GetCaster(), this, damage);
+
     data << GetPackGUID();
     data << aura->GetCasterGUID().WriteAsPacked();
     data << uint32(aura->GetId());                          // spellId
@@ -6258,7 +6261,6 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
         case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
             {
                 //IF we are in cheat mode we swap absorb with damage and set damage to 0, this way we can still debug damage but our hp bar will not drop
-                uint32 damage = pInfo->damage;
                 uint32 absorb = pInfo->absorb;
                 if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetCommandStatus(CHEAT_GOD))
                 {
@@ -6276,7 +6278,7 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
             break;
         case SPELL_AURA_PERIODIC_HEAL:
         case SPELL_AURA_OBS_MOD_HEALTH:
-            data << uint32(pInfo->damage);                  // damage
+            data << uint32(damage);                  // damage
             data << uint32(pInfo->overDamage);              // overheal
             data << uint32(pInfo->absorb);                  // absorb
             data << uint8(pInfo->critical);                 // new 3.1.2 critical tick
@@ -6284,11 +6286,11 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
         case SPELL_AURA_OBS_MOD_POWER:
         case SPELL_AURA_PERIODIC_ENERGIZE:
             data << uint32(aura->GetMiscValue());           // power type
-            data << uint32(pInfo->damage);                  // damage
+            data << uint32(damage);                  // damage
             break;
         case SPELL_AURA_PERIODIC_MANA_LEECH:
             data << uint32(aura->GetMiscValue());           // power type
-            data << uint32(pInfo->damage);                  // amount
+            data << uint32(damage);                  // amount
             data << float(pInfo->multiplier);               // gain multiplier
             break;
         default:
