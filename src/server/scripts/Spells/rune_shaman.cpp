@@ -461,6 +461,9 @@ class rune_sha_resurgence : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->HasAttribute(SPELL_ATTR4_ALLOW_CAST_WHILE_CASTING))
+            return false;
+
         return eventInfo.GetProcSpell();
     }
 
@@ -855,6 +858,7 @@ class rune_sha_lightning_rod : public AuraScript
 
         if (spellID == SPELL_SHAMAN_EARTH_SHOCK || spellID == SPELL_SHAMAN_EARTHQUAKE_DAMAGE || spellID == SPELL_SHAMAN_ELEMENTAL_BLAST)
             caster->CastSpell(target, LightningRod, TRIGGERED_FULL_MASK);
+
         else if (spellID == SPELL_SHAMAN_LIGHTNING_BOLT || spellID == SPELL_SHAMAN_CHAIN_LIGHTNING)
         {
             GetEffect(EFFECT_1)->SetAmount(eventInfo.GetDamageInfo()->GetDamage());

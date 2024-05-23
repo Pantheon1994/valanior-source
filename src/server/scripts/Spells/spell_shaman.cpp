@@ -53,7 +53,6 @@ enum ShamanSpells
     SPELL_SHAMAN_CRASH_LIGHTNING_DAMAGE = 84034,
     SPELL_SHAMAN_CLEANSING_TOTEM_EFFECT = 52025,
     SPELL_SHAMAN_DOWNPOUR = 84046,
-    SPELL_SHAMAN_DOWNPOUR_LISTENER = 84059,
     SPELL_SHAMAN_EARTH_SHIELD_HEAL = 379,
     SPELL_SHAMAN_EARTHLIVING_WEAPON = 51994,
     SPELL_SHAMAN_ELEMENTAL_BLAST = 84022,
@@ -1815,6 +1814,9 @@ class spell_sha_ancestral_guidance : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        if (eventInfo.GetSpellInfo() && eventInfo.GetSpellInfo()->HasAttribute(SPELL_ATTR4_ALLOW_CAST_WHILE_CASTING))
+            return false;
+
         return eventInfo.GetActor() && eventInfo.GetProcTarget();
     }
 
@@ -2237,29 +2239,31 @@ class spell_sha_downpour : public SpellScript
 
     void FilterTargets(std::list<WorldObject*>& targets)
     {
-        if (targets.size() > 6)
-            targets.resize(6);
-
-        targetsSize = targets.size();
+        targets.remove_if(Acore::RaidCheck(GetCaster(), false));
     }
 
-    void HandleAfterCast()
+    void HandleHit(SpellEffIndex effIndex)
     {
-        Unit* caster = GetCaster();
-        int32 cooldownPerTarget = GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(caster);
-        caster->ToPlayer()->SetSpellCooldown(SPELL_SHAMAN_DOWNPOUR, -30000);
-        caster->ToPlayer()->SetSpellCooldown(SPELL_SHAMAN_DOWNPOUR, (targetsSize * cooldownPerTarget));
+        Player* caster = GetCaster()->ToPlayer();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (GetHitHeal() <= 0)
+            return;
+
+        if (GetHitUnit()->GetHealthPct() < 100)
+        {
+            int32 cooldownPerTarget = -(GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(caster));
+            caster->ModifySpellCooldown(SPELL_SHAMAN_DOWNPOUR, cooldownPerTarget);
+        }
     }
 
     void Register() override
     {
         OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_downpour::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
-        AfterCast += SpellCastFn(spell_sha_downpour::HandleAfterCast);
+        OnEffectHitTarget += SpellEffectFn(spell_sha_downpour::HandleHit, EFFECT_0, SPELL_EFFECT_HEAL);
     }
-
-
-private:
-    uint32 targetsSize;
 };
 
 // 51474 - Improved Astral Shift
@@ -4906,9 +4910,4 @@ void AddSC_shaman_spell_scripts()
     RegisterSpellScript(spell_sha_liquid_magma_eruption);
     RegisterSpellScript(spell_sha_earth_shock);
     RegisterSpellScript(spell_sha_earthquake);
-
-
-
-
-
 }

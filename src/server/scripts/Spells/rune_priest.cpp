@@ -2562,43 +2562,6 @@ class rune_pri_velens_blessing : public AuraScript
     }
 };
 
-class rune_pri_velens_blessing_proc : public AuraScript
-{
-    PrepareAuraScript(rune_pri_velens_blessing_proc);
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        return eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0;
-    }
-
-    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-    {
-        Unit* caster = GetCaster();
-
-        if (!caster || caster->isDead())
-            return;
-
-        Unit* owner = GetUnitOwner();
-
-        if (!owner || owner->isDead())
-            return;
-
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
-
-        if (!target || target->isDead())
-            return;
-
-        int32 procSpell = aurEff->GetAmount();
-        owner->CastSpell(target, procSpell, TRIGGERED_FULL_MASK, nullptr, nullptr, caster->GetGUID());
-    }
-
-    void Register()
-    {
-        DoCheckProc += AuraCheckProcFn(rune_pri_velens_blessing_proc::CheckProc);
-        OnEffectProc += AuraEffectProcFn(rune_pri_velens_blessing_proc::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
-    }
-};
-
 class rune_pri_fate_mirror : public AuraScript
 {
     PrepareAuraScript(rune_pri_fate_mirror);
@@ -2759,7 +2722,6 @@ void AddSC_priest_perks_scripts()
     RegisterSpellScript(rune_pri_holymancy);
     RegisterSpellScript(rune_pri_accretion);
     RegisterSpellScript(rune_pri_velens_blessing);
-    RegisterSpellScript(rune_pri_velens_blessing_proc);
     RegisterSpellScript(rune_pri_fate_mirror);
     RegisterSpellScript(spell_pri_lights_protection);
 }
