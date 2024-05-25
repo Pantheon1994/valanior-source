@@ -471,6 +471,9 @@ public:
     void OnActivateRune(Player* pPlayer, std::string message, uint32 index);
     void ShowWarningSpecialization(Player* pPlayer);
 
+    void SendProgressionOnboarding(Player* pPlayer, uint8 progression);
+
+
     void OnPlayerEnterCombat(Player* pPlayer, Unit* pEnemy);
     void OnPlayerLeaveCombat(Player* pPlayer);
     void OnPVPKill(Player* pKiller, Player* pKilled);

@@ -243,6 +243,7 @@ namespace Hooks
 
         PLAYER_EVENT_OPEN_ITEM_UPGRADE_UI = 71,       // (event, player, rune)
 
+        PLAYER_SEND_PROGRESSION_ONBOARDING = 72,
 
         PLAYER_EVENT_COUNT
     };

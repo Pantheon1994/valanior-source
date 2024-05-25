@@ -212,7 +212,13 @@ void Eluna::ShowWarningSpecialization(Player* pPlayer)
     CallAllFunctions(PlayerEventBindings, key);
 }
 
-
+void Eluna::SendProgressionOnboarding(Player* pPlayer, uint8 progression)
+{
+    START_HOOK(PLAYER_SEND_PROGRESSION_ONBOARDING);
+    Push(pPlayer);
+    Push(progression);
+    CallAllFunctions(PlayerEventBindings, key);
+}
 
 void Eluna::OnActivateRune(Player* pPlayer, std::string message, uint32 index)
 {

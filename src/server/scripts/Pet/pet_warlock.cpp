@@ -802,6 +802,8 @@ struct npc_pet_warlock_darkglare : public ScriptedAI
                 {
                     if (me->CanCreatureAttack(target))
                     {
+                        me->CombatStop();
+                        me->SetTarget();
                         AttackStart(target);
                         _initAttack = false;
                     }
@@ -978,6 +980,8 @@ struct npc_pet_warlock_vilefiend : public ScriptedAI
                 {
                     if (me->CanCreatureAttack(target) && owner->IsInCombat())
                     {
+                        me->CombatStop();
+                        me->SetTarget();
                         AttackTarget(target);
                         _initAttack = false;
                     }
@@ -1128,6 +1132,9 @@ struct npc_pet_warlock_felguard_grimoire : public ScriptedAI
                 {
                     if (me->CanCreatureAttack(target) && owner->IsInCombat())
                     {
+
+                        me->CombatStop();
+                        me->SetTarget();
                         AttackTarget(target);
                         _initAttack = false;
                     }
@@ -1211,11 +1218,7 @@ struct npc_pet_warlock_demonic_tyrant : public ScriptedAI
     void InitializeAI() override
     {
         _events.Reset();
-        _events.ScheduleEvent(1, 2000);
-        owner = me->GetCharmerOrOwnerPlayerOrPlayerItself();
-
-        if (!owner)
-            return;
+        _events.ScheduleEvent(1, 200);
     }
 
     void Reset() override
@@ -1245,12 +1248,8 @@ struct npc_pet_warlock_demonic_tyrant : public ScriptedAI
                 {
                     if (Unit* newTarget = owner->GetSelectedUnit())
                     {
-                        if (Unit* victim = me->GetVictim()) {
-                            if (victim->GetGUID() != newTarget->GetGUID() && owner->IsInCombatWith(victim))
-                            {
-                                if (me->CanCreatureAttack(newTarget))
-                                    me->CastSpell(newTarget, SPELL_DEMONFIRE);
-                            }
+                        if (owner->IsInCombat()) {
+                            me->CastSpell(newTarget, SPELL_DEMONFIRE);
                         }
                     }
                 }
@@ -1264,7 +1263,6 @@ struct npc_pet_warlock_demonic_tyrant : public ScriptedAI
 
 private:
     EventMap _events;
-    Player* owner;
     bool alreadyFollowing;
     int32 shadow;
 };
@@ -1336,14 +1334,19 @@ struct npc_pet_warlock_dreadstalker : public ScriptedAI
             {
                 if (Unit* target = owner->GetSelectedUnit())
                 {
-                    if (me->CanCreatureAttack(target) && owner->IsInCombat())
+                    if (me->CanCreatureAttack(target))
                     {
+                        me->CombatStop();
+                        me->SetTarget();
                         AttackTarget(target);
-                        _initAttack = false;
                     }
                 }
             }
+            _initAttack = false;
         }
+
+        if (!UpdateVictim())
+            return;
 
         _events.Update(diff);
 
@@ -1352,23 +1355,30 @@ struct npc_pet_warlock_dreadstalker : public ScriptedAI
             switch (eventId)
             {
             case EVENT_TRY_ATTACK_NEW_TARGET:
+            {
                 if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
                 {
                     if (Unit* newTarget = owner->GetSelectedUnit())
                     {
                         if (Unit* victim = me->GetVictim()) {
-                            if (victim->GetGUID() != newTarget->GetGUID() && owner->IsInCombatWith(victim))
+                            if (owner->IsInCombatWith(victim))
                             {
                                 if (me->CanCreatureAttack(newTarget))
-                                    AttackTarget(newTarget);
+                                {
+                                    me->_removeAttacker(victim);
+                                    me->SetTarget();
+                                    AttackStart(newTarget);
+                                }
                             }
                         }
                     }
                 }
                 _events.ScheduleEvent(EVENT_TRY_ATTACK_NEW_TARGET, 1500);
                 break;
-            case EVENT_WARLOCK_CAST_SPELL:
-                if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
+            }
+               
+            case EVENT_WARLOCK_CAST_SPELL: {
+                 if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
                 {
                     if (Unit* target = owner->GetSelectedUnit())
                     {
@@ -1381,11 +1391,9 @@ struct npc_pet_warlock_dreadstalker : public ScriptedAI
                 _events.ScheduleEvent(1, 4000);
                 break;
             }
+               
+            }
         }
-
-        if (!UpdateVictim())
-            return;
-
         DoMeleeAttackIfReady();
     }
 

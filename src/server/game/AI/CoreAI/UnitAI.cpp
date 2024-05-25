@@ -28,7 +28,10 @@
 void UnitAI::AttackStart(Unit* victim)
 {
     if (victim && me->Attack(victim, true))
+    {
+        LOG_ERROR("CANNOT START ATTACK", "victim && me->Attack(victim, true)");
         me->GetMotionMaster()->MoveChase(victim);
+    }
 }
 
 void UnitAI::AttackStartCaster(Unit* victim, float dist)
