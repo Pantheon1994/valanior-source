@@ -102,17 +102,6 @@ struct npc_pet_warlock_felguard : public ScriptedAI
         return nullptr;
     }
 
-    Aura* GetImmutableHatredAura(Unit* caster)
-    {
-        for (size_t i = 800704; i < 800710; i++)
-        {
-            if (caster->HasAura(i))
-                return caster->GetAura(i);
-        }
-
-        return nullptr;
-    }
-
     Aura* GetReignofTyrannyAura(Unit* caster)
     {
         for (size_t i = 800844; i < 800850; i++)
@@ -136,9 +125,6 @@ struct npc_pet_warlock_felguard : public ScriptedAI
             int32 procSpell = runeAura->GetEffect(EFFECT_1)->GetAmount();
             me->AddAura(procSpell, me);
         }
-
-        if (Aura* runeAura = GetImmutableHatredAura(owner))
-            me->AddAura(RUNE_WARLOCK_IMMUTABLE_HATRED_LISTENER, me);
 
         // Add a Stack of Demonic Servitude from Reign of Tyranny
         if (Aura* runeAura = GetReignofTyrannyAura(owner))
@@ -173,17 +159,6 @@ struct npc_pet_warlock_felhunter : public ScriptedAI
 {
     npc_pet_warlock_felhunter(Creature* creature) : ScriptedAI(creature) { }
 
-    Aura* GetImprovedFelhunterAura(Unit* caster)
-    {
-        if (caster->HasAura(TALENT_WARLOCK_IMPROVED_FELHUNTER_R1))
-            return caster->GetAura(TALENT_WARLOCK_IMPROVED_FELHUNTER_R1);
-
-        if (caster->HasAura(TALENT_WARLOCK_IMPROVED_FELHUNTER_R2))
-            return caster->GetAura(TALENT_WARLOCK_IMPROVED_FELHUNTER_R2);
-
-        return nullptr;
-    }
-
     Aura* GetReignofTyrannyAura(Unit* caster)
     {
         for (size_t i = 800844; i < 800850; i++)
@@ -199,12 +174,8 @@ struct npc_pet_warlock_felhunter : public ScriptedAI
     {
         Unit* owner = me->GetOwner();
 
-        if (!owner)
+        if (!owner || owner->isDead())
             return;
-
-        // Add Improved Felhunter listener
-        if (GetImprovedFelhunterAura(owner))
-            me->AddAura(TALENT_WARLOCK_IMPROVED_FELHUNTER_LISTENER, me);
 
         // Add a Stack of Demonic Servitude from Reign of Tyranny
         if (Aura* runeAura = GetReignofTyrannyAura(owner))

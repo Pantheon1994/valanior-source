@@ -64,6 +64,7 @@ enum WarlockSpells
     SPELL_WARLOCK_UNSTABLE_AFFLICTION_DISPEL = 31117,
     SPELL_WARLOCK_IMPROVED_DRAIN_SOUL_R1 = 18213,
     SPELL_WARLOCK_IMPROVED_DRAIN_SOUL_PROC = 18371,
+    SPELL_WARLOCK_CURSE_OF_EXHAUSTION = 83026,
 
     //OURS
     SPELL_FELBOAR_CHARGE = 83005,
@@ -142,7 +143,6 @@ enum WarlockSpells
     TALENT_WARLOCK_MOLTEN_HAND = 47245,
     TALENT_WARLOCK_IMPROVED_FELHUNTER_R1 = 54037,
     TALENT_WARLOCK_IMPROVED_FELHUNTER_R2 = 54038,
-    TALENT_WARLOCK_IMPROVED_FELHUNTER_LISTENER = 54425,
 
     // Masteries  
     MASTERY_WARLOCK_FEL_BLOOD = 1100024,
@@ -172,8 +172,6 @@ enum WarlockSpells
     SPELL_MINION_INCREASE_VILEFIEND = 1100012,
     SPELL_MINION_INCREASE_DEMONIC_TYRANT = 1100013,
     SPELL_MINION_INCREASE_BOMBER = 1100014,
-
-    SPELL_WARLOCK_DEMONIC_TYRANT_DAMAGE_INCREASE = 83032,
 
     // Runes
     RUNE_WARLOCK_SEIZED_VITALITY_DEBUFF = 800484,
@@ -207,7 +205,7 @@ enum WarlockPets
     // Guardians
     GUARDIAN_WARLOCK_BILESCOURGE = 600607,
     GUARDIAN_WARLOCK_DARKGLARE = 600604,
-    GUARDIAN_WARLOCK_DEMONIC_TYRAN = 600603,
+    GUARDIAN_WARLOCK_DEMONIC_TYRANT = 600603,
     GUARDIAN_WARLOCK_DOOMGUARD = 600616,
     GUARDIAN_WARLOCK_DREADSTALKER = 600600,
     GUARDIAN_WARLOCK_FELGUARD_GRIMOIRE = 600605,
@@ -1598,25 +1596,27 @@ class spell_warl_unstable_affliction : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        if (GetCaster() && GetCaster()->IsAlive())
-            GetCaster()->CastSpell(GetCaster(), SPELL_WARLOCK_UNSTABLE_AFFLICTION_ENERGY, TRIGGERED_FULL_MASK);
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        caster->EnergizeBySpell(caster, SPELL_WARLOCK_UNSTABLE_AFFLICTION, GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(caster), POWER_ENERGY);
     }
 
     void HandleDispel(DispelInfo* dispelInfo)
     {
-        if (Unit* caster = GetCaster())
-            if (AuraEffect const* aurEff = GetEffect(EFFECT_2))
-            {
-                int32 damage = aurEff->GetBaseAmount();
-                damage = aurEff->GetSpellInfo()->Effects[EFFECT_2].CalcValue(caster, &damage, nullptr) * 9;
-                // backfire damage and silence
-                caster->CastCustomSpell(dispelInfo->GetDispeller(), SPELL_WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, nullptr, nullptr, true, nullptr, aurEff);
-            }
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        caster->CastSpell(dispelInfo->GetDispeller(), SPELL_WARLOCK_UNSTABLE_AFFLICTION_DISPEL, TRIGGERED_FULL_MASK);
     }
 
     void Register() override
     {
-        OnEffectProc += AuraEffectProcFn(spell_warl_unstable_affliction::HandleProc, EFFECT_2, SPELL_AURA_DUMMY);
+        OnEffectProc += AuraEffectProcFn(spell_warl_unstable_affliction::HandleProc, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
         AfterDispel += AuraDispelFn(spell_warl_unstable_affliction::HandleDispel);
     }
 };
@@ -1830,13 +1830,13 @@ class spell_warlock_summon_darkhound : public SpellScript
             if (Aura* runeAura = GetCarnivorousStalkersAura(player))
             {
                 int32 procSpell = runeAura->GetEffect(EFFECT_0)->GetAmount();
-                player->CastSpell(summon, procSpell, TRIGGERED_FULL_MASK);
+                player->AddAura(procSpell, summon);
             }
 
             if (Aura* runeAura = GetTheHoundmastersStratagemAura(player))
             {
                 int32 procSpell = runeAura->GetEffect(EFFECT_1)->GetAmount();
-                player->CastSpell(summon, procSpell, TRIGGERED_FULL_MASK);
+                player->AddAura(procSpell, summon);
             }
         }
     }
@@ -2138,7 +2138,7 @@ class spell_warlock_cataclysm : public SpellScript
             if (Unit* unitTarget = target->ToUnit())
             {
                 if (!unitTarget->HasAura(SPELL_WARLOCK_IMMOLATE))
-                    GetCaster()->CastSpell(unitTarget, SPELL_WARLOCK_IMMOLATE, true);
+                    GetCaster()->AddAura(SPELL_WARLOCK_IMMOLATE, unitTarget);
             }
         }
     }
@@ -2170,8 +2170,8 @@ class spell_warlock_summon_demonic_tyrant : public SpellScript
         {
             int32 timerIncrease = GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(player);
 
-            int32 duration = GetSpellInfo()->GetDuration();
-            TempSummon* summon = GetCaster()->SummonCreatureGuardian(GUARDIAN_WARLOCK_DEMONIC_TYRAN, player, player, duration, GUARDIAN_WARLOCK_DEMONIC_TYRAN_DIST, PET_FOLLOW_ANGLE);
+            int32 duration = GetSpellInfo()->GetEffect(EFFECT_2).CalcValue(player);
+            TempSummon* summon = GetCaster()->SummonCreatureGuardian(GUARDIAN_WARLOCK_DEMONIC_TYRANT, player, player, duration, GUARDIAN_WARLOCK_DEMONIC_TYRAN_DIST, PET_FOLLOW_ANGLE);
 
             if (summon)
                 summon->SetPositionReset(GUARDIAN_WARLOCK_DEMONIC_TYRAN_DIST, PET_FOLLOW_ANGLE);
@@ -2192,13 +2192,6 @@ class spell_warlock_summon_demonic_tyrant : public SpellScript
                     {
                         if (summon->GetEntry() == GUARDIAN_WARLOCK_VILEFIEND || summon->GetEntry() == GUARDIAN_WARLOCK_DREADSTALKER)
                             summon->SetTimer(summon->GetTimer() + timerIncrease);
-
-                        if (summon->GetEntry() == GUARDIAN_WARLOCK_FELGUARD_GRIMOIRE || summon->GetEntry() == NPC_IMP
-                            || summon->GetEntry() == NPC_FELHUNTER || summon->GetEntry() == NPC_FELGUARD
-                            || summon->GetEntry() == NPC_VOIDWALKER || summon->GetEntry() == NPC_SUCCUBUS)
-                        {
-                            player->CastSpell(summon, SPELL_WARLOCK_DEMONIC_TYRANT_DAMAGE_INCREASE);
-                        }
                     }
         }
     }
@@ -3243,10 +3236,14 @@ class spell_warl_shadowburn_death : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* caster = GetCaster();
-        if (caster && caster->IsAlive())
-            caster->CastSpell(caster, SPELL_WARLOCK_SHADOWBURN_ENERGY, TRIGGERED_FULL_MASK);
-        caster->ToPlayer()->RemoveSpellCooldown(SPELL_WARLOCK_SHADOWBURN, true);
+        Player* caster = GetCaster()->ToPlayer();
+
+        if (!caster || caster->isDead())
+            return;
+
+        uint32 increase = sSpellMgr->AssertSpellInfo(SPELL_WARLOCK_SHADOWBURN)->GetEffect(EFFECT_0).CalcValue(GetCaster());
+        caster->EnergizeBySpell(caster, SPELL_WARLOCK_SHADOWBURN, increase, POWER_ENERGY);
+        caster->RemoveSpellCooldown(SPELL_WARLOCK_SHADOWBURN, true);
 
     }
 
@@ -3263,8 +3260,17 @@ class spell_warl_soul_fire_energy : public SpellScript
     void HandleHit(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
-        if (caster && caster->IsAlive())
-            caster->CastSpell(caster, SPELL_WARLOCK_SOUL_FIRE_ENERGY, TRIGGERED_FULL_MASK);
+
+        if (!caster || caster->isDead())
+            return;
+
+        Unit* target = GetHitUnit();
+
+        if (!target || target->isDead())
+            return;
+
+        uint32 increase = sSpellMgr->AssertSpellInfo(SPELL_WARLOCK_SOUL_FIRE)->GetEffect(EFFECT_1).CalcValue(GetCaster());
+        caster->EnergizeBySpell(caster, SPELL_WARLOCK_SOUL_FIRE, increase, POWER_ENERGY);
     }
 
     void Register() override
@@ -4176,7 +4182,6 @@ class spell_warl_demonkin : public AuraScript
     {
         Player* target = GetCaster()->ToPlayer();
 
-        target->removeSpell(SPELL_WARLOCK_SUMMON_FELGUARD, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_WARLOCK_SUMMON_FELHUNTER, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_WARLOCK_SUMMON_IMP, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_WARLOCK_SUMMON_SUCCUBUS, SPEC_MASK_ALL, false);
@@ -4202,7 +4207,6 @@ class spell_warl_demonkin : public AuraScript
         target->removeSpell(SPELL_WARLOCK_SHROUD_OF_DARKNESS, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_WARLOCK_SOUL_BOMB, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_WARLOCK_METAMORPHOSIS, SPEC_MASK_ALL, false);
-        target->learnSpell(SPELL_WARLOCK_SUMMON_FELGUARD);
         target->learnSpell(SPELL_WARLOCK_SUMMON_FELHUNTER);
         target->learnSpell(SPELL_WARLOCK_SUMMON_IMP);
         target->learnSpell(SPELL_WARLOCK_SUMMON_SUCCUBUS);
@@ -5241,57 +5245,6 @@ class spell_warlock_felhunter_shadow_bite : public SpellScript
 };
 
 // 54037 - 54038 - Improved Felhunter
-class spell_warlock_improved_felhunter : public AuraScript
-{
-    PrepareAuraScript(spell_warlock_improved_felhunter);
-
-    void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        Unit* caster = GetCaster();
-
-        if (!caster || caster->isDead())
-            return;
-
-        if (Player* player = caster->ToPlayer())
-        {
-            Pet* pet = player->GetPet();
-
-            if (!pet || pet->isDead())
-                return;
-
-            if (pet->GetEntry() == PET_WARLOCK_FELHUNTER)
-                pet->AddAura(TALENT_WARLOCK_IMPROVED_FELHUNTER_LISTENER, pet);
-        }
-    }
-
-    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        Unit* caster = GetCaster();
-
-        if (!caster || caster->isDead())
-            return;
-
-        int32 procSpell = aurEff->GetAmount();
-
-        if (Player* player = caster->ToPlayer())
-        {
-            Pet* pet = player->GetPet();
-
-            if (!pet || pet->isDead())
-                return;
-
-            if (pet->HasAura(TALENT_WARLOCK_IMPROVED_FELHUNTER_LISTENER))
-                pet->RemoveAura(TALENT_WARLOCK_IMPROVED_FELHUNTER_LISTENER);
-        }
-    }
-
-    void Register()
-    {
-        OnEffectApply += AuraEffectApplyFn(spell_warlock_improved_felhunter::HandleApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_warlock_improved_felhunter::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
 // 54425 - Improved Felhunter proc
 class spell_warlock_improved_felhunter_proc : public AuraScript
 {
@@ -5327,8 +5280,11 @@ class spell_warlock_improved_felhunter_proc : public AuraScript
 
         if (Aura* talentAura = GetImprovedFelhunterAura(caster))
         {
-            int32 amount = talentAura->GetEffect(EFFECT_0)->GetAmount();
-            pet->EnergizeBySpell(pet, GetSpellInfo()->Id, amount, POWER_ENERGY);
+            if (caster->GetPower(POWER_ENERGY) < 100)
+            {
+                int32 amount = talentAura->GetEffect(EFFECT_0)->GetAmount();
+                pet->ModifyPower(POWER_ENERGY, amount);
+            }
         }
     }
 
@@ -5405,7 +5361,88 @@ class spell_warlock_nightfall_duration : public AuraScript
     }
 };
 
+class spell_warlock_foul_flame_target : public SpellScript
+{
+    PrepareSpellScript(spell_warlock_foul_flame_target);
 
+    void FilterTargets(std::list<WorldObject*>& targets)
+    {
+        targets.remove(GetExplTargetUnit());
+    }
+
+    void Register() override
+    {
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warlock_foul_flame_target::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+    }
+};
+
+class spell_warl_ruin_pet : public AuraScript
+{
+    PrepareAuraScript(spell_warl_ruin_pet);
+
+    Aura* GetTalentAura(Player* caster)
+    {
+        for (size_t i = 83224; i < 83229; i++)
+        {
+            if (caster->HasSpell(i))
+                return caster->GetAura(i);
+        }
+        return nullptr;
+    }
+
+    void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+    {
+        Player* caster = GetCaster()->ToPlayer();
+
+        if (!caster || caster->isDead())
+            return;
+
+        caster->learnSpell(GetAura()->GetEffect(EFFECT_1)->GetAmount());
+    }
+
+    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+    {
+        Player* caster = GetCaster()->ToPlayer();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (Aura* talent = GetTalentAura(caster))
+            caster->removeSpell(talent->GetId(), SPEC_MASK_ALL, false);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_warl_ruin_pet::HandleApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_warl_ruin_pet::HandleRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+class spell_warlock_vile_taint : public SpellScript
+{
+    PrepareSpellScript(spell_warlock_vile_taint);
+
+    void HandleHit(SpellEffIndex effIndex)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        Unit* target = GetHitUnit();
+
+        if (!target || target->isDead())
+            return;
+
+        caster->AddAura(SPELL_WARLOCK_AGONY, target);
+        caster->AddAura(SPELL_WARLOCK_CURSE_OF_EXHAUSTION, target);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_warlock_vile_taint::HandleHit, EFFECT_0, SPELL_EFFECT_PERSISTENT_AREA_AURA);
+    }
+};
 
 void AddSC_warlock_spell_scripts()
 {
@@ -5518,13 +5555,10 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warlock_darkglare_shadow_blast);
     RegisterSpellScript(spell_warlock_doomguard_doom_bolt);
     RegisterSpellScript(spell_warlock_felhunter_shadow_bite);
-    RegisterSpellScript(spell_warlock_improved_felhunter);
     RegisterSpellScript(spell_warlock_improved_felhunter_proc);
     RegisterSpellScript(spell_warlock_flame_nourish_target);
     RegisterSpellScript(spell_warlock_nightfall_duration);
-
-
-    
-
-
+    RegisterSpellScript(spell_warlock_foul_flame_target);
+    RegisterSpellScript(spell_warl_ruin_pet);
+    RegisterSpellScript(spell_warlock_vile_taint);
 }

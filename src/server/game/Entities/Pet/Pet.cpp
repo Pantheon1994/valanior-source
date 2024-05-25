@@ -468,7 +468,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool c
 
         if (getPetType() == SUMMON_PET && !current) //all (?) summon pets come with full health when called, but not when they are current
         {
-            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+            //SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
             SetFullHealth();
         }
         else
@@ -1134,6 +1134,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
         SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, uint32(sObjectMgr->GetXPForLevel(petlevel) * sWorld->getRate(RATE_XP_PET_NEXT_LEVEL)));
         owner->AddAura(80246, this); //Animal Companion
+        SetPower(POWER_FOCUS, GetMaxPower(POWER_FOCUS));
         break;
     }
     case SUMMON_PET:
@@ -1166,6 +1167,9 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_FELGUARD_PET_PASSIVE_03, this);
             SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
 
+            // Immutable Hatred Rune
+            owner->AddAura(800716, this);
+
             // xinef: Glyph of Felguard, so ugly im crying... no appropriate spell
             /*if (AuraEffect* aurEff = owner->GetAuraEffectDummy(SPELL_GLYPH_OF_FELGUARD))
             {
@@ -1187,6 +1191,9 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_FELHUNTER_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_FELHUNTER_PET_PASSIVE_03, this);
             SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
+
+            // Improved Felhunter
+            owner->AddAura(54425, this);
             break;
         }
         case NPC_IMP:
@@ -1243,6 +1250,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_MAGE_PET_SCALING_02, this);
             AddAura(SPELL_MAGE_PET_SCALING_03, this);
             AddAura(SPELL_MAGE_PET_SCALING_04, this);
+            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
             break;
         }
         case NPC_POWERFUL_WATER_ELEMENTAL_PERM:
@@ -1254,6 +1262,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_MAGE_PET_SCALING_03, this);
             AddAura(SPELL_MAGE_PET_SCALING_04, this);
             AddAura(300421, this);
+            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
             break;
         }
         }
@@ -1455,6 +1464,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_MAGE_PET_SCALING_02, this);
             AddAura(SPELL_MAGE_PET_SCALING_03, this);
             AddAura(SPELL_MAGE_PET_SCALING_04, this);
+            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
             break;
         }
         case NPC_POWERFUL_WATER_ELEMENTAL:
@@ -1466,6 +1476,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_MAGE_PET_SCALING_03, this);
             AddAura(SPELL_MAGE_PET_SCALING_04, this);
             AddAura(300421, this);
+            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
             break;
         }
         case NPC_TREANT: //force of nature
@@ -1538,6 +1549,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_MAGE_PET_SCALING_02, this);
             AddAura(SPELL_MAGE_PET_SCALING_03, this);
             AddAura(SPELL_MAGE_PET_SCALING_04, this);
+            SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
             break;
         }
         case NPC_EBON_GARGOYLE: // Ebon Gargoyle
@@ -1577,6 +1589,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_HUNTER_PET_SCALING_01, this);
             AddAura(SPELL_HUNTER_PET_SCALING_02, this);
             AddAura(SPELL_HUNTER_PET_SCALING_03, this);
+            break;
         }
         case NPC_ARMY_OF_THE_DEAD:
         {
@@ -1638,7 +1651,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     UpdateAllStats();
 
     SetFullHealth();
-    SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+    //SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
 
     if (owner->GetTypeId() == TYPEID_PLAYER)
         sScriptMgr->OnAfterGuardianInitStatsForLevel(owner->ToPlayer(), this);
