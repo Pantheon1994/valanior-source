@@ -474,6 +474,8 @@ ElunaRegister<Player> PlayerMethods[] =
     { "ActivatePreferredSpecialization", &LuaPlayer::ActivatePreferredSpecialization },
     { "UpgradeItem", &LuaPlayer::UpgradeItem },
 
+    { "AcceptGift", &LuaPlayer::AcceptGift },
+
 
     { "GetSelection", &LuaPlayer::GetSelection },
     { "GetGMRank", &LuaPlayer::GetGMRank },

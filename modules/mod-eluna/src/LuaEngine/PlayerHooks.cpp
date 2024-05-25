@@ -229,7 +229,6 @@ void Eluna::OnActivateRune(Player* pPlayer, std::string message, uint32 index)
     CallAllFunctions(PlayerEventBindings, key);
 }
 
-
 void Eluna::OnDisableRune(Player* pPlayer, std::string message, uint32 index)
 {
     START_HOOK(PLAYER_EVENT_CALLBACK_REMOVE_RUNE);

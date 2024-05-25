@@ -9,7 +9,7 @@
 
 enum OnboardingStep {
 
-    STEP_FIRST_LOGIN = 0,
+    STEP_FIRST_LOGIN = 1,
     STEP_GIFT_ACCEPTED,
     STEP_EQUIP_A_RUNE,
     STEP_REACH_LEVEL_6,
@@ -25,6 +25,7 @@ class OnboardingManager
 {
 public:
 
+    static uint8 GetOnboardingStep(Player* player);
     static void InitializeOnboardingAccountProgression();
     static void SendEventDependingOnTheProgression(Player* player);
     static void UpdateProgression(Player* player);

@@ -11,6 +11,7 @@
 #include "PlayerSpecialization.h"
 #include "MythicManager.h"
 #include "ItemUpgradeManager.h"
+#include "OnboardingManager.h"
 
 /***
  * Inherits all methods from: [Object], [WorldObject], [Unit]
@@ -135,6 +136,12 @@ namespace LuaPlayer
     {
         uint32 entry = Eluna::CHECKVAL<uint32>(L, 2);
         ItemUpgradeManager::UpgradeItem(player, entry);
+        return 0;
+    }
+
+    int AcceptGift(lua_State* L, Player* player)
+    {
+        OnboardingManager::OnClaimTheGift(player);
         return 0;
     }
 
