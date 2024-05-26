@@ -22,11 +22,32 @@ public:
 
         OnboardingManager::SendEventDependingOnTheProgression(player);
     }
+
+    void OnLevelChanged(Player* player, uint8 oldlevel)
+    {
+        if (player->getLevel() >= 6) {
+            OnboardingManager::OnReachLevel(player);
+        }
+    }
 };
+
+class Onboarding_WorldScript : public WorldScript
+{
+public:
+    Onboarding_WorldScript() : WorldScript("Onboarding_WorldScript") { }
+
+    void OnBeforeConfigLoad(bool reload) override
+    {
+        LOG_INFO("Runes", "Initializing Onboarding...");
+        OnboardingManager::InitializeOnboardingAccountProgression();
+    }
+};
+
 
 // Add all scripts in one
 void AddSC_Onboarding()
 {
     new Onboarding_PlayerScripts();
+    new Onboarding_WorldScript();
 }
 

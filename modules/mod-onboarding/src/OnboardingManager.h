@@ -32,11 +32,13 @@ public:
 
 
     // Onboarding Event;
-    static void OnClaimTheGift(Player* player);
+    static void AcceptGift(Player* player);
     static void OnReachLevel(Player* player);
     static void OnEquipARune(Player* player);
     static void OnUpgradeARune(Player* player);
     static void OnOpeningSealedCommonRune(Player* player);
+    static void ApplyLuckyRune(Player* player);
+    static void OnSelectAutoRefundRune(Player* player);
 
 private:
     typedef std::map<uint32, OnboardingStep> accountOnboardingContainer;

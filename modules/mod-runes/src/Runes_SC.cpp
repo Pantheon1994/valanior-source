@@ -20,6 +20,7 @@
 #include "Log.h"
 #include "ScriptedGossip.h"
 #include "SpellInfo.h"
+#include "OnboardingManager.h"
 
 class Runes_PlayerScripts: public PlayerScript
 {
@@ -136,6 +137,12 @@ class spell_activate_rune : public SpellScript
         {
             RunesManager::SpellConversion(rune.spellId, player, true);
             RunesManager::AddRuneToSlot(player, rune);
+
+            if (rune.spellId == 100163) {
+                OnboardingManager::OnEquipARune(player);
+            }
+
+
             sEluna->OnActivateRune(player, "Rune successfully activated!", 0);
         }
 
@@ -200,6 +207,7 @@ class spell_generate_random_rune : public SpellScript
             return;
         }
 
+        OnboardingManager::OnOpeningSealedCommonRune(player);
         RunesManager::AddRunesPlayer(player, { rune });
     }
 
@@ -268,6 +276,8 @@ class spell_upgrade_rune : public SpellScript
 
         RunesManager::RemoveNecessaryItemsForUpgrade(player, rune);
         RunesManager::AddRunesPlayer(player, { rune });
+
+        OnboardingManager::OnUpgradeARune(player);
     }
 
     void Register() override

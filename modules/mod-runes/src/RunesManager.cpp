@@ -5,6 +5,7 @@
 #include "LuaEngine.h"
 #include "boost/iterator/counting_iterator.hpp"
 #include "PlayerSpecialization.h"
+#include "OnboardingManager.h"
 
 std::map<uint32 /* SpellId */, Rune> RunesManager::m_Runes = {};
 std::unordered_multimap<uint32 /* groupId */, Rune> RunesManager::m_unorderedRunes = {};
@@ -368,7 +369,7 @@ void RunesManager::ApplyAutorefund(Player* player, uint32 runeSpellId)
         }
     }
 
-   
+    OnboardingManager::OnSelectAutoRefundRune(player);
 }
 
 bool RunesManager::IsSpellIdLuckyRune(Player* player, uint32 spellId)
@@ -499,6 +500,7 @@ void RunesManager::ApplyLuckyRune(Player* player, uint32 runeSpellId, bool enabl
 
     if (enabled) {
         sEluna->EnableLuckyRune(player, runeSpellId);
+        OnboardingManager::ApplyLuckyRune(player);
     }
 }
 

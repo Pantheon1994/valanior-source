@@ -141,7 +141,7 @@ namespace LuaPlayer
 
     int AcceptGift(lua_State* L, Player* player)
     {
-        OnboardingManager::OnClaimTheGift(player);
+        OnboardingManager::AcceptGift(player);
         return 0;
     }
 

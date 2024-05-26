@@ -7,7 +7,7 @@ void OnboardingManager::InitializeOnboardingAccountProgression()
 {
     AccountOnboardingStore = {};
 
-    QueryResult result = LoginDatabase.Query("SELECT id, progression FROM dungeon_mythic_bosses ORDER by `order` ASC");
+    QueryResult result = LoginDatabase.Query("SELECT id, progression FROM account");
 
     if (!result)
         return;
@@ -38,8 +38,16 @@ void OnboardingManager::SendEventDependingOnTheProgression(Player* player)
         case STEP_EQUIP_A_RUNE:
             break;
         case STEP_REACH_LEVEL_6:
+            if (player->getLevel() > 6) {
+                UpdateProgression(player);
+                sEluna->SendProgressionOnboarding(player, step);
+                return;
+            }
             break;
         case STEP_UPGRADE_A_RUNE:
+            if (player->HasItemCount(70008, 1000)) {
+                player->AddItem(70008, 1000 - player->GetItemCount(70008, true));
+            }
             break;
         case STEP_DISCOVER_MORE_RUNE:
             break;
@@ -66,6 +74,35 @@ uint8 OnboardingManager::GetOnboardingStep(Player* player)
     return 0;
 }
 
+void OnboardingManager::ApplyLuckyRune(Player* player)
+{
+    OnboardingStep step = OnboardingStep(GetOnboardingStep(player));
+
+    if (step == 0)
+        return;
+
+    if (step >= STEP_CHOOSE_LUCKY_RUNE)
+        return;
+
+    UpdateProgression(player);
+    SendEventDependingOnTheProgression(player);
+}
+
+void OnboardingManager::OnSelectAutoRefundRune(Player* player)
+{
+    OnboardingStep step = OnboardingStep(GetOnboardingStep(player));
+
+    if (step == 0)
+        return;
+
+    if (step >= STEP_CHOOSE_AUTO_REFUND_RUNE)
+        return;
+
+    UpdateProgression(player);
+    SendEventDependingOnTheProgression(player);
+}
+
+
 void OnboardingManager::UpdateProgression(Player* player)
 {
     OnboardingStep step = OnboardingStep(GetOnboardingStep(player));
@@ -79,7 +116,7 @@ void OnboardingManager::UpdateProgression(Player* player)
     LoginDatabase.Query("UPDATE account SET progression = progression + 1 WHERE id = {}", accountId);
 }
 
-void OnboardingManager::OnClaimTheGift(Player* player)
+void OnboardingManager::AcceptGift(Player* player)
 {
     OnboardingStep step = OnboardingStep(GetOnboardingStep(player));
 
@@ -146,7 +183,6 @@ void OnboardingManager::OnUpgradeARune(Player* player)
 void OnboardingManager::OnOpeningSealedCommonRune(Player* player)
 {
     // Logic for the achievements
-
     OnboardingStep step = OnboardingStep(GetOnboardingStep(player));
 
     if (step == 0)
