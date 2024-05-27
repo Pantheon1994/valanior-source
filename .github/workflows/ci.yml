@@ -25,3 +25,4 @@ jobs:
           cd build-valanior/bin/dbc
           git pull origin master
           cd ../../../..
+        shell: bash
