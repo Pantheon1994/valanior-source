@@ -29,14 +29,11 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-
-    - name: Run CMake
-      run: |
-        mkdir -p build
-        cd build
-        cmake ..
+        sudo apt-get install -y cmake gcc g++ libmysql++-dev libssl-dev
 
     - name: Build AzerothCore
       run: |
+        mkdir build
         cd build
+        cmake ../
         make -j $(nproc)
