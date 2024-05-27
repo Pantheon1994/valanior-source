@@ -17,6 +17,7 @@ jobs:
           cd ../../../../../
           echo "Current directory after change:"
           pwd
+          cd /valanior-source
           git pull origin main
         shell: bash
 
