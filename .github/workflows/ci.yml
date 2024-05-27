@@ -1,4 +1,4 @@
-name: Build Valanior Source
+name: Update and Build Valanior Source
 
 on:
   push:
@@ -11,18 +11,14 @@ jobs:
 
     steps:
       - name: Checkout valanior-source repository
-        uses: actions/checkout@v2
-
-      - name: Pull latest sources from main repo
-        run: git pull origin main
-
-      - name: Install dependencies
         run: |
-          sudo apt update
-
-      - name: Pull latest changes in dbc
-        run: |
-          cd build-valanior/bin/dbc
-          git pull origin master
-          cd ../../../..
+          cd /valanior-source/
+          git pull origin main
         shell: bash
+
+      - name: Checkout dbc repository
+        run: |
+          cd /azeroth-server/bin/dbc/
+          git pull origin master
+        shell: bash
+
