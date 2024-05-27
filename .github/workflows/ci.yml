@@ -18,7 +18,7 @@ jobs:
 
     - name: Ensure directory for repo1 exists and pull latest sources with root privileges
       run: |
-        sudo mkdir -p ~/azeroth-server/bin/dbc
+        sudo su
         cd ~/azeroth-server/bin/dbc
         sudo git pull origin master
 
