@@ -13,22 +13,28 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Pull latest sources from main repo
-      run: git pull origin main
-
     - name: Ensure directory for repo2 exists and pull latest sources
       run: |
-        cd /valanior-source/build-valanior/bin
-      	sudo git pull origin master
+        if [ -d "/valanior-source/build-valanior/bin" ]; then
+          echo "Directory /valanior-source/build-valanior/bin exists."
+          cd /valanior-source/build-valanior/bin
+          echo "Current directory: $(pwd)"
+          echo "Listing files:"
+          ls -la
+          git pull origin master
+        else
+          echo "Directory /valanior-source/build-valanior/bin does not exist. Exiting."
+          exit 1
+        fi
 
     - name: Install dependencies
       run: |
         sudo apt-get update
+        sudo apt-get install -y cmake build-essential
 
     - name: Build AzerothCore
       run: |
+        mkdir -p build
         cd build
         cmake ../
         make -j $(nproc)
-
-
