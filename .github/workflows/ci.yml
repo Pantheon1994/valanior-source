@@ -16,16 +16,10 @@ jobs:
     - name: Pull latest sources from main repo
       run: git pull origin main
 
-    - name: Pull latest sources from additional repo 1 with root privileges
+    - name: Ensure directory for repo2 exists and pull latest sources
       run: |
         cd /valanior-source/build-valanior/bin
       	sudo git pull origin master
-
-    - name: Ensure directory for repo2 exists and pull latest sources
-      run: |
-        mkdir -p /path/to/repo2
-        cd /path/to/repo2
-        git pull origin master
 
     - name: Install dependencies
       run: |
