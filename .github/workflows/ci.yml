@@ -10,25 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout valanior-source repository
-        run: |
-          echo "Current directory before change:"
-          pwd
-          cd ../../../../../
-          echo "Current directory after change:"
-          pwd
-          ls -la
-          cd valanior-source
-          git pull origin main
-        shell: bash
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: Checkout dbc repository
+      - name: Make script executable and run
         run: |
-          echo "Current directory before change:"
-          pwd
-          cd /home/runner/work/valanior-source/valanior-source/azeroth-server/bin/dbc
-          echo "Current directory after change:"
-          pwd
-          git pull origin master
+          chmod +x ./update_and_build.sh
+          ./update_and_build.sh
         shell: bash
-
