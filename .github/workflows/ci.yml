@@ -18,7 +18,7 @@ jobs:
 
     - name: Pull latest sources from additional repo 1 with root privileges
       run: |
-        cd /valanior-source/build/build-valanior/dbc
+        cd /valanior-source/build-valanior/bin
       	sudo git pull origin master
 
     - name: Ensure directory for repo2 exists and pull latest sources
@@ -33,7 +33,6 @@ jobs:
 
     - name: Build AzerothCore
       run: |
-        mkdir build
         cd build
         cmake ../
         make -j $(nproc)
