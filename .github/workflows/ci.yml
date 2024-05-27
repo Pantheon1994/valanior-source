@@ -18,7 +18,7 @@ jobs:
 
     - name: Pull latest sources from additional repo 1 with root privileges
       run: |
-        cd ./valanior-source/build/build-valanior/bin/dbc
+        cd /valanior-source/build/build-valanior/bin/dbc
         sudo git pull origin master
 
     - name: Install dependencies
