@@ -12,13 +12,16 @@ jobs:
     steps:
       - name: Checkout valanior-source repository
         run: |
-	  echo pwd
+          echo "Current directory:"
+          pwd
           cd /valanior-source
           git pull origin main
         shell: bash
 
       - name: Checkout dbc repository
         run: |
+          echo "Current directory:"
+          pwd
           cd /azeroth-server/bin/dbc
           git pull origin master
         shell: bash
