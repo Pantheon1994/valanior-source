@@ -18,6 +18,7 @@ jobs:
 
     - name: Pull latest sources from additional repo 1
       run: |
+  	sudo -s
         cd ~/azeroth-server/bin/dbc
         git pull origin master
 
