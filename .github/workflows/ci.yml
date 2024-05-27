@@ -1,4 +1,4 @@
-name: Build AzerothCore
+name: Build Valanior Source
 
 on:
   push:
@@ -10,62 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout valanior-source repository
+        uses: actions/checkout@v2
 
-    - name: Debug - List root directory
-      run: |
-        echo "Listing root directory:"
-        ls -la /
+      - name: Pull latest sources from main repo
+        run: git pull origin master
 
-    - name: Debug - List home directory
-      run: |
-        echo "Listing home directory:"
-        ls -la $HOME
+      - name: Install dependencies
+        run: |
+          sudo apt update
 
-    - name: Debug - List /valanior-source directory
-      run: |
-        if [ -d "/valanior-source" ]; then
-          echo "Directory /valanior-source exists."
-          ls -la /valanior-source
-        else
-          echo "Directory /valanior-source does not exist."
-        fi
+      - name: Pull latest changes in dbc
+        run: |
+          cd build-valanior/bin/dbc
+          git pull origin master
+          cd ../../../..
 
-    - name: Debug - List /valanior-source/build-valanior directory
-      run: |
-        if [ -d "/valanior-source/build-valanior" ]; then
-          echo "Directory /valanior-source/build-valanior exists."
-          ls -la /valanior-source/build-valanior
-        else
-          echo "Directory /valanior-source/build-valanior does not exist."
-        fi
+      - name: Create build directory
+        run: mkdir build
 
-    - name: Debug - List /valanior-source/build-valanior/bin directory
-      run: |
-        if [ -d "/valanior-source/build-valanior/bin" ]; then
-          echo "Directory /valanior-source/build-valanior/bin exists."
-          ls -la /valanior-source/build-valanior/bin
-        else
-          echo "Directory /valanior-source/build-valanior/bin does not exist."
-        fi
+      - name: Run CMake
+        run: cmake .. -Bbuild
 
-    - name: Ensure directory for repo2 exists and pull latest sources
-      run: |
-        cd /valanior-source/build-valanior/bin
-        echo "Current directory: $(pwd)"
-        echo "Listing files:"
-        ls -la
-        git pull origin master
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake build-essential
-
-    - name: Build AzerothCore
-      run: |
-        mkdir -p build
-        cd build
-        cmake ../
-        make -j $(nproc)
+      - name: Build Valanior Source
+        run: cmake --build build -- -j $(nproc)
