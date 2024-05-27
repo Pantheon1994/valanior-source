@@ -13,49 +13,39 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Debug - List root directory
-      run: |
-        echo "Listing root directory:"
-        ls -la /
-
-    - name: Debug - List home directory
-      run: |
-        echo "Listing home directory:"
-        ls -la $HOME
-
     - name: Debug - List /valanior-source directory
       run: |
-        if [ -d "/valanior-source" ]; then
-          echo "Directory /valanior-source exists."
-          ls -la /valanior-source
-        else
-          echo "Directory /valanior-source does not exist."
-        fi
+        echo "Listing /valanior-source directory:"
+        ls -la /valanior-source
 
     - name: Debug - List /valanior-source/build-valanior directory
       run: |
-        if [ -d "/valanior-source/build-valanior" ]; then
-          echo "Directory /valanior-source/build-valanior exists."
-          ls -la /valanior-source/build-valanior
-        else
-          echo "Directory /valanior-source/build-valanior does not exist."
-        fi
-
-    - name: Debug - List /valanior-source/build-valanior/bin directory
-      run: |
-        if [ -d "/valanior-source/build-valanior/bin" ]; then
-          echo "Directory /valanior-source/build-valanior/bin exists."
-          ls -la /valanior-source/build-valanior/bin
-        else
-          echo "Directory /valanior-source/build-valanior/bin does not exist."
-        fi
+        echo "Listing /valanior-source/build-valanior directory:"
+        ls -la /valanior-source/build-valanior
 
     - name: Ensure directory for repo2 exists and pull latest sources
       run: |
-        cd /valanior-source/build-valanior/bin
-        echo "Current directory: $(pwd)"
-        echo "Listing files:"
-        ls -la
-        git pull origin master
+        if [ -d "/valanior-source/build-valanior/bin" ]; then
+          echo "Directory /valanior-source/build-valanior/bin exists."
+          cd /valanior-source/build-valanior/bin
+          echo "Current directory: $(pwd)"
+          echo "Listing files:"
+          ls -la
+          git pull origin master
+        else
+          echo "Directory /valanior-source/build-valanior/bin does not exist. Exiting."
+          exit 1
+        fi
 
-    -
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential
+
+    - name: Build AzerothCore
+      run: |
+        cd /valanior-source/build-valanior/bin
+        mkdir -p build
+        cd build
+        cmake ../
+        make -j $(nproc)
