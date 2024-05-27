@@ -13,27 +13,26 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Debug - List /valanior-source directory
+    - name: Set environment variable for valanior-source
       run: |
-        echo "Listing /valanior-source directory:"
-        ls -la /valanior-source
+        echo "VALANIOR_SOURCE=/valanior-source" >> $GITHUB_ENV
 
-    - name: Debug - List /valanior-source/build-valanior directory
+    - name: Debug - List valanior-source directory
       run: |
-        echo "Listing /valanior-source/build-valanior directory:"
-        ls -la /valanior-source/build-valanior
+        echo "Listing \$VALANIOR_SOURCE directory:"
+        ls -la $VALANIOR_SOURCE
 
     - name: Ensure directory for repo2 exists and pull latest sources
       run: |
-        if [ -d "/valanior-source/build-valanior/bin" ]; then
-          echo "Directory /valanior-source/build-valanior/bin exists."
-          cd /valanior-source/build-valanior/bin
+        if [ -d "$VALANIOR_SOURCE/build-valanior/bin" ]; then
+          echo "Directory $VALANIOR_SOURCE/build-valanior/bin exists."
+          cd $VALANIOR_SOURCE/build-valanior/bin
           echo "Current directory: $(pwd)"
           echo "Listing files:"
           ls -la
           git pull origin master
         else
-          echo "Directory /valanior-source/build-valanior/bin does not exist. Exiting."
+          echo "Directory $VALANIOR_SOURCE/build-valanior/bin does not exist. Exiting."
           exit 1
         fi
 
@@ -44,7 +43,7 @@ jobs:
 
     - name: Build AzerothCore
       run: |
-        cd /valanior-source/build-valanior/bin
+        cd $VALANIOR_SOURCE/build-valanior/bin
         mkdir -p build
         cd build
         cmake ../
