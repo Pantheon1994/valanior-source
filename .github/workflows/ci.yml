@@ -15,6 +15,5 @@ jobs:
 
       - name: Make script executable and run
         run: |
-          chmod +x ./update_and_build.sh
           ./update_and_build.sh
         shell: bash

@@ -15,6 +15,7 @@ function list_files {
 
 # Mettre à jour valanior-source
 echo "Updating valanior-source..."
+cd /
 cd $VALANIOR_SOURCE_DIR || exit
 list_files
 git pull origin main
