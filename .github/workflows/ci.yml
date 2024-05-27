@@ -12,12 +12,12 @@ jobs:
     steps:
       - name: Checkout valanior-source repository
         run: |
-          cd /valanior-source/
+          cd /valanior-source
           git pull origin main
         shell: bash
 
       - name: Checkout dbc repository
         run: |
-          cd /azeroth-server/bin/dbc/
+          cd /azeroth-server/bin/dbc
           git pull origin master
         shell: bash
