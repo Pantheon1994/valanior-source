@@ -3,7 +3,7 @@ name: Build AzerothCore
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -14,11 +14,11 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Pull latest sources from main repo
-      run: git pull origin main
+      run: git pull origin master
 
     - name: Pull latest sources from additional repo 1
       run: |
-        cd /path/to/repo1
+        cd ~/azeroth-server/bin/dbc
         git pull origin master
 
     - name: Pull latest sources from additional repo 2
@@ -30,9 +30,13 @@ jobs:
       run: |
         sudo apt-get update
 
+    - name: Run CMake
+      run: |
+        mkdir -p build
+        cd build
+        cmake ..
+
     - name: Build AzerothCore
       run: |
-        mkdir build
         cd build
-        cmake ../
         make -j $(nproc)
