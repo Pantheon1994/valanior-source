@@ -21,4 +21,3 @@ jobs:
           cd /azeroth-server/bin/dbc/
           git pull origin master
         shell: bash
-
