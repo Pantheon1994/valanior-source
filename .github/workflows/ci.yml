@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Checkout valanior-source repository
         run: |
-	  pwd
+	  echo pwd
           cd /valanior-source
           git pull origin main
         shell: bash
