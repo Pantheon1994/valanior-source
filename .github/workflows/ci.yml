@@ -25,12 +25,3 @@ jobs:
           cd build-valanior/bin/dbc
           git pull origin master
           cd ../../../..
-
-      - name: Create build directory
-        run: mkdir build
-
-      - name: Run CMake
-        run: cmake .. -Bbuild
-
-      - name: Build Valanior Source
-        run: cmake --build build -- -j $(nproc)
