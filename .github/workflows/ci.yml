@@ -1,0 +1,38 @@
+name: Build AzerothCore
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Pull latest sources from main repo
+      run: git pull origin master
+
+    - name: Pull latest sources from additional repo 1
+      run: |
+        cd /path/to/repo1
+        git pull origin master
+
+    - name: Pull latest sources from additional repo 2
+      run: |
+        cd /path/to/repo2
+        git pull origin master
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+
+    - name: Build AzerothCore
+      run: |
+        mkdir build
+        cd build
+        cmake ../
+        make -j $(nproc)
