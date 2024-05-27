@@ -18,8 +18,7 @@ jobs:
 
     - name: Pull latest sources from additional repo 1 with root privileges
       run: |
-        sudo chown -R $USER:$USER /root/azeroth-server/bin/dbc
-        cd /root/azeroth-server/bin/dbc
+        cd /valanior-source/build/build-valanior
       	sudo git pull origin master
 
     - name: Ensure directory for repo2 exists and pull latest sources
