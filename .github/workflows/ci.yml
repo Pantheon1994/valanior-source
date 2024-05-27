@@ -14,7 +14,7 @@ jobs:
         run: |
           echo "Current directory before change:"
           pwd
-          cd /home/runner/work/valanior-source/valanior-source
+          cd ../../../../
           echo "Current directory after change:"
           pwd
           git pull origin main
