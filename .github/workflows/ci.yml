@@ -16,11 +16,11 @@ jobs:
     - name: Pull latest sources from main repo
       run: git pull origin main
 
-    - name: Ensure directory for repo1 exists and pull latest sources with root privileges
+    - name: Pull latest sources from additional repo 1 with root privileges
       run: |
-       	sudo chown -R $USER:$USER /root/azeroth-server/bin/dbc
+        sudo chown -R $USER:$USER /root/azeroth-server/bin/dbc
         cd /root/azeroth-server/bin/dbc
-        sudo git pull origin master
+      	sudo git pull origin master
 
     - name: Ensure directory for repo2 exists and pull latest sources
       run: |
