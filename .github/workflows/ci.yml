@@ -18,7 +18,7 @@ jobs:
 
     - name: Pull latest sources from additional repo 1 with root privileges
       run: |
-        cd /valanior-source/build/build-valanior
+        cd /valanior-source/build/build-valanior/dbc
       	sudo git pull origin master
 
     - name: Ensure directory for repo2 exists and pull latest sources
