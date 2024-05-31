@@ -13433,16 +13433,31 @@ uint32 Player::CalculateTalentsPoints() const
 {
     uint32 base_talent = getLevel() < 10 ? 0 : getLevel() - 9;
 
+    uint32 additionalTalentPoints = 0;
+
+    for (uint32 i = 15; i <= getLevel(); i += 5)
+    {
+        additionalTalentPoints += 1;
+    }
+
     if (getClass() != CLASS_DEATH_KNIGHT || GetMapId() != 609)
-        return uint32(base_talent * sWorld->getRate(RATE_TALENT));
+    {
+        return uint32((base_talent + additionalTalentPoints) * sWorld->getRate(RATE_TALENT));
+    }
 
     uint32 talentPointsForLevel = getLevel() < 56 ? 0 : getLevel() - 55;
     talentPointsForLevel += m_questRewardTalentCount;
 
     if (talentPointsForLevel > base_talent)
+    {
         talentPointsForLevel = base_talent;
+    }
 
     talentPointsForLevel += m_extraBonusTalentCount;
+
+    // Ajout des points de talent supplémentaires pour les Chevaliers de la mort
+    talentPointsForLevel += additionalTalentPoints;
+
     return uint32(talentPointsForLevel * sWorld->getRate(RATE_TALENT));
 }
 
