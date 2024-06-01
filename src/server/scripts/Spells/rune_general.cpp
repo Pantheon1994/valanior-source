@@ -704,8 +704,13 @@ class spell_rampart : public AuraScript
 
     void HandlePeriodic(AuraEffect const* aurEff)
     {
-        if (!GetCaster()->HasAura(GetDamageCheckSpell()) && !GetCaster()->HasAura(GetProcSpell()))
-            GetCaster()->CastCustomSpell(GetProcSpell(), SPELLVALUE_BASE_POINT0, GetProcAmount(), GetCaster(), true);
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (!caster->HasAura(GetDamageCheckSpell()) && !caster->HasAura(GetProcSpell()))
+            caster->CastCustomSpell(GetProcSpell(), SPELLVALUE_BASE_POINT0, GetProcAmount(), caster, true);
     }
 
     void Register() override
