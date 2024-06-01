@@ -3619,20 +3619,42 @@ class spell_dk_contagion_replacer : public AuraScript
 {
     PrepareAuraScript(spell_dk_contagion_replacer);
 
+    Aura* GetRuneAura()
+    {
+        for (size_t i = 600352; i < 600358; i++)
+        {
+            if (GetCaster()->HasAura(i))
+                return GetCaster()->GetAura(i);
+        }
+        return nullptr;
+    }
+
     void HandleLearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Player* target = GetCaster()->ToPlayer();
 
-        target->removeSpell(SPELL_DK_DEATH_AND_DECAY, SPEC_MASK_ALL, false);
-        target->learnSpell(SPELL_DK_DEFILE);
+        if (Aura* rune = GetRuneAura())
+            return;
+
+        if (target->HasSpell(SPELL_DK_DEATH_AND_DECAY))
+        {
+            target->removeSpell(SPELL_DK_DEATH_AND_DECAY, SPEC_MASK_ALL, false);
+            target->learnSpell(SPELL_DK_DEFILE);
+        } 
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Player* target = GetCaster()->ToPlayer();
 
-        target->removeSpell(SPELL_DK_DEFILE, SPEC_MASK_ALL, false);
-        target->learnSpell(SPELL_DK_DEATH_AND_DECAY);
+        if (Aura* rune = GetRuneAura())
+            return;
+
+        if (target->HasSpell(SPELL_DK_DEFILE))
+        {
+            target->removeSpell(SPELL_DK_DEFILE, SPEC_MASK_ALL, false);
+            target->learnSpell(SPELL_DK_DEATH_AND_DECAY);
+        }
     }
 
     void Register() override

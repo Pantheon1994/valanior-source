@@ -87,6 +87,7 @@ enum DeathKnightSpells
     SPELL_DK_FLOOD_OF_DARKNESS = 87022,
     SPELL_DK_FLOOD_OF_DARKNESS_DAMAGE = 87024,
     SPELL_DK_DEATHS_EMBRACE = 87001,
+    SPELL_DK_CONTAGION_REPLACER = 80419,
 };
 
 class rune_dk_permafrost : public AuraScript
@@ -678,22 +679,22 @@ class rune_dk_aura_of_decay : public AuraScript
     {
         Player* target = GetCaster()->ToPlayer();
 
-        if (!target)
-            return;
-
-        target->removeSpell(SPELL_DK_DEATH_AND_DECAY, SPEC_MASK_ALL, false);
-        target->learnSpell(RUNE_DK_AURA_OF_DECAY);
+        if (target->HasSpell(SPELL_DK_DEATH_AND_DECAY))
+        {
+            target->removeSpell(SPELL_DK_DEATH_AND_DECAY, SPEC_MASK_ALL, false);
+            target->learnSpell(RUNE_DK_AURA_OF_DECAY);
+        } 
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Player* target = GetCaster()->ToPlayer();
 
-        if (!target)
-            return;
-
-        target->removeSpell(RUNE_DK_AURA_OF_DECAY, SPEC_MASK_ALL, false);
-        target->learnSpell(SPELL_DK_DEATH_AND_DECAY);
+        if (target->HasSpell(RUNE_DK_AURA_OF_DECAY))
+        {
+            target->removeSpell(RUNE_DK_AURA_OF_DECAY, SPEC_MASK_ALL, false);
+            target->learnSpell(SPELL_DK_DEATH_AND_DECAY);
+        }
     }
 
     void Register() override
@@ -731,6 +732,9 @@ class rune_dk_aura_of_decay_periodic : public AuraScript
     {
         if (Unit* caster = GetCaster())
         {
+            if (caster->HasAura(SPELL_DK_CONTAGION_REPLACER))
+                return;
+
             if (caster->IsInCombat() && caster->IsAlive())
             {
                 caster->CastSpell(caster, RUNE_DK_AURA_OF_DECAY_DAMAGE, TRIGGERED_FULL_MASK);
