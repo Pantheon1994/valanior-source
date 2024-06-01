@@ -115,6 +115,8 @@ struct npc_pet_warlock_felguard : public ScriptedAI
 
     void InitializeAI() override
     {
+        me->SetPower(POWER_ENERGY, me->GetMaxPower(POWER_ENERGY));
+
         Unit* owner = me->GetOwner();
 
         if (!owner)
@@ -172,6 +174,8 @@ struct npc_pet_warlock_felhunter : public ScriptedAI
 
     void InitializeAI() override
     {
+        me->SetPower(POWER_ENERGY, me->GetMaxPower(POWER_ENERGY));
+
         Unit* owner = me->GetOwner();
 
         if (!owner || owner->isDead())
@@ -223,6 +227,8 @@ struct npc_pet_warlock_imp : public ScriptedAI
 
     void InitializeAI() override
     {
+        me->SetPower(POWER_ENERGY, me->GetMaxPower(POWER_ENERGY));
+
         Unit* owner = me->GetOwner();
 
         if (!owner)
@@ -274,6 +280,8 @@ struct npc_pet_warlock_succubus : public ScriptedAI
 
     void InitializeAI() override
     {
+        me->SetPower(POWER_ENERGY, me->GetMaxPower(POWER_ENERGY));
+
         Unit* owner = me->GetOwner();
 
         if (!owner)
@@ -325,6 +333,8 @@ struct npc_pet_warlock_voidwalker : public ScriptedAI
 
     void InitializeAI() override
     {
+        me->SetPower(POWER_ENERGY, me->GetMaxPower(POWER_ENERGY));
+
         Unit* owner = me->GetOwner();
 
         if (!owner)
@@ -826,8 +836,6 @@ private:
     bool _initAttack;
 };
 
-
-
 class spell_warl_darkglare_spell : public SpellScriptLoader
 {
 public:
@@ -1170,7 +1178,6 @@ private:
     Player* owner;
 };
 
-
 struct npc_pet_warlock_demonic_tyrant : public ScriptedAI
 {
     npc_pet_warlock_demonic_tyrant(Creature* creature) : ScriptedAI(creature) { }
@@ -1237,7 +1244,6 @@ private:
     bool alreadyFollowing;
     int32 shadow;
 };
-
 
 struct npc_pet_warlock_dreadstalker : public ScriptedAI
 {
@@ -1845,8 +1851,6 @@ private:
     bool _initAttack;
 };
 
-
-
 void AddSC_warlock_pet_scripts()
 {
     RegisterCreatureAI(npc_pet_warlock_felguard);
@@ -1865,7 +1869,6 @@ void AddSC_warlock_pet_scripts()
     RegisterCreatureAI(npc_pet_warlock_infernal);
     RegisterCreatureAI(npc_pet_warlock_inquisitors_eye);
     RegisterCreatureAI(npc_pet_warlock_pit_lord);
-
 
 
     new spell_warl_darkglare_spell();
