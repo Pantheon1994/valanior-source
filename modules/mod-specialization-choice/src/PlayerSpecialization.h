@@ -101,6 +101,14 @@ enum DruidSpells
     RUNE_DRUID_TRANQUILITY_TRANQUIL_MIND = 701742
 };
 
+enum DeathKnightSpells
+{
+    SPELL_DK_CONTAGION_REPLACER = 80419,
+    SPELL_DK_CONTAGION = 80405,
+    SPELL_DK_DEATH_AND_DECAY = 49938,
+    RUNE_DK_DEATH_AND_DECAY_AURA_OF_DECAY = 600358,
+};
+
 struct SpecValue {
     int32 specMask;
     // 0 : all, 1 is melee, 2 is for caster

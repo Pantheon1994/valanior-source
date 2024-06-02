@@ -151,7 +151,9 @@ bool PlayerSpecialization::Exception(Player* player, uint32 spellId)
     return (player->HasAura(SPELL_DRUID_AVATAR_OF_ASHAMANE_REPLACER) && spellId == SPELL_DRUID_BERSERK_CAT)
         || (player->HasAura(SPELL_DRUID_GUARDIAN_OF_URSOC_REPLACER) && spellId == SPELL_DRUID_BERSERK_BEAR)
         || (player->HasAura(SPELL_WARRIOR_WARBREAKER_REPLACER) && spellId == SPELL_WARRIOR_COLOSSUS_SMASH)
-        || (player->HasAura(SPELL_DRUID_RAZE_REPLACER) && spellId == SPELL_DRUID_MAUL);
+        || (player->HasAura(SPELL_DRUID_RAZE_REPLACER) && spellId == SPELL_DRUID_MAUL)
+        || (player->HasAura(SPELL_DK_CONTAGION_REPLACER) && spellId == SPELL_DK_DEATH_AND_DECAY)
+        || (player->HasSpell(RUNE_DK_DEATH_AND_DECAY_AURA_OF_DECAY) && spellId == SPELL_DK_DEATH_AND_DECAY);
 }
 
 uint32 PlayerSpecialization::GetSpellException(Player* player, uint32 spellId)
@@ -176,6 +178,16 @@ uint32 PlayerSpecialization::GetSpellException(Player* player, uint32 spellId)
         return SPELL_DRUID_RAZE;
     }
 
+    if (player->HasAura(SPELL_DK_CONTAGION_REPLACER) && spellId == SPELL_DK_DEATH_AND_DECAY)
+    {
+        return SPELL_DK_CONTAGION;
+    }
+
+    if (player->HasSpell(RUNE_DK_DEATH_AND_DECAY_AURA_OF_DECAY) && spellId == SPELL_DK_DEATH_AND_DECAY)
+    {
+        return RUNE_DK_DEATH_AND_DECAY_AURA_OF_DECAY;
+    }
+
     return 0;
 }
 
@@ -188,7 +200,6 @@ void PlayerSpecialization::RemoveSpellWhenTalentChange(Player* player)
     if (player->HasSpell(RUNE_DRUID_TRANQUILITY_TRANQUIL_MIND))
         player->removeSpell(RUNE_DRUID_TRANQUILITY_TRANQUIL_MIND, SPEC_MASK_ALL, false);
 }
-
 
 void PlayerSpecialization::RemoveSpellsAndAurasOnSpecChange(Player* player)
 {
@@ -215,7 +226,7 @@ void PlayerSpecialization::RemoveSpellsAndAurasOnSpecChange(Player* player)
     if (player->HasAura(SPELL_WARRIOR_WARBREAKER_REPLACER) && !player->HasSpell(SPELL_WARRIOR_COLOSSUS_SMASH))
     {
         player->removeSpell(SPELL_WARRIOR_WARBREAKER, SPEC_MASK_ALL, false, true);
-    } 
+    }
 }
 
 std::vector<std::string> PlayerSpecialization::GetSpecializations(Player* player)

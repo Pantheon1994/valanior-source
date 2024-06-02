@@ -525,6 +525,25 @@ class spell_dru_dash : public AuraScript
     }
 };
 
+class spell_dru_dash_remove : public AuraScript
+{
+    PrepareAuraScript(spell_dru_dash_remove);
+
+    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        if (Aura* dash = GetCaster()->GetAura(33357))
+            dash->Remove();
+
+        if (Aura* tigerDash = GetCaster()->GetAura(80515))
+            tigerDash->Remove();
+    }
+
+    void Register() override
+    {
+        OnEffectRemove += AuraEffectRemoveFn(spell_dru_dash_remove::HandleRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 // 5229 - Enrage
 class spell_dru_enrage : public AuraScript
 {
@@ -1749,7 +1768,6 @@ class spell_dru_force_of_nature : public SpellScript
 class spell_dru_berserk_cat : public AuraScript
 {
     PrepareAuraScript(spell_dru_berserk_cat);
-
 
     void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
@@ -3278,6 +3296,7 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_treant_scaling);
     //RegisterSpellScript(spell_dru_berserk);
     RegisterSpellScript(spell_dru_dash);
+    RegisterSpellScript(spell_dru_dash_remove);
     RegisterSpellScript(spell_dru_enrage);
     RegisterSpellScript(spell_dru_glyph_of_starfire);
     RegisterSpellScript(spell_dru_idol_lifebloom);
