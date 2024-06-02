@@ -121,6 +121,7 @@ enum HunterSpells
     SPELL_HUNTER_SPEARHEAD_PET_DAMAGE = 80207,
     SPELL_HUNTER_SPEARHEAD_BUFF = 80208,
     SPELL_HUNTER_FLANKING_STRIKE_PET_DAMAGE = 80198,
+    SPELL_HUNTER_TWILIGHT_PIERCER = 85006,
 
     // Talents
     TALENT_HUNTER_SHADOW_CLOAK = 85034,
@@ -3347,6 +3348,9 @@ class spell_hun_twilight_piercer : public SpellScript
 
         if (!caster || caster->isDead())
             return;
+
+        int32 energizeAmount = sSpellMgr->AssertSpellInfo(SPELL_HUNTER_TWILIGHT_PIERCER)->GetEffect(EFFECT_2).CalcValue();
+        caster->EnergizeBySpell(caster, SPELL_HUNTER_TWILIGHT_PIERCER, energizeAmount, POWER_FOCUS);
 
         if (Player* player = caster->ToPlayer())
         {

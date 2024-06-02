@@ -4294,7 +4294,41 @@ class spell_item_ranged_attack_proc : public AuraScript
     }
 };
 
+class spell_item_oozing_tooth : public AuraScript
+{
+    PrepareAuraScript(spell_item_oozing_tooth);
 
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (!GetCaster() || GetCaster()->isDead())
+            return false;
+
+        if (!eventInfo.GetActionTarget() || eventInfo.GetActionTarget()->isDead())
+            return false;
+
+        if (GetCaster()->GetGUID() == eventInfo.GetActionTarget()->GetGUID())
+            return false;
+
+        return eventInfo.GetDamageInfo();
+    }
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        Player* caster = GetCaster()->ToPlayer();
+
+        if (!caster->HasSpellCooldown(2200034))
+        {
+            caster->CastSpell(eventInfo.GetActionTarget(), 2200034, TRIGGERED_FULL_MASK);
+            caster->AddSpellCooldown(2200034, 0, 6000);
+        }
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_item_oozing_tooth::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_item_oozing_tooth::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+    }
+};
 
 void AddSC_item_spell_scripts()
 {
@@ -4427,7 +4461,7 @@ void AddSC_item_spell_scripts()
     RegisterSpellScript(spell_item_force_reactive_disk);
     RegisterSpellScript(spell_item_rhokdelar_whispered_thruths);
     RegisterSpellScript(spell_item_ranged_attack_proc);
-
+    RegisterSpellScript(spell_item_oozing_tooth);
 
 
     
