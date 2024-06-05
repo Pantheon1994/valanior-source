@@ -2639,7 +2639,7 @@ class rune_hunter_double_trouble : public AuraScript
         int32 displayId = pet->ToCreature()->GetDisplayId();
         Creature* guardian = GetCaster()->SummonCreature(600617, pos, TEMPSUMMON_TIMED_DESPAWN, duration, 0, properties);
 
-        pet->SetDisplayId(displayId);
+        guardian->SetDisplayId(displayId);
 
         PetBuffs(guardian);
 
