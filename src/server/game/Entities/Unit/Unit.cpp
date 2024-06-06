@@ -3551,20 +3551,9 @@ float Unit::GetUnitParryChance() const
                 tmpitem = player->GetWeaponForAttack(OFF_ATTACK, true);
 
             if (tmpitem)
-                chance = player->GetRealParry(); //GetFloatValue(PLAYER_PARRY_PERCENTAGE);
+                chance = player->GetRealParry(); // GetFloatValue(PLAYER_PARRY_PERCENTAGE);
         }
     }
-    else if (GetTypeId() == TYPEID_UNIT)
-    {
-        if (ToCreature()->isWorldBoss())
-            chance = 13.4f; // + 0.6 by skill diff
-        else if (GetCreatureType() == CREATURE_TYPE_HUMANOID)
-            chance = 5.0f;
-
-        // Xinef: if aura is present, type should not matter
-        chance += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
-    }
-
     return chance > 0.0f ? chance : 0.0f;
 }
 
@@ -3595,17 +3584,6 @@ float Unit::GetUnitBlockChance() const
         }
         // is player but has no block ability or no not broken shield equipped
         return 0.0f;
-    }
-    else
-    {
-        if (ToCreature()->IsTotem())
-            return 0.0f;
-        else
-        {
-            float block = 5.0f;
-            block += GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_PERCENT);
-            return block > 0.0f ? block : 0.0f;
-        }
     }
 }
 

@@ -473,6 +473,7 @@ ElunaRegister<Player> PlayerMethods[] =
     { "EnableOrDisableLuckyRunes", &LuaPlayer::EnableOrDisableLuckyRunes },
     { "ActivatePreferredSpecialization", &LuaPlayer::ActivatePreferredSpecialization },
     { "UpgradeItem", &LuaPlayer::UpgradeItem },
+    { "AskForItemUpgrade", &LuaPlayer::AskForItemUpgrade },
 
     { "AcceptGift", &LuaPlayer::AcceptGift },
 

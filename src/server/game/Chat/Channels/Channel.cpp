@@ -780,8 +780,7 @@ void Channel::Say(ObjectGuid guid, std::string const& what, uint32 lang)
     if (what.empty())
         return;
 
-    if (sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
-        lang = LANG_UNIVERSAL;
+   lang = LANG_UNIVERSAL;
 
     if (!IsOn(guid))
     {

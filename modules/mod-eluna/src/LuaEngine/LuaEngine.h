@@ -473,6 +473,8 @@ public:
 
     void SendProgressionOnboarding(Player* pPlayer, uint8 progression);
 
+    void SendItemForUpgrade(Player* pPlayer, std::string item);
+
 
     void OnPlayerEnterCombat(Player* pPlayer, Unit* pEnemy);
     void OnPlayerLeaveCombat(Player* pPlayer);

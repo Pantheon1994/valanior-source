@@ -590,13 +590,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
                 {
                     if (Channel* chn = cMgr->GetChannel(channel, sender))
                     {
-                        if (!sScriptMgr->CanPlayerUseChat(sender, type, lang, msg, chn))
-                        {
-                            return;
-                        }
-
                         sScriptMgr->OnPlayerChat(sender, type, lang, msg, chn);
-
                         chn->Say(sender->GetGUID(), msg.c_str(), lang);
                     }
                 }

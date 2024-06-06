@@ -139,6 +139,13 @@ namespace LuaPlayer
         return 0;
     }
 
+    int AskForItemUpgrade(lua_State* L, Player* player)
+    {
+        uint32 entry = Eluna::CHECKVAL<uint32>(L, 2);
+        ItemUpgradeManager::SendItemToUpgradeWithRequierements(player, entry);
+        return 0;
+    }
+
     int AcceptGift(lua_State* L, Player* player)
     {
         OnboardingManager::AcceptGift(player);

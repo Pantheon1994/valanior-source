@@ -143,6 +143,8 @@ void OnboardingManager::OnReachLevel(Player* player)
     if (step >= STEP_REACH_LEVEL_6)
         return;
 
+    player->AddItem(70009, 50);
+
     Rune rune = RunesManager::GetRuneBySpellId(100163);
     RunesManager::AddRunesPlayer(player, { rune, rune });
 

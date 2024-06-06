@@ -253,6 +253,14 @@ void Eluna::EnableLuckyRune(Player* pPlayer, uint32 spellId)
     CallAllFunctions(PlayerEventBindings, key);
 }
 
+void Eluna::SendItemForUpgrade(Player* pPlayer, std::string item)
+{
+    START_HOOK(PLAYER_SEND_ITEM_FOR_UPGRADE);
+    Push(pPlayer);
+    Push(item);
+    CallAllFunctions(PlayerEventBindings, key);
+}
+
 void Eluna::UpgradeItemSuccess(Player* pPlayer)
 {
     START_HOOK(PLAYER_EVENT_ITEM_UPGRADE_SUCCESS);

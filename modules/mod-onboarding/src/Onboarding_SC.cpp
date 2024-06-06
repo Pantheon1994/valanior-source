@@ -9,6 +9,7 @@
 #include "LuaEngine.h"
 #include "Spell.h"
 #include "OnboardingManager.h"
+#include "ChannelMgr.h"
 
 class Onboarding_PlayerScripts : public PlayerScript
 {

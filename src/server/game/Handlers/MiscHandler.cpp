@@ -83,7 +83,7 @@ void WorldSession::HandleRepopRequestOpcode(WorldPacket& recv_data)
 
     sScriptMgr->OnPlayerReleasedGhost(GetPlayer());
 
-    if (!sScriptMgr->CanResurrectThroughSpirit(GetPlayer()))
+    if (GetPlayer()->GetMap()->IsDungeon())
         return;
 
     GetPlayer()->BuildPlayerRepop();

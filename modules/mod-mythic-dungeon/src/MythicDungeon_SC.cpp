@@ -21,17 +21,6 @@ class MythicDungeon_PlayerScripts : public PlayerScript
 public:
     MythicDungeon_PlayerScripts() : PlayerScript("MythicDungeon_PlayerScripts") { }
 
-
-    bool CanResurrectThroughSpirit(Player* player)
-    {
-        Mythic* mythic = sMythicMgr->GetMythicPlayer(player);
-
-        if (mythic)
-            return false;
-
-        return true;
-    }
-
     void OnLogin(Player* player) override
     {
         if (!player)
@@ -82,12 +71,9 @@ public:
 
     void OnPlayerReleasedGhost(Player* player)
     {
-        Mythic* mythic = sMythicMgr->GetMythicPlayer(player);
-
-        if (!mythic)
-            return;
-
-        mythic->OnPlayerRelease(player);
+        AreaTriggerTeleport const* at = sObjectMgr->GetMapEntranceTrigger(player->GetMapId());
+        player->ResurrectPlayer(25.f, false);
+        player->TeleportTo(player->GetMapId(), at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
     }
 };
 

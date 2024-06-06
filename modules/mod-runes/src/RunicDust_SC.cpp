@@ -23,6 +23,7 @@
 
 enum Items {
     ITEM_RUNIC_DUST =   70008,
+    ITEM_RUNIC_ESSENCE = 70009,
     ITEM_SEALED_RUNE = 70002,
 };
 
@@ -31,60 +32,91 @@ class RunicDust_MiscScript : public MiscScript
 public:
     RunicDust_MiscScript() : MiscScript("Runes_MiscScript") { }
 
-    void AddRunicDustToLoot(uint32 minValue, uint32 maxValue, Loot* loot)
+    void AddRunicDustToLoot(uint32 minValue, Loot* loot)
     {
-        LootStoreItem storeItem(ITEM_RUNIC_DUST, 0, 100, 0, LOOT_MODE_DEFAULT, 0, minValue, maxValue);
-        loot->AddItem(storeItem);
+        LootStoreItem runicDust(ITEM_RUNIC_DUST, 0, 100, 0, LOOT_MODE_DEFAULT, 0, minValue, minValue);
+
+        loot->AddItem(runicDust);
     }
 
-    double calculatePourcentage(uint32 skillLevel, double pourcentageInitial)
+    void AddRunicEssenceToLoot(uint32 minValue, Loot* loot)
     {
-        return skillLevel / 10 + pourcentageInitial;
+        LootStoreItem runicEssence(ITEM_RUNIC_ESSENCE, 0, 100, 0, LOOT_MODE_DEFAULT, 0, minValue, minValue);
+        loot->AddItem(runicEssence);
     }
 
-    void AddBonusRunicDust(Creature* creature, Player* player, Loot* loot) {
+    void AddBonusRunicDustAndRunicEssence(Creature* creature, Player* player, Loot* loot) {
 
-        if (creature->getLevel() < player->getLevel())
+        if ((player->getLevel() - creature->getLevel()) >= 10)
             return;
-
-        int valueFromEliteRareMin = sWorld->GetValue("CONFIG_DROP_ELITE_RARE_RUNIC_DUST_MIN");
-        int valueFromEliteRareMax = sWorld->GetValue("CONFIG_DROP_ELITE_RARE_RUNIC_DUST_MAX");
-
-        int valueFromEliteMin = sWorld->GetValue("CONFIG_DROP_ELITE_RUNIC_DUST_MIN");
-        int valueFromEliteMax = sWorld->GetValue("CONFIG_DROP_ELITE_RUNIC_DUST_MAX");
-
-        int dropChanceFromMonster = sWorld->GetValue("CONFIG_DROP_CHANCE_FROM_MONSTER_RUNIC_DUST");
-
-        int valueMinFromDungeonBoss = sWorld->GetValue("CONFIG_DUNGEON_BOSS_RUNIC_DUST_MIN");
-        int valueMaxFromDungeonBoss = sWorld->GetValue("CONFIG_DUNGEON_BOSS_RUNIC_DUST_MAX");
 
         Map* map = creature->GetMap();
 
-        const bool isNormalDungeonBoss = creature->IsDungeonBoss() && !map->IsHeroic();
-        const bool isHeroicDungeonBoss = creature->IsDungeonBoss() && map->IsHeroic();
-        const bool isMythicDungeonBoss = creature->IsDungeonBoss() && map->IsMythic();
-        const bool isNormalMobs = !creature->isElite() && roll_chance_i(dropChanceFromMonster);
-        const bool isCreatureEliteRare = creature->GetCreatureTemplate()->rank == CREATURE_ELITE_RARE;
+        const int CONFIG_DROP_RUNIC_ESSENCE_NORMAL_CREATURE = sWorld->GetValue("CONFIG_DROP_RUNIC_ESSENCE_NORMAL_CREATURE");
+        const int CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS = sWorld->GetValue("CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS");
+        const int CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS = sWorld->GetValue("CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS");
+        const int CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS = sWorld->GetValue("CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS");
 
+        const int CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS_RAID = sWorld->GetValue("CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS_RAID");
+        const int CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS_RAID = sWorld->GetValue("CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS_RAID");
+        const int CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS_RAID = sWorld->GetValue("CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS_RAID");
 
-        if (isNormalDungeonBoss) {
-            AddRunicDustToLoot(valueMinFromDungeonBoss, valueMaxFromDungeonBoss, loot);
+        const int CONFIG_DROP_RUNIC_DUST_NORMAL_CREATURE = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_NORMAL_CREATURE");
+        const int CONFIG_DROP_RUNIC_DUST_NORMAL_BOSS = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_NORMAL_BOSS");
+        const int CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS");
+        const int CONFIG_DROP_RUNIC_DUST_MYTHIC_BOSS = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_MYTHIC_BOSS");
+
+        const int CONFIG_DROP_RUNIC_DUST_NORMAL_BOSS_RAID = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_NORMAL_BOSS_RAID");
+        const int CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS_RAID = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS_RAID");
+        const int CONFIG_DROP_RUNIC_DUST_MYTHIC_BOSS_RAID = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_MYTHIC_BOSS_RAID");
+
+        if (creature->IsDungeonBoss()) {
+            if (map->IsNonRaidDungeon())
+            {
+                if (map->GetDifficulty() == DUNGEON_DIFFICULTY_NORMAL)
+                {
+                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS, loot);
+                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_NORMAL_BOSS, loot);
+                }
+                if (map->GetDifficulty() == DUNGEON_DIFFICULTY_HEROIC)
+                {
+                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS, loot);
+                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS, loot);
+                }
+                if (map->GetDifficulty() == DUNGEON_DIFFICULTY_EPIC)
+                {
+                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS, loot);
+                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_MYTHIC_BOSS, loot);
+                }
+            }
+
+            if (map->IsRaid())
+            {
+                if (map->GetDifficulty() == RAID_DIFFICULTY_10_25MAN_NORMAL)
+                {
+                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_NORMAL_BOSS_RAID, loot);
+                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS_RAID, loot);
+                }
+                if (map->GetDifficulty() == RAID_DIFFICULTY_10_25MAN_HEROIC)
+                {
+                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS_RAID, loot);
+                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS_RAID, loot);
+                }
+                if (map->GetDifficulty() == RAID_DIFFICULTY_10_25MAN_MYTHIC)
+                {
+                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS_RAID, loot);
+                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS_RAID, loot);
+                }
+            }
         }
+        else {
+            if (roll_chance_i(50)) {
+                AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_NORMAL_CREATURE, loot);
+            }
 
-        if (isHeroicDungeonBoss) {
-            AddRunicDustToLoot(valueMinFromDungeonBoss * 2, valueMaxFromDungeonBoss * 2, loot);
-        }
-
-        if (isMythicDungeonBoss) {
-            AddRunicDustToLoot(valueMinFromDungeonBoss * 3, valueMaxFromDungeonBoss * 3, loot);
-        }
-
-        if (isNormalMobs) {
-            AddRunicDustToLoot(1, 1, loot);
-        }
-
-        if (isCreatureEliteRare) {
-            AddRunicDustToLoot(valueFromEliteRareMin, valueFromEliteRareMax, loot);
+            if (roll_chance_i(50)) {
+                AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_NORMAL_CREATURE, loot);
+            }
         }
     }
 
@@ -111,7 +143,8 @@ public:
                         {
                             int valueFromMinningAndHerborsimMin = sWorld->GetValue("CONFIG_MINNING_AND_HERBORISM_RUNIC_DUST_MIN");
                             int valueFromMinningAndHerborsimMax = sWorld->GetValue("CONFIG_MINNING_AND_HERBORISM_RUNIC_DUST_MAX");
-                            AddRunicDustToLoot(valueFromMinningAndHerborsimMin, valueFromMinningAndHerborsimMax, loot);
+                            AddRunicDustToLoot(valueFromMinningAndHerborsimMin, loot);
+                            AddRunicEssenceToLoot(valueFromMinningAndHerborsimMin, loot);
                         }
                     }
                     break;
@@ -127,10 +160,11 @@ public:
                 {
                     int valueFromSkinningMin = sWorld->GetValue("CONFIG_SKINNING_RUNIC_DUST_MIN");
                     int valueFromSkinningMax = sWorld->GetValue("CONFIG_SKINNING_RUNIC_DUST_MAX");
-                    AddRunicDustToLoot(valueFromSkinningMin, valueFromSkinningMax, loot);
+                    AddRunicDustToLoot(valueFromSkinningMin, loot);
+                    AddRunicEssenceToLoot(valueFromSkinningMin, loot);
                 }
             }
-            AddBonusRunicDust(creature, lootOwner, loot);
+            AddBonusRunicDustAndRunicEssence(creature, lootOwner, loot);
         }
     }
 };

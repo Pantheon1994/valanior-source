@@ -7,13 +7,15 @@
 #include "LuaEngine.h"
 #include "Spell.h"
 
-struct Upgrade {
+struct ItemUpgradeRequirement {
     uint32 itemLevel;
-    uint32 runicEssenceCost;
+    uint32 inventoryType;
+    uint32 cosmicEssenceCost;
     uint32 requiredItemId1;
-    uint32 requiredItemCount1;
     uint32 requiredItemId2;
+    uint32 requiredItemCount1;
     uint32 requiredItemCount2;
+    uint32 quality;
 };
 
 class ItemUpgradeManager {
@@ -21,13 +23,16 @@ class ItemUpgradeManager {
 public:
     static void LoadCosts();
     static void LoadItemsUpgrade();
+    static bool IsThisItemUpgradable(uint32 itemId);
+    static ItemUpgradeRequirement* GetItemsRequierement(Player* player, uint32 itemId);
+    static void SendItemToUpgradeWithRequierements(Player* player, uint32 itemId);
     static void UpgradeItem(Player* player, uint32 itemId);
-    static void RemoveRequieredItem(Player* player, Upgrade upgrade);
-    static bool HasEnoughItemToUpgrade(Player* player, Upgrade upgrade);
+    static void RemoveRequieredItem(Player* player, ItemUpgradeRequirement* upgrade);
+    static bool HasEnoughItemToUpgrade(Player* player, ItemUpgradeRequirement* upgrade);
 
 private:
-    static std::map<uint32 /* item Level */, Upgrade> m_CostUpgrade;
-    static std::map<uint32 /* item1 */, uint32 /* item1 */> m_ItemsUpgrade;
+    static std::vector<ItemUpgradeRequirement> m_CostUpgrade;
+    static std::map<uint32 /* item1 */, uint32 /* item1 */> m_ItemUpgradeConversion;
 
 
 };

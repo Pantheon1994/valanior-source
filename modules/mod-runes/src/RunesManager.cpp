@@ -29,6 +29,7 @@ void RunesManager::SetupConfig()
     config.maxSlots = 14;
     config.defaultSlot = 14;
 
+    config.upgradeCostRunicEssence.insert(std::make_pair(UNCOMMON_QUALITY, sWorld->GetValue("CONFIG_COST_RUNIC_ESSENCE_GREEN")));
     config.upgradeCostRunicEssence.insert(std::make_pair(RARE_QUALITY, sWorld->GetValue("CONFIG_COST_RUNIC_ESSENCE_RARE")));
     config.upgradeCostRunicEssence.insert(std::make_pair(EPIC_QUALITY, sWorld->GetValue("CONFIG_COST_RUNIC_ESSENCE_EPIC")));
     config.upgradeCostRunicEssence.insert(std::make_pair(LEGENDARY_QUALITY, sWorld->GetValue("CONFIG_COST_RUNIC_ESSENCE_LEGENDARY")));
@@ -789,7 +790,7 @@ void RunesManager::RemoveNecessaryItemsForUpgrade(Player* player, Rune nextRune)
 
     CharacterDatabase.Execute("DELETE FROM account_know_runes WHERE accountId = {} AND spellId = {} LIMIT 3", accountId, previousRune.spellId);
 
-    if (nextRune.quality >= RARE_QUALITY) {
+    if (nextRune.quality >= UNCOMMON_QUALITY) {
         uint32 cost = config.upgradeCostRunicEssence[nextRune.quality];
         player->DestroyItemCount(70009, cost, true);
     }
@@ -917,7 +918,7 @@ std::vector<std::string> RunesManager::RunesUpgradeForClient(Player* player)
 
         fmt << "|" << nextRune.spellId << "," << std::to_string(nextQuality);
 
-        if(nextQuality >= RARE_QUALITY)
+        if(nextQuality >= UNCOMMON_QUALITY)
             fmt << "|" << "70009" << "," << config.upgradeCostRunicEssence[nextQuality];
 
         elements.push_back(fmt.str());

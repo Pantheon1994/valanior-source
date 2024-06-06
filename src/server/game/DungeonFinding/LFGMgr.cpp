@@ -41,7 +41,7 @@
 
 namespace lfg
 {
-    LFGMgr::LFGMgr(): m_lfgProposalId(1), m_options(sWorld->getIntConfig(CONFIG_LFG_OPTIONSMASK)), m_Testing(false)
+    LFGMgr::LFGMgr(): m_lfgProposalId(1), m_options(sWorld->getIntConfig(CONFIG_LFG_OPTIONSMASK)), m_Testing(true)
     {
         new LFGPlayerScript();
         new LFGGroupScript();
@@ -1731,10 +1731,7 @@ namespace lfg
                 {
                     randomDungeon = true;
                     // if player is debugging, don't add dungeon cooldown
-                    if (!m_Testing)
-                    {
-                        player->AddAura(LFG_SPELL_DUNGEON_COOLDOWN, player);
-                    }
+                    player->AddAura(LFG_SPELL_DUNGEON_COOLDOWN, player);
                 }
 
                 if (player->GetMapId() == uint32(dungeon->map))
