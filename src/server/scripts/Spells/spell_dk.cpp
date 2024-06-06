@@ -2478,6 +2478,12 @@ class spell_dk_scourge_strike_new : public SpellScript
         Unit* caster = GetCaster();
         Unit* target = GetHitUnit();
 
+        if (!caster || caster->isDead())
+            return;
+
+        if (!target || !target->isDead())
+            return;
+
         ObjectGuid guid = caster->GetGUID();
         if (Aura* targetAura = target->GetAura(SPELL_DK_FESTERING_WOUND, guid))
         {
@@ -3478,6 +3484,7 @@ class spell_dk_contagions_periodic_tick : public AuraScript
         Position position = caster->GetPosition();
         Creature* creature = caster->FindNearestCreature(NPC_CONTAGION_AREA, 10.f, true);
         float radius = GetSpellInfo()->Effects[EFFECT_0].CalcRadius(caster);
+
         if (creature)
         {
             Position pos = creature->GetPosition();
@@ -3495,7 +3502,7 @@ class spell_dk_contagions_periodic_tick : public AuraScript
 
     void Register() override
     {
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_dk_contagions_periodic_tick::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_dk_contagions_periodic_tick::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
     }
 };
 
@@ -3503,18 +3510,15 @@ class spell_dk_contagious_summon : public SpellScript
 {
     PrepareSpellScript(spell_dk_contagious_summon);
 
-    void HandleSummon(SpellEffIndex effIndex)
+    void HandleSummon()
     {
-        WorldLocation const* dest = GetHitDest();
-        Position pos = dest->GetPosition();
-
         SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(61);
-        Creature* summon = GetCaster()->SummonCreature(500508, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ() + 5.f, pos.GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, GetSpellInfo()->GetDuration(), properties);
+        Creature* summon = GetCaster()->SummonCreature(500508, GetExplTargetDest()->GetPositionX(), GetExplTargetDest()->GetPositionY(), GetExplTargetDest()->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, GetSpellInfo()->GetDuration(), properties);
     }
 
     void Register() override
     {
-        OnEffectHit += SpellEffectFn(spell_dk_contagious_summon::HandleSummon, EFFECT_2, SPELL_EFFECT_DUMMY);
+        OnCast += SpellCastFn(spell_dk_contagious_summon::HandleSummon);
     }
 };
 
