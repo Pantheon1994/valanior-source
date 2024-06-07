@@ -1228,14 +1228,14 @@ class spell_warl_havoc : public AuraScript
     Unit* FindTargetHavoc()
     {
         Unit* havocTarget = nullptr;
-        auto const& threatList = GetCaster()->getAttackers();
+        auto const& threatList = GetCaster()->GetThreatMgr().GetThreatList();
         auto threatListCopy = threatList;
 
         if (threatListCopy.empty()) return nullptr;
 
         for (auto const& treathTarget : threatListCopy)
         {
-            if (Unit* target = ObjectAccessor::GetUnit(*GetCaster(), treathTarget->GetGUID())) {
+            if (Unit* target = ObjectAccessor::GetUnit(*GetCaster(), treathTarget->getUnitGuid())) {
                 if (target->HasAura(SPELL_WARLOCK_HAVOC_AURA))
                     havocTarget = target;
             }
@@ -1246,6 +1246,7 @@ class spell_warl_havoc : public AuraScript
 
     void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
+
         Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
@@ -1257,6 +1258,9 @@ class spell_warl_havoc : public AuraScript
             return;
 
         int32 damagePourcentage = aurEff->GetAmount();
+
+        uint32 spellId = eventInfo.GetSpellInfo()->Id;
+
         int32 totalDamage = CalculatePct(damageInfo->GetDamage(), damagePourcentage);
         Unit* havocTarget = FindTargetHavoc();
 
