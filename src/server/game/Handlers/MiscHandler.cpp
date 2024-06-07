@@ -83,7 +83,9 @@ void WorldSession::HandleRepopRequestOpcode(WorldPacket& recv_data)
 
     sScriptMgr->OnPlayerReleasedGhost(GetPlayer());
 
-    if (GetPlayer()->GetMap()->IsDungeon())
+    Map* map = GetPlayer()->GetMap();
+
+    if (map && map->IsDungeon())
         return;
 
     GetPlayer()->BuildPlayerRepop();
