@@ -383,6 +383,42 @@ class rune_pal_golden_path : public AuraScript
     }
 };
 
+class rune_pal_golden_path_cast: public SpellScript
+{
+    PrepareSpellScript(rune_pal_golden_path_cast);
+
+    Aura* GetRuneAura(Unit* caster)
+    {
+        for (size_t i = 400224; i < 400230; i++)
+        {
+            if (caster->HasAura(i))
+                return caster->GetAura(i);
+        }
+
+        return nullptr;
+    }
+
+    void HandleProc()
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (Aura* rune = GetRuneAura(caster))
+        {
+            int32 procSpell = GetRuneAura(caster)->GetSpellInfo()->GetEffect(EFFECT_0).CalcValue();
+
+            caster->CastSpell(caster, procSpell, TRIGGERED_FULL_MASK);
+        }
+    }
+
+    void Register()
+    {
+        OnCast += SpellCastFn(rune_pal_golden_path_cast::HandleProc);
+    }
+};
+
 class rune_pal_crusade : public AuraScript
 {
     PrepareAuraScript(rune_pal_crusade);
@@ -3225,6 +3261,7 @@ void AddSC_paladin_perks_scripts()
     RegisterSpellScript(rune_pal_fires_of_justice);
     RegisterSpellScript(rune_pal_sanctification);
     RegisterSpellScript(rune_pal_golden_path);
+    RegisterSpellScript(rune_pal_golden_path_cast);
     RegisterSpellScript(rune_pal_crusade);
     RegisterSpellScript(rune_pal_crusade_avenger_check);
     RegisterSpellScript(rune_pal_paragon_of_light);
