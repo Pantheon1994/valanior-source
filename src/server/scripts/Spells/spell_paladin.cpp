@@ -1269,6 +1269,25 @@ class spell_pal_holy_power : public SpellScript
     }
 };
 
+class spell_pal_crusader_strike: public SpellScript
+{
+    PrepareSpellScript(spell_pal_crusader_strike);
+
+    void HandleEnergy()
+    {
+        Player* caster = GetCaster()->ToPlayer();
+
+        if (caster->GetPower(POWER_ENERGY) < 5)
+            if (caster->IsTwoHandUsed())
+                caster->SetPower(POWER_ENERGY, caster->GetPower(POWER_ENERGY) + 1);
+    }
+
+    void Register()
+    {
+        OnCast += SpellCastFn(spell_pal_crusader_strike::HandleEnergy);
+    }
+};
+
 class spell_pal_infusion_of_light_power : public AuraScript
 {
     PrepareAuraScript(spell_pal_infusion_of_light_power);
@@ -2831,6 +2850,7 @@ void AddSC_paladin_spell_scripts()
     RegisterSpellScript(spell_pal_consecration);
     RegisterSpellScript(spell_pal_ret_aura); 
     RegisterSpellScript(spell_pal_holy_power);
+    RegisterSpellScript(spell_pal_crusader_strike);
     RegisterSpellScript(spell_pal_infusion_of_light_power);
     RegisterSpellScript(spell_pal_light_of_dawn);
     RegisterSpellScript(spell_pal_light_of_the_martyr);
