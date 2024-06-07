@@ -426,15 +426,15 @@ bool MythicManager::IsStatTypeAllowableSpec(uint32 currentSpec, uint32 statType)
 
 void MythicManager::UpdatePlayerKey(Player* player, int8 upgrade)
 {
-    MythicKey* key = sMythicMgr->GetCurrentPlayerMythicKey(player);
+    MythicKey* key = GetCurrentPlayerMythicKey(player);
 
     if (!key)
         return;
 
-    uint32 currentItemId = sMythicMgr->GetItemIdWithDungeonId(key->dungeonId);
+    uint32 currentItemId = GetItemIdWithDungeonId(key->dungeonId);
     player->DestroyItemCount(currentItemId, 1, true);
 
-    uint32 dungeonId = sMythicMgr->GetRandomMythicDungeonForPlayer(player);
+    uint32 dungeonId = GetRandomMythicDungeonForPlayer(player);
     
     key->dungeonId = dungeonId;
 
@@ -451,14 +451,14 @@ void MythicManager::UpdatePlayerKey(Player* player, int8 upgrade)
     if (key->level < 2)
         key->level = 2;
 
-    if (uint32 newItemId = sMythicMgr->GetItemIdWithDungeonId(dungeonId)) {
+    if (uint32 newItemId = GetItemIdWithDungeonId(dungeonId)) {
 
         player->AddItem(newItemId, 1);
 
         Item* item = player->GetItemByEntry(newItemId);
 
         if (item) {
-            uint32 enchantId = sMythicMgr->GetEnchantByMythicLevel(key->level);
+            uint32 enchantId = GetEnchantByMythicLevel(key->level);
             item->SetEnchantment(PERM_ENCHANTMENT_SLOT, enchantId, 0, 0, player->GetGUID());
         }
 
@@ -749,6 +749,30 @@ void MythicManager::OnKill(Player* player, Creature* killed)
         mythic->OnKillBoss(player, killed);
     else
         mythic->OnKillCreature(player, killed);
+
+    bool isEnabled = sWorld->GetValue("CONFIG_MYTHIC_ENABLED_DISTRUBTION_KEY");
+
+    if (killed->IsDungeonBoss() && isEnabled) {
+        if (Group* group = player->GetGroup()) {
+            auto const& allyList = group->GetMemberSlots();
+            for (auto const& target : allyList)
+            {
+                Player* member = ObjectAccessor::FindPlayer(target.guid);
+                if (member) {
+                    MythicKey* key = GetCurrentPlayerMythicKey(member);
+                    if (!key) {
+                        GenerateFirstRandomMythicKey(member);
+                    }
+                }
+            }
+        }
+        else {
+            MythicKey* key = GetCurrentPlayerMythicKey(player);
+            if (!key) {
+                GenerateFirstRandomMythicKey(player);
+            }
+        }
+    }
 }
 
 void MythicManager::OnPlayerDie(Player* player, Creature* killed)

@@ -3585,6 +3585,7 @@ float Unit::GetUnitBlockChance() const
         // is player but has no block ability or no not broken shield equipped
         return 0.0f;
     }
+    return 0.0f;
 }
 
 float Unit::GetUnitCriticalChance(WeaponAttackType attackType, Unit const* victim) const

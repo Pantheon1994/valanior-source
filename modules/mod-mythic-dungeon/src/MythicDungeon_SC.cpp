@@ -71,9 +71,11 @@ public:
 
     void OnPlayerReleasedGhost(Player* player)
     {
-        AreaTriggerTeleport const* at = sObjectMgr->GetMapEntranceTrigger(player->GetMapId());
-        player->ResurrectPlayer(25.f, false);
-        player->TeleportTo(player->GetMapId(), at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
+        if (player->GetMap()->IsDungeon()) {
+            AreaTriggerTeleport const* at = sObjectMgr->GetMapEntranceTrigger(player->GetMapId());
+            player->ResurrectPlayer(25.f, false);
+            player->TeleportTo(player->GetMapId(), at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
+        }
     }
 };
 
