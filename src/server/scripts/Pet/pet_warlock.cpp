@@ -806,7 +806,7 @@ struct npc_pet_warlock_darkglare : public ScriptedAI
                 {
                     me->CastSpell(me->GetVictim(), SPELL_SHADOW_BLAST);
                 }
-                _events.ScheduleEvent(1, 2000);
+                _events.ScheduleEvent(1, 2100); // Doesn't always cast so we need to put 2100.
                 break;
             default:
                 break;

@@ -840,7 +840,7 @@ void RunesManager::AddRunesPlayer(Player* player, std::vector<Rune> runes)
 
 std::string RunesManager::RuneForClient(Player* player, Rune rune, bool known, uint32 count)
 {
-    rune.isLucky = rune.isLucky ? true: IsSpellIdLuckyRune(player, rune.spellId);
+    rune.isLucky = IsSpellIdLuckyRune(player, rune.spellId);
     rune.isAutorefund = IsSpellIdAutoRefund(player, rune.spellId);
 
     std::string fmt =
