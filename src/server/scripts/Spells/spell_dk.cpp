@@ -2481,9 +2481,6 @@ class spell_dk_scourge_strike_new : public SpellScript
         if (!caster || caster->isDead())
             return;
 
-        if (!target || !target->isDead())
-            return;
-
         ObjectGuid guid = caster->GetGUID();
         if (Aura* targetAura = target->GetAura(SPELL_DK_FESTERING_WOUND, guid))
         {
