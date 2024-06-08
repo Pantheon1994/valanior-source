@@ -1000,11 +1000,8 @@ bool RunesManager::IsRuneUpgradable(Player* player, Rune targetRune, uint32 coun
 
     bool didHasRunes = countRune >= 3;
 
-    if (nextQuality == UNCOMMON_QUALITY)
-        return didHasRunes;
-
-    if (nextQuality >= RARE_QUALITY)
-        return didHasRunes && config.upgradeCostRunicEssence[nextQuality];
+    if (nextQuality >= UNCOMMON_QUALITY)
+        return didHasRunes && player->HasItemCount(70009, config.upgradeCostRunicEssence[nextQuality]);
 
     return false;
 }
