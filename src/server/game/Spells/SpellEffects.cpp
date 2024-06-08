@@ -5266,6 +5266,8 @@ void Spell::EffectResurrectPet(SpellEffIndex /*effIndex*/)
     pet->SetHealth(pet->CountPctFromMaxHealth(damage));
     pet->SetDisplayId(pet->GetNativeDisplayId());
 
+    player->AddAura(80246, pet);
+
     // xinef: restore movement
     if (auto ci = pet->GetCharmInfo())
     {
