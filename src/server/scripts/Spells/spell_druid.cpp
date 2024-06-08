@@ -56,6 +56,7 @@ enum DruidSpells
     SPELL_DRUID_SURVIVAL_INSTINCTS          = 50322,
     //SPELL_DRUID_SAVAGE_ROAR                 = 62071,
     SPELL_DRUID_TIGER_S_FURY_ENERGIZE       = 51178,
+    SPELL_DRUID_TIGERS_FURY                 = 80676,
     SPELL_DRUID_ITEM_T8_BALANCE_RELIC       = 64950,
     SPELL_DRUID_BEAR_FORM_PASSIVE           = 1178,
     SPELL_DRUID_DIRE_BEAR_FORM_PASSIVE      = 9635,
@@ -2417,6 +2418,7 @@ class spell_dru_feline_adept : public AuraScript
         target->learnSpell(SPELL_DRUID_MOONFIRE_CAT);
         target->learnSpell(SPELL_DRUID_SOOTHE_CAT);
         target->learnSpell(SPELL_DRUID_REMOVE_CORRUPTION_CAT);
+        target->learnSpell(SPELL_DRUID_TIGERS_FURY);
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
@@ -2425,6 +2427,7 @@ class spell_dru_feline_adept : public AuraScript
         target->removeSpell(SPELL_DRUID_MOONFIRE_CAT, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_DRUID_SOOTHE_CAT, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_DRUID_REMOVE_CORRUPTION_CAT, SPEC_MASK_ALL, false);
+        target->removeSpell(SPELL_DRUID_TIGERS_FURY, SPEC_MASK_ALL, false);
     }
 
     void Register() override
