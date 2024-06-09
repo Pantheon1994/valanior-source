@@ -788,10 +788,21 @@ void MythicManager::OnPlayerDie(Player* player, Creature* killed)
 
 void MythicManager::Update(Creature* creature)
 {
+
+    if (!creature)
+        return;
+
     Map* map = creature->GetMap();
+
+    if (!map)
+        return;
+
     Mythic* mythic = GetMythicInMap(map);
 
     if (!mythic)
+        return;
+
+    if ((creature->IsHunterPet() || creature->IsPet() || creature->IsSummon()) && creature->IsControlledByPlayer())
         return;
 
     if (creature->HasAura(90000))
