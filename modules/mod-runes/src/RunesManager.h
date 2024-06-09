@@ -165,7 +165,7 @@ public:
     static std::vector<std::string> SlotsCachingForClient(Player* player);
     static std::string ProgressionCachingForClient(Player* player);
     static Rune GetRuneByQuality(uint32 groupId, int8 nextQuality);
-    static bool IsRuneUpgradable(Player* player, Rune rune, uint32 countRune, bool checkAmount = false);
+    static bool IsRuneUpgradable(Player* player, Rune rune, uint32 countRune);
     static Rune GetRuneBySpellId(uint32 spellId);
     static bool KnowRuneId(Player* player, uint64 runeId);
     static void AutomaticalyRefundRune(Player* player, Rune rune);
