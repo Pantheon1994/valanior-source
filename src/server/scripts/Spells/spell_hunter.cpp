@@ -194,7 +194,7 @@ class spell_hun_wyvern_sting : public AuraScript
 {
     PrepareAuraScript(spell_hun_wyvern_sting)
 
-        void HandleEffectRemove(AuraEffect const*  /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    void HandleEffectRemove(AuraEffect const*  /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         if (Unit* caster = GetCaster())
             caster->CastSpell(GetTarget(), SPELL_HUNTER_WYVERN_STING_DOT, true);
@@ -4369,6 +4369,7 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_animal_companion_check);
     RegisterSpellScript(spell_hun_expert_of_the_wilds);
     RegisterSpellScript(spell_hun_withering_fire_energy);
+    RegisterSpellScript(spell_wyvern_sting_stop_combat);
 
     //new Hunter_AllMapScript();
     new npc_hunter_spell_stampeded();
