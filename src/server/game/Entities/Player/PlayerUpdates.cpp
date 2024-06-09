@@ -1043,14 +1043,24 @@ void Player::UpdateSkillsForLevel()
         if (itr->second.uState == SKILL_DELETED)
             continue;
 
+
+
         uint32                         pskill = itr->first;
         SkillRaceClassInfoEntry const* rcEntry =
             GetSkillRaceClassInfo(pskill, getRace(), getClass());
+
         if (!rcEntry)
+            continue;
+
+        SkillLineEntry const* skill = sSkillLineStore.LookupEntry(rcEntry->SkillID);
+
+        if (!skill)
             continue;
 
         if (GetSkillRangeType(rcEntry) != SKILL_RANGE_LEVEL)
             continue;
+
+
 
         uint32 valueIndex = PLAYER_SKILL_VALUE_INDEX(itr->second.pos);
         uint32 data       = GetUInt32Value(valueIndex);
@@ -1061,8 +1071,8 @@ void Player::UpdateSkillsForLevel()
         if (max != 1)
         {
             /// maximize skill always
-            if (alwaysMaxSkill ||
-                (rcEntry->Flags & SKILL_FLAG_ALWAYS_MAX_VALUE))
+            if ((alwaysMaxSkill ||
+                (rcEntry->Flags & SKILL_FLAG_ALWAYS_MAX_VALUE)) && skill->categoryId != 13)
             {
                 SetUInt32Value(valueIndex,
                                MAKE_SKILL_VALUE(maxSkill, maxSkill));
