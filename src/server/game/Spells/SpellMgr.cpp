@@ -178,8 +178,12 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
                 // Wyvern Sting mechanic is MECHANIC_SLEEP but the diminishing is DIMINISHING_DISORIENT
                 else if ((spellproto->SpellFamilyFlags[1] & 0x1000) && spellproto->SpellIconID == 1721)
                     return DIMINISHING_DISORIENT;
+                else if (spellproto->Id == 80155)
+                    return DIMINISHING_DISORIENT;
                 // Freezing Arrow
                 else if (spellproto->SpellFamilyFlags[0] & 0x8)
+                    return DIMINISHING_DISORIENT;
+                else if (spellproto->Id == 80140)
                     return DIMINISHING_DISORIENT;
                 break;
             }
