@@ -898,7 +898,7 @@ std::vector<std::string> RunesManager::RunesUpgradeForClient(Player* player)
         int8 nextQuality = knownRune.rune.quality + 1;
 
         Rune nextRune = GetRuneByQuality(knownRune.rune.groupId, nextQuality);
-        bool isUpgradable = IsRuneUpgradable(player, nextRune, knownRune.count);
+        bool isUpgradable = IsRuneUpgradable(player, nextRune, knownRune.count, false);
 
         if ((knownRune.rune.allowableClass & player->getClassMask()) == 0)
             continue;
@@ -994,14 +994,14 @@ Rune RunesManager::GetRuneByQuality(uint32 groupId, int8 nextQuality)
     return runeQuality;
 }
 
-bool RunesManager::IsRuneUpgradable(Player* player, Rune targetRune, uint32 countRune)
+bool RunesManager::IsRuneUpgradable(Player* player, Rune targetRune, uint32 countRune, bool checkAmount)
 {
     int8 nextQuality = targetRune.quality;
 
     bool didHasRunes = countRune >= 3;
 
     if (nextQuality >= UNCOMMON_QUALITY)
-        return didHasRunes && player->HasItemCount(70009, config.upgradeCostRunicEssence[nextQuality]);
+        return didHasRunes && (checkAmount && player->HasItemCount(70009, config.upgradeCostRunicEssence[nextQuality]));
 
     return false;
 }
