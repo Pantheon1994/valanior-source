@@ -198,6 +198,7 @@ enum DeathKnightSpells
     //RUNE
     RUNE_DK_SPLINTERING_SHIELD_PROC = 600572,
     RUNE_DK_LIGHT_AND_DARK_VALKYR = 600943,
+    RUNE_DK_DEATH_AND_DECAY_AURA_OF_DECAY = 600358,
 
     // Sets
     T1_DEATHKNIGHT_BLOOD_4PC = 97001,
@@ -3166,6 +3167,24 @@ class spell_dk_epidemic : public SpellScript
     }
 };
 
+class spell_dk_death_and_decay_check : public SpellScript
+{
+    PrepareSpellScript(spell_dk_death_and_decay_check);
+
+    SpellCastResult CheckCast()
+    {
+        if (GetCaster()->HasSpell(RUNE_DK_DEATH_AND_DECAY_AURA_OF_DECAY) || GetCaster()->HasSpell(SPELL_DK_DEFILE))
+            return SPELL_FAILED_SPELL_UNAVAILABLE;
+        else
+            return SPELL_CAST_OK;
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_dk_death_and_decay_check::CheckCast);
+    }
+};
+
 class spell_dk_vile_contagion : public SpellScript
 {
     PrepareSpellScript(spell_dk_vile_contagion);
@@ -4525,6 +4544,7 @@ void AddSC_deathknight_spell_scripts()
     RegisterSpellScript(spell_dk_blood_control);
     RegisterSpellScript(spell_dk_master_of_the_dead);
     RegisterSpellScript(spell_dk_soul_catching);
+    RegisterSpellScript(spell_dk_death_and_decay_check);
     new npc_dk_spell_glacial_advance();
     new npc_dk_spell_frostwyrm();
 }

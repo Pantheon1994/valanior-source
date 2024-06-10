@@ -459,7 +459,7 @@ class rune_pri_expiation : public AuraScript
         if (!caster || caster->isDead())
             return false;
 
-        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+        Unit* target = eventInfo.GetActionTarget();
 
         if (!target || target->isDead())
             return false;
