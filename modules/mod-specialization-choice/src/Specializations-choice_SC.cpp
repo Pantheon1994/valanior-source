@@ -192,10 +192,13 @@ class spell_activate_specialization : public SpellScript
         }
 
         auto summonedUnits = player->ToPlayer()->m_Controlled;
+        auto copy = summonedUnits;
 
-        for (const auto& pet : summonedUnits)
+        for (const auto& pet : copy)
             if (pet->GetCharmInfo())
-                pet->ToTempSummon()->DespawnOrUnsummon();
+                if (TempSummon * pet = pet->ToTempSummon()) {
+                    pet->DespawnOrUnsummon();
+                }
 
         if (!player->HasSpell(674) && player->m_canDualWield)
             player->SetCanDualWield(false);

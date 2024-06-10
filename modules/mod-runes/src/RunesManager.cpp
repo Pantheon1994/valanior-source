@@ -564,12 +564,6 @@ Rune RunesManager::GetRandomRune(Player* player, uint8 quality)
     }
 
     auto matchJ = m_CharacterLuckyRunes.find(guid);
-
-    if (quality == NORMAL_QUALITY) {
-        bool isUpgradedThroughLuck = roll_chance_i(10);
-        if (isUpgradedThroughLuck)
-            quality = UNCOMMON_QUALITY;
-    }
     
     if (matchJ != m_CharacterLuckyRunes.end())
     {
