@@ -2674,7 +2674,7 @@ void AddSC_priest_perks_scripts()
     RegisterSpellScript(rune_pri_shadowy_insight);
     RegisterSpellScript(rune_pri_insidious_ire);
     RegisterSpellScript(rune_pri_psychic_link);
-    RegisterSpellScript(rune_pri_expiation);
+    //RegisterSpellScript(rune_pri_expiation);
     RegisterSpellScript(rune_pri_void_shield);
     RegisterSpellScript(rune_pri_train_of_thought);
     RegisterSpellScript(rune_pri_revitalizing_prayers);
