@@ -613,6 +613,11 @@ inline bool IsProfessionOrRidingSkill(uint32 skill)
     return  IsProfessionSkill(skill) || skill == SKILL_RIDING;
 }
 
+inline bool isGatheringSkill(uint32 skill)
+{
+    return  skill == SKILL_SKINNING || skill == SKILL_MINING || skill == SKILL_HERBALISM;
+}
+
 bool IsPartOfSkillLine(uint32 skillId, uint32 spellId);
 
 // spell diminishing returns

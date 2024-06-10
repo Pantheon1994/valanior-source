@@ -1043,8 +1043,6 @@ void Player::UpdateSkillsForLevel()
         if (itr->second.uState == SKILL_DELETED)
             continue;
 
-
-
         uint32                         pskill = itr->first;
         SkillRaceClassInfoEntry const* rcEntry =
             GetSkillRaceClassInfo(pskill, getRace(), getClass());
@@ -1060,8 +1058,6 @@ void Player::UpdateSkillsForLevel()
         if (GetSkillRangeType(rcEntry) != SKILL_RANGE_LEVEL)
             continue;
 
-
-
         uint32 valueIndex = PLAYER_SKILL_VALUE_INDEX(itr->second.pos);
         uint32 data       = GetUInt32Value(valueIndex);
         uint32 max        = SKILL_MAX(data);
@@ -1072,7 +1068,7 @@ void Player::UpdateSkillsForLevel()
         {
             /// maximize skill always
             if ((alwaysMaxSkill ||
-                (rcEntry->Flags & SKILL_FLAG_ALWAYS_MAX_VALUE)) && skill->categoryId != 13)
+                (rcEntry->Flags & SKILL_FLAG_ALWAYS_MAX_VALUE)))
             {
                 SetUInt32Value(valueIndex,
                                MAKE_SKILL_VALUE(maxSkill, maxSkill));
@@ -1101,6 +1097,10 @@ void Player::UpdateSkillsToMaxSkillsForLevel()
         uint32 pskill = itr->first;
         if (IsProfessionOrRidingSkill(pskill))
             continue;
+
+        if (isGatheringSkill(pskill))
+            continue;
+
         uint32 valueIndex = PLAYER_SKILL_VALUE_INDEX(itr->second.pos);
         uint32 data       = GetUInt32Value(valueIndex);
         uint32 max        = SKILL_MAX(data);

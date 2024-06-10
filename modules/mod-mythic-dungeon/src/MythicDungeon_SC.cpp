@@ -91,8 +91,10 @@ public:
         MythicDungeon foundDungeon;
 
         if (Group* group = player->GetGroup()) {
-            if (group->isRaidGroup())
+            if (group->isRaidGroup()) {
+                ChatHandler(player->GetSession()).SendSysMessage("You can't start a Mythic Dungeon while in a Raid group!");
                 return false;
+            }
         }
 
         if (Mythic* mythic = sMythicMgr->GetMythicPlayer(player))
