@@ -613,6 +613,14 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
     });
 
+    ApplySpellFix({ 100098, 100099, 100100, 100101, 100102, 100103 }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->Effects[EFFECT_0].Effect = SPELL_EFFECT_APPLY_AURA;
+            spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_SCHOOL_ABSORB;
+            spellInfo->Effects[EFFECT_1].Effect = SPELL_EFFECT_APPLY_AURA;
+            spellInfo->Effects[EFFECT_1].ApplyAuraName = SPELL_AURA_DUMMY;
+        });
+
     // Intervene
     ApplySpellFix({ 3411 }, [](SpellInfo* spellInfo)
     {

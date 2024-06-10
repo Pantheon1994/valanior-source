@@ -126,6 +126,7 @@ enum WarlockSpells
     SPELL_WARLOCK_FRACTURE_ENERGY = 83107,
     SPELL_WARLOCK_METAMORPHOSIS = 47241,
     SPELL_WARLOCK_DEMONIC_CORE_BUFF = 83029,
+    SPELL_WARLOCK_DEMONBOLT = 83028,
 
     // Talents
     TALENT_WARLOCK_RITUAL_OF_RUIN = 83074,
@@ -1815,7 +1816,14 @@ class spell_warlock_summon_darkhound : public SpellScript
     void HandleCast()
     {
         Player* player = GetCaster()->ToPlayer();
+
+        if (!player || player->isDead())
+            return;
+
         Unit* target = GetExplTargetUnit();
+
+        if (!target || target->isDead())
+            return;
 
         int32 totalSummons = GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(player);
 
@@ -1830,6 +1838,9 @@ class spell_warlock_summon_darkhound : public SpellScript
 
             if (summon)
                 summon->SetPositionReset(GUARDIAN_WARLOCK_DREADSTALKER_DIST + i, PET_FOLLOW_ANGLE);
+
+            if (!summon || summon->isDead())
+                return;
 
             if (Aura* runeAura = GetCarnivorousStalkersAura(player))
             {
@@ -1903,9 +1914,13 @@ class spell_warlock_summon_gargoyle : public SpellScript
     void HandleCast()
     {
         Player* player = GetCaster()->ToPlayer();
+
+        if (!player || player->isDead())
+            return;
+
         Unit* target = player->GetSelectedUnit();
 
-        if (!target)
+        if (!target || target->isDead())
             return;
 
         int32 duration = GetSpellInfo()->GetDuration();
@@ -1966,15 +1981,23 @@ class spell_warlock_soul_strike : public SpellScript
     void HandleHit(SpellEffIndex /*effIndex*/)
     {
         Player* player = GetCaster()->ToPlayer();
+
+        if (!player || player->isDead())
+            return;
+
         Unit* target = player->GetSelectedUnit();
+
+        if (!target || target->isDead())
+            return;
+
         Unit* pet = GetPet();
 
-        if (pet && target)
-        {
-            pet->ToCreature()->AI()->AttackStart(target);
-            pet->CastSpell(target, SPELL_WARLOCK_SOUL_STRIKE, TRIGGERED_IGNORE_GCD, nullptr, nullptr, player->GetGUID());
-            player->CastSpell(player, SPELL_WARLOCK_SOUL_STRIKE_ENERGY, TRIGGERED_FULL_MASK);
-        }
+        if (!pet || pet->isDead())
+            return;
+
+        pet->ToCreature()->AI()->AttackStart(target);
+        pet->CastSpell(target, SPELL_WARLOCK_SOUL_STRIKE, TRIGGERED_IGNORE_GCD, nullptr, nullptr, player->GetGUID());
+        player->CastSpell(player, SPELL_WARLOCK_SOUL_STRIKE_ENERGY, TRIGGERED_FULL_MASK);
     }
 
     void Register() override
@@ -1991,8 +2014,16 @@ class spell_warlock_summon_felboar : public SpellScript
     void HandleCast()
     {
         Player* player = GetCaster()->ToPlayer();
+
+        if (!player || player->isDead())
+            return;
+
         int32 totalSummons = GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(player);
+
         Unit* target = GetExplTargetUnit();
+
+        if (!target || target->isDead())
+            return;
 
         for (size_t i = 0; i < totalSummons; i++)
         {
@@ -2018,6 +2049,9 @@ class spell_warlock_summon_felguard : public SpellScript
     void HandleCast()
     {
         Player* player = GetCaster()->ToPlayer();
+
+        if (!player || player->isDead())
+            return;
 
         int32 duration = GetSpellInfo()->GetDuration();
         TempSummon* summon = GetCaster()->SummonCreatureGuardian(GUARDIAN_WARLOCK_FELGUARD_GRIMOIRE, player, player, duration, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
@@ -2067,13 +2101,26 @@ class spell_warlock_implosion : public SpellScript
     {
         Unit* caster = GetCaster();
 
+        if (!caster || caster->isDead())
+            return;
+
         Player* player = caster->ToPlayer();
+
+        if (!player || player->isDead())
+            return;
+
         Unit* target = ObjectAccessor::GetUnit(*caster, caster->GetTarget());
+
+        if (!target || target->isDead())
+            return;
 
         for (auto itr = player->m_Controlled.begin(); itr != player->m_Controlled.end(); ++itr)
         {
             if (Unit* pet = *itr)
             {
+                if (pet->isDead())
+                    return;
+
                 if (pet->GetEntry() == GUARDIAN_WARLOCK_WILD_IMP)
                 {
                     pet->CastSpell(target, SPELL_WARLOCK_IMPLOSSION, true, nullptr, nullptr, player->GetGUID());
@@ -2096,7 +2143,14 @@ class spell_warlock_summon_darkglare : public SpellScript
     void HandleCast()
     {
         Player* player = GetCaster()->ToPlayer();
+
+        if (!player || player->isDead())
+            return;
+
         Unit* target = GetExplTargetUnit();
+
+        if (!target || target->isDead())
+            return;
 
         int32 duration = GetSpellInfo()->GetDuration();
         TempSummon* summon = GetCaster()->SummonCreatureGuardian(GUARDIAN_WARLOCK_DARKGLARE, player, player, duration, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
@@ -2216,9 +2270,13 @@ class spell_warlock_hand_of_guldan : public SpellScript
         int32 damage = GetHitDamage();
 
         Unit* caster = GetCaster();
-        Player* player = caster->ToPlayer();
 
         if (!caster || caster->isDead())
+            return;
+
+        Player* player = caster->ToPlayer();
+
+        if (!player || player->isDead())
             return;
 
         int32 runicPower = caster->GetPower(POWER_ENERGY);
@@ -2272,12 +2330,18 @@ class spell_warlock_summon_nether_portal : public SpellScript
     {
         Player* player = GetCaster()->ToPlayer();
 
+        if (!player || player->isDead())
+            return;
+
         int32 timerIncrease = GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(player);
 
         int32 duration = GetSpellInfo()->GetDuration();
         SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(83);
         Position pos = GetCaster()->GetNearPosition(PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
         TempSummon* summon = GetCaster()->GetMap()->SummonCreature(GUARDIAN_WARLOCK_PORTAL_SUMMON, pos, properties, duration, GetCaster(), GetSpellInfo()->Id);
+
+        if (!summon || summon->isDead())
+            return;
 
         summon->AddAura(40280, summon);
     }
@@ -2636,6 +2700,10 @@ class spell_warlock_dark_pact : public SpellScript
     void HandleBeforeCast()
     {
         Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         SpellInfo const* value = sSpellMgr->AssertSpellInfo(SPELL_WARLOCK_DARK_PACT);
         int32 sacrificePct = CalculatePct(caster->GetHealth(), value->GetEffect(EFFECT_0).CalcValue(caster));
         shieldAmount = CalculatePct(sacrificePct, value->GetEffect(EFFECT_1).CalcValue(caster)) + CalculatePct(caster->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask()), value->GetEffect(EFFECT_2).CalcValue(caster));
@@ -2652,6 +2720,10 @@ class spell_warlock_dark_pact : public SpellScript
     void HandleAfterCast()
     {
         Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         caster->CastCustomSpell(SPELL_WARLOCK_DARK_PACT_SHIELD, SPELLVALUE_BASE_POINT0, shieldAmount, caster, TRIGGERED_FULL_MASK);
     }
 
@@ -3316,11 +3388,15 @@ class spell_warl_power_siphon : public SpellScript
     void HandleCast()
     {
         Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         uint32 maxSacrifice = GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(caster);
         uint8 totalSacrifice = 0;
         Player* player = GetCaster()->ToPlayer();
 
-        if (!player)
+        if (!player || player->isDead())
             return;
 
         auto summonedUnits = player->m_Controlled;
@@ -3385,7 +3461,7 @@ class spell_warl_malefic_rapture : public SpellScript
     {
         Unit* caster = GetCaster();
 
-        if (!caster)
+        if (!caster || caster->isDead())
             return;
 
         auto const& threatList = caster->getAttackers();
@@ -3589,11 +3665,18 @@ class spell_warl_channel_demonfire : public SpellScript
     {
         Unit* target = GetHitUnit();
 
-        if (GetCaster() && target)
-            if (Aura* immolate = target->GetAura(SPELL_WARLOCK_IMMOLATE))
-                immolate->RefreshDuration();
-            else
-                GetCaster()->CastSpell(target, SPELL_WARLOCK_IMMOLATE, TRIGGERED_FULL_MASK);
+        if (!target || target->isDead())
+            return;
+
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (Aura* immolate = target->GetAura(SPELL_WARLOCK_IMMOLATE))
+            immolate->RefreshDuration();
+        else
+            caster->CastSpell(target, SPELL_WARLOCK_IMMOLATE, TRIGGERED_FULL_MASK);
     }
 
     void Register() override
@@ -3921,6 +4004,9 @@ class spell_warl_soul_collector_fragment : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return;
+
         GetAura()->ModStackAmount(-1);
 
         GetCaster()->CastSpell(GetCaster(), SPELL_WARLOCK_SOUL_COLLECTOR_HEAL, TRIGGERED_FULL_MASK);
@@ -3961,6 +4047,9 @@ class spell_warl_immolation_aura_energy : public SpellScript
 
     void HandleCast()
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return;
+
         GetCaster()->CastSpell(GetCaster(), SPELL_WARLOCK_IMMOLATION_AURA_INITIAL_ENERGY, TRIGGERED_FULL_MASK);
     }
 
@@ -3976,6 +4065,9 @@ class spell_warl_fracture_energy : public SpellScript
 
     void HandleCast()
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return;
+
         GetCaster()->CastSpell(GetCaster(), SPELL_WARLOCK_IMMOLATION_AURA_INITIAL_ENERGY, TRIGGERED_FULL_MASK);
     }
 
@@ -4003,6 +4095,10 @@ class spell_warl_demonic_barrier : public AuraScript
     void ApplyEffect(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         int32 healthPct = caster->GetHealthPct();
         int32 baseRatio = aurEff->GetAmount();
         int32 minimumThreshold = 20;
@@ -4061,6 +4157,10 @@ class spell_warl_soul_bomb : public SpellScript
     void HandleCast()
     {
         Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         int32 damage = CalculatePct(caster->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FIRE), sSpellMgr->AssertSpellInfo(SPELL_WARLOCK_SOUL_BOMB)->GetEffect(EFFECT_0).CalcValue(caster));
 
         if (Aura* soulFragment = caster->GetAura(SPELL_WARLOCK_SOUL_COLLECTOR_FRAGMENT))
@@ -4168,6 +4268,9 @@ class spell_warl_fracture_fragment : public SpellScript
 
     void HandleHit(SpellEffIndex /*effIndex*/)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return;
+
         if (roll_chance_i(GetSpellInfo()->GetEffect(EFFECT_1).CalcValue()))
             GetCaster()->CastSpell(GetCaster(), SPELL_WARLOCK_SOUL_COLLECTOR_FRAGMENT, TRIGGERED_FULL_MASK);
     }
@@ -4243,6 +4346,10 @@ class spell_warl_demonic_protection_mastery : public AuraScript
     void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
         Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         if (Aura* aura = caster->GetAura(MASTERY_WARLOCK_FEL_BLOOD))
         {
             int32 amount = aura->GetEffect(EFFECT_0)->GetAmount() + caster->ToPlayer()->GetMastery();
@@ -4306,6 +4413,9 @@ class spell_warl_demonic_thirst : public AuraScript
 
     void HandleEffectProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
+        if (!GetCaster() || GetCaster()->isDead())
+            return;
+
         GetCaster()->ToPlayer()->ModifySpellCooldown(SPELL_WARLOCK_DEMONIC_PROTECTION, aurEff->GetAmount());
     }
 
@@ -4569,6 +4679,8 @@ class spell_warl_demonbolt : public SpellScript
 
         if (Player* player = caster->ToPlayer())
         {
+            //player->EnergizeBySpell(caster, SPELL_WARLOCK_DEMONBOLT, GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(caster), POWER_ENERGY);
+
             if (Aura* aura = caster->GetAura(SPELL_WARLOCK_DEMONIC_CORE_BUFF))
             {
                 aura->ModCharges(-1);
@@ -4812,8 +4924,6 @@ class spell_warl_demonic_devastation_damage : public SpellScript
         caster->CastSpell(caster, SPELL_WARLOCK_DEMONIC_DEVASTATION_HEAL, TRIGGERED_FULL_MASK);
 
         int32 damage = GetHitDamage();
-
-
 
         SetHitDamage(damage);
     }
