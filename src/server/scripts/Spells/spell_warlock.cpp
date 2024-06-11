@@ -2114,18 +2114,22 @@ class spell_warlock_implosion : public SpellScript
         if (!target || target->isDead())
             return;
 
-        for (auto itr = player->m_Controlled.begin(); itr != player->m_Controlled.end(); ++itr)
-        {
-            if (Unit* pet = *itr)
-            {
-                if (pet->isDead())
-                    return;
+        auto summonedUnits = player->m_Controlled;
 
-                if (pet->GetEntry() == GUARDIAN_WARLOCK_WILD_IMP)
+        for (auto const& unit : summonedUnits)
+        {
+            if (unit->isDead())
+                continue;
+
+            if (unit->GetEntry() == GUARDIAN_WARLOCK_WILD_IMP)
+            {
+                unit->CastSpell(target, SPELL_WARLOCK_IMPLOSSION, true, nullptr, nullptr, player->GetGUID());
+
+                if (TempSummon* summon = unit->ToTempSummon())
                 {
-                    pet->CastSpell(target, SPELL_WARLOCK_IMPLOSSION, true, nullptr, nullptr, player->GetGUID());
-                    pet->ToTempSummon()->DespawnOrUnsummon();
+                    unit->ToTempSummon()->DespawnOrUnsummon();
                 }
+
             }
         }
     }
