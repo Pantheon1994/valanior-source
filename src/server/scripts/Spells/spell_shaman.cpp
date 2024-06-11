@@ -961,6 +961,46 @@ class spell_sha_earth_shield_heal : public SpellScript
     }
 };
 
+
+// 6474 - Earthbind Totem - Fix Talent: Earthen Power
+class spell_sha_ghost_wolf_aura : public AuraScript
+{
+    PrepareAuraScript(spell_sha_ghost_wolf_aura);
+
+    void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (caster->GetAura(1000000)) {
+            if (caster->getPowerType() != POWER_RUNIC_POWER)
+                caster->setPowerType(POWER_RUNIC_POWER);
+        }
+    }
+
+    void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (caster->GetAura(1000000)) {
+            if (caster->getPowerType() != POWER_RUNIC_POWER) {
+                caster->setPowerType(POWER_RUNIC_POWER);
+            }
+        }
+    }
+
+    void Register() override
+    {
+        AfterEffectRemove += AuraEffectRemoveFn(spell_sha_ghost_wolf_aura::HandleRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectApply += AuraEffectApplyFn(spell_sha_ghost_wolf_aura::Apply, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 // 6474 - Earthbind Totem - Fix Talent: Earthen Power
 class spell_sha_earthbind_totem : public AuraScript
 {
@@ -4910,4 +4950,5 @@ void AddSC_shaman_spell_scripts()
     RegisterSpellScript(spell_sha_liquid_magma_eruption);
     RegisterSpellScript(spell_sha_earth_shock);
     RegisterSpellScript(spell_sha_earthquake);
+    RegisterSpellScript(spell_sha_ghost_wolf_aura);
 }
