@@ -5625,7 +5625,7 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warl_nether_portal_proc);
     RegisterSpellScript(spell_warlock_summon_nether_portal);
     RegisterSpellScript(spell_warl_pit_lord_scaling);
-    //RegisterSpellScript(spell_warlock_implosion);
+    RegisterSpellScript(spell_warlock_implosion);
     RegisterSpellScript(spell_warl_power_siphon);
     RegisterSpellScript(spell_warlock_summon_gargoyle);
     RegisterSpellScript(spell_warl_havoc);
