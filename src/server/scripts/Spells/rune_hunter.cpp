@@ -1300,10 +1300,12 @@ class rune_hunter_trick_shots : public AuraScript
 
         GetCaster()->CastSpell(GetCaster(), RUNE_HUNTER_TRICK_SHOTS_LISTENER, TRIGGERED_FULL_MASK);
 
-        Aura* listener = GetCaster()->GetAura(RUNE_HUNTER_TRICK_SHOTS_LISTENER);
+        if (Aura* listener = GetCaster()->GetAura(RUNE_HUNTER_TRICK_SHOTS_LISTENER))
+        {
+            if (listener->GetStackAmount() < 3)
+                return;
+        }
 
-        if (listener->GetStackAmount() < 3)
-            return;
 
         GetCaster()->AddAura(buffAura, GetCaster());
     }
