@@ -517,7 +517,7 @@ struct npc_pet_warlock_wildimp : public ScriptedAI
                 {
                     if (Unit* target = owner->GetSelectedUnit())
                     {
-                        if (me->CanCreatureAttack(target))
+                        if (me->CanCreatureAttack(target) && owner->GetGUID() != target->GetGUID())
                         {
                             me->CastSpell(target, SPELL_WILDIMP_FIREBOLT);
                         }
