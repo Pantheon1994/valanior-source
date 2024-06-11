@@ -52,8 +52,8 @@ public:
         if (!reciever)
             return;
 
-        if (healer->GetTypeId() == TYPEID_PLAYER)
-            CombatLogManager::RecordLog(healer, reciever, gain, spellInfo, true);
+        //if (healer->GetTypeId() == TYPEID_PLAYER)
+            //CombatLogManager::RecordLog(healer, reciever, gain, spellInfo, true);
     }
 
     void OnDamage(Unit* attacker, Unit* victim, uint32& damage, SpellInfo const* spellProto)
@@ -65,8 +65,8 @@ public:
         if (!victim)
             return;
 
-        if(attacker->GetTypeId() == TYPEID_PLAYER)
-            CombatLogManager::RecordLog(attacker, victim, damage, spellProto, false);
+        //if(attacker->GetTypeId() == TYPEID_PLAYER)
+           // CombatLogManager::RecordLog(attacker, victim, damage, spellProto, false);
     }
 };
 
