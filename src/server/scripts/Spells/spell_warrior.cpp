@@ -673,7 +673,7 @@ class spell_warr_bloodthirst : public SpellScript
         }
 
         if (Aura* aura = GetCaster()->GetAura(TALENT_WARRIOR_POWERFUL_BLOODTHIRST))
-            if (GetExplTargetUnit()->HealthBelowPct(35))
+            if (GetHitUnit()->HealthBelowPct(35))
                 ApplyPct(damage, aura->GetEffect(EFFECT_0)->GetAmount());
 
         SetHitDamage(damage);
