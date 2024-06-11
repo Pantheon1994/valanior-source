@@ -2026,11 +2026,11 @@ class rune_dk_korpskrieg : public SpellScript
         if (!runeAura)
             return;
 
-        for (Unit::ControlSet::const_iterator itr = player->m_Controlled.begin(); itr != player->m_Controlled.end(); ++itr)
-        {
-            Unit* undeadPet = (*itr);
+        auto summonedUnits = player->m_Controlled;
 
-            if (!undeadPet || !undeadPet->IsAlive())
+        for (auto const& undeadPet : summonedUnits)
+        {
+            if (!undeadPet || undeadPet->isDead())
                 continue;
 
             if (undeadPet->GetEntry() == 24207 && undeadPet->IsWithinDist(player, 100.0f, false))
