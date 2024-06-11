@@ -4679,7 +4679,7 @@ class spell_warl_demonbolt : public SpellScript
 
         if (Player* player = caster->ToPlayer())
         {
-            //player->EnergizeBySpell(caster, SPELL_WARLOCK_DEMONBOLT, GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(caster), POWER_ENERGY);
+            player->EnergizeBySpell(caster, SPELL_WARLOCK_DEMONBOLT, GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(caster), POWER_ENERGY);
 
             if (Aura* aura = caster->GetAura(SPELL_WARLOCK_DEMONIC_CORE_BUFF))
             {
