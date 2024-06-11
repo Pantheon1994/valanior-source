@@ -1606,7 +1606,7 @@ class spell_warl_unstable_affliction : public AuraScript
         if (!caster || caster->isDead())
             return;
 
-        caster->EnergizeBySpell(caster, SPELL_WARLOCK_UNSTABLE_AFFLICTION, GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(caster), POWER_ENERGY);
+        caster->EnergizeBySpell(caster, SPELL_WARLOCK_UNSTABLE_AFFLICTION, GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(caster), POWER_ENERGY);
     }
 
     void HandleDispel(DispelInfo* dispelInfo)
@@ -5621,7 +5621,7 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warl_nether_portal_proc);
     RegisterSpellScript(spell_warlock_summon_nether_portal);
     RegisterSpellScript(spell_warl_pit_lord_scaling);
-    RegisterSpellScript(spell_warlock_implosion);
+    //RegisterSpellScript(spell_warlock_implosion);
     RegisterSpellScript(spell_warl_power_siphon);
     RegisterSpellScript(spell_warlock_summon_gargoyle);
     RegisterSpellScript(spell_warl_havoc);

@@ -526,6 +526,27 @@ class spell_dru_dash : public AuraScript
     }
 };
 
+class spell_dru_dash_transform : public SpellScript
+{
+    PrepareSpellScript(spell_dru_dash_transform);
+
+    void HandleCast()
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (caster->GetShapeshiftForm() != FORM_CAT)
+            caster->CastSpell(caster, SPELL_DRUID_CAT_FORM, TRIGGERED_FULL_MASK);
+    }
+
+    void Register() override
+    {
+        OnCast += SpellCastFn(spell_dru_dash_transform::HandleCast);
+    }
+};
+
 class spell_dru_dash_remove : public AuraScript
 {
     PrepareAuraScript(spell_dru_dash_remove);
@@ -3300,6 +3321,7 @@ void AddSC_druid_spell_scripts()
     //RegisterSpellScript(spell_dru_berserk);
     RegisterSpellScript(spell_dru_dash);
     RegisterSpellScript(spell_dru_dash_remove);
+    RegisterSpellScript(spell_dru_dash_transform);
     RegisterSpellScript(spell_dru_enrage);
     RegisterSpellScript(spell_dru_glyph_of_starfire);
     RegisterSpellScript(spell_dru_idol_lifebloom);
