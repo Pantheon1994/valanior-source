@@ -49,8 +49,6 @@ enum SpecMageSpells
     SPELL_TELEPORT_DARNASSUS = 3565,
     SPELL_TELEPORT_EXODAR = 32271,
     SPELL_TELEPORT_IRONFORGE = 3562,
-    SPELL_TELEPORT_ORGRIMMAR = 3567,
-
 };
 
 void LearningSpellsManager::PreloadAllSpells()
