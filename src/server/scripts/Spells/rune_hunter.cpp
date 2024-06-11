@@ -2915,10 +2915,17 @@ class rune_hunter_legacy_of_the_windrunner : public AuraScript
         if (!victim || victim->isDead())
             return;
 
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         int32 duration = GetAura()->GetEffect(EFFECT_1)->GetAmount();
 
-        GetCaster()->CastSpell(victim, SPELL_HUNTER_WIND_ARROW, TRIGGERED_FULL_MASK);
-        victim->GetAura(SPELL_HUNTER_WIND_ARROW)->SetDuration(duration);
+        caster->CastSpell(victim, SPELL_HUNTER_WIND_ARROW, TRIGGERED_FULL_MASK);
+
+        if (Aura* aura = victim->GetAura(SPELL_HUNTER_WIND_ARROW))
+            aura->SetDuration(duration);
     }
 
     void Register()
