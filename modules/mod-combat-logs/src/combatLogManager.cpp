@@ -64,7 +64,7 @@ void CombatLogManager::EndCombat(Player* player)
     CharacterDatabase.DirectExecute(stmt);
     uint64 maxCombatLogId = GetMaxIdCombatLog();
 
-    if (!combatLog->spellsCast.empty())
+    /*if (!combatLog->spellsCast.empty())
     {
         for (auto const& spell : combatLog->spellsCast)
         {
@@ -76,7 +76,7 @@ void CombatLogManager::EndCombat(Player* player)
             stmt->SetData(3, now_time_t);
             CharacterDatabase.Execute(stmt);
         }
-    }
+    }*/
 
     combatInfo.erase(it);
 }
