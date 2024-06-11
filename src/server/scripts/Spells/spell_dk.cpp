@@ -3133,17 +3133,6 @@ class spell_dk_epidemic : public SpellScript
 {
     PrepareSpellScript(spell_dk_epidemic);
 
-    SpellCastResult CheckCast()
-    {
-        if (Unit* target = GetExplTargetUnit())
-        {
-            if (target->HasAura(SPELL_DK_VIRULENT_PLAGUE))
-                return SPELL_CAST_OK;
-        }
-
-        return SPELL_FAILED_BAD_TARGETS;
-    }
-
     void FindTargets(std::list<WorldObject*>& targets)
     {
         Unit* caster = GetCaster();
@@ -3162,7 +3151,6 @@ class spell_dk_epidemic : public SpellScript
 
     void Register() override
     {
-        OnCheckCast += SpellCheckCastFn(spell_dk_epidemic::CheckCast);
         OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dk_epidemic::FindTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
     }
 };
