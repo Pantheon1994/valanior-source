@@ -2922,9 +2922,7 @@ class rune_hunter_legacy_of_the_windrunner : public AuraScript
 
         int32 duration = GetAura()->GetEffect(EFFECT_1)->GetAmount();
 
-        caster->CastSpell(victim, SPELL_HUNTER_WIND_ARROW, TRIGGERED_FULL_MASK);
-
-        if (Aura* aura = victim->GetAura(SPELL_HUNTER_WIND_ARROW))
+        if (Aura* aura = caster->AddAura(SPELL_HUNTER_WIND_ARROW, victim))
             aura->SetDuration(duration);
     }
 
