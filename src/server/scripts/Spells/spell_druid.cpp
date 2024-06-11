@@ -2474,9 +2474,9 @@ class spell_dru_ironfur : public SpellScript
         {
             if (caster->HasAura(SPELL_DRUID_URSINE_ADEPT))
             {
-                int32 remainingDuration = aura->GetDuration();
+                int32 duration = std::min<int32>(aura->GetMaxDuration(), aura->GetDuration() + increaseDuration);
                 caster->CastCustomSpell(SPELL_DRUID_IRONFUR_ARMOR, SPELLVALUE_BASE_POINT0, armor, caster, TRIGGERED_FULL_MASK);
-                aura->SetDuration(remainingDuration + increaseDuration);
+                aura->SetDuration(duration);
             }
             else
             {
