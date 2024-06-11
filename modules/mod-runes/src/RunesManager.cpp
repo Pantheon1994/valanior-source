@@ -1443,7 +1443,6 @@ void RunesManager::AddRuneToSlot(Player* player, Rune rune)
 
     if (activeId <= 0)
     {
-        LOG_ERROR("Error", "Could not find the Active Loadout.");
         return;
     }
 
@@ -1489,7 +1488,6 @@ void RunesManager::RemoveRuneFromSlots(Player* player, Rune rune)
 
     if (match == m_SlotRune.end())
     {
-        LOG_ERROR("Error", "Could not find the Rune slot.");
         return;
     }
 

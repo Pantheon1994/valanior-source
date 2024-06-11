@@ -217,8 +217,6 @@ class spell_activate_specialization : public SpellScript
         sEluna->OnActivateSpec(player, "Specialization " + newSpec.name + " successfully activated!", true, newSpecId);
         player->UpdateMastery();
         player->SaveToDB(false, false);
-
-        player->resetTalents();
     }
 
     void Register() override
