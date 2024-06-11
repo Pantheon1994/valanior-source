@@ -1423,145 +1423,6 @@ class spell_hun_predators_thirst : public AuraScript
     }
 };
 
-class spell_hun_aspect_predator : public AuraScript
-{
-    PrepareAuraScript(spell_hun_aspect_predator);
-
-    int32 originalAmount;
-
-    void HandleProc(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        Unit* pet = GetCaster()->ToPlayer()->GetPet();
-        if (!pet)
-            return;
-
-        AuraEffect* predatorAuraEffect = pet->GetAuraEffect(80127, EFFECT_0);
-        if (!predatorAuraEffect)
-            return;
-
-        int32 increaseAmount = GetAura()->GetEffect(EFFECT_1)->GetAmount();
-
-        originalAmount = predatorAuraEffect->GetAmount();
-        int32 newPathAmount = CalculatePct(originalAmount, increaseAmount) + originalAmount;
-        predatorAuraEffect->ChangeAmount(newPathAmount);
-    }
-
-    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        Unit* pet = GetCaster()->ToPlayer()->GetPet();
-        if (!pet)
-            return;
-
-        AuraEffect* predatorAuraEffect = pet->GetAuraEffect(80127, EFFECT_0);
-        if (!predatorAuraEffect)
-            return;
-
-        predatorAuraEffect->ChangeAmount(10);
-    }
-
-    void Register() override
-    {
-        OnEffectApply += AuraEffectApplyFn(spell_hun_aspect_predator::HandleProc, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_hun_aspect_predator::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-class spell_hun_aspect_endurance : public AuraScript
-{
-    PrepareAuraScript(spell_hun_aspect_endurance);
-
-    int32 originalAmount;
-
-    void HandleProc(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        Unit* pet = GetCaster()->ToPlayer()->GetPet();
-
-        if (!pet || pet->isDead())
-            return;
-
-        AuraEffect* enduranceAuraEffect = pet->GetAuraEffect(80126, EFFECT_0);
-        if (!enduranceAuraEffect)
-            return;
-
-        int32 increaseAmount = GetAura()->GetEffect(EFFECT_1)->GetAmount();
-
-        originalAmount = enduranceAuraEffect->GetAmount();
-        int32 newEnduranceAmount = CalculatePct(originalAmount, increaseAmount) + originalAmount;
-        enduranceAuraEffect->ChangeAmount(newEnduranceAmount);
-    }
-
-    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        if (GetCaster() || GetCaster()->isDead())
-            return;
-
-        Unit* pet = GetCaster()->ToPlayer()->GetPet();
-
-        if (!pet || pet->isDead())
-            return;
-
-        AuraEffect* enduranceAuraEffect = pet->GetAuraEffect(80126, EFFECT_0);
-
-        if (!enduranceAuraEffect)
-            return;
-
-        enduranceAuraEffect->ChangeAmount(5);
-    }
-
-    void Register() override
-    {
-        OnEffectApply += AuraEffectApplyFn(spell_hun_aspect_endurance::HandleProc, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_hun_aspect_endurance::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-class spell_hun_aspect_path : public AuraScript
-{
-    PrepareAuraScript(spell_hun_aspect_path);
-
-    int32 originalAmount;
-
-    void HandleProc(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        Unit* pet = GetCaster()->ToPlayer()->GetPet();
-
-        if (!pet || pet->isDead())
-            return;
-
-        AuraEffect* pathAuraEffect = pet->GetAuraEffect(80127, EFFECT_0);
-
-        if (!pathAuraEffect)
-            return;
-
-        int32 increaseAmount = GetAura()->GetEffect(EFFECT_1)->GetAmount();
-
-        originalAmount = pathAuraEffect->GetAmount();
-        int32 newPathAmount = CalculatePct(originalAmount, increaseAmount) + originalAmount;
-        pathAuraEffect->ChangeAmount(newPathAmount);
-    }
-
-    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        Unit* pet = GetCaster()->ToPlayer()->GetPet();
-
-        if (!pet || pet->isDead())
-            return;
-
-        AuraEffect* pathAuraEffect = pet->GetAuraEffect(80127, EFFECT_0);
-
-        if (!pathAuraEffect)
-            return;
-
-        pathAuraEffect->ChangeAmount(8);
-    }
-
-    void Register() override
-    {
-        OnEffectApply += AuraEffectApplyFn(spell_hun_aspect_path::HandleProc, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_hun_aspect_path::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
 class spell_hun_aspect_cheetah : public AuraScript
 {
     PrepareAuraScript(spell_hun_aspect_cheetah);
@@ -1608,7 +1469,7 @@ class spell_hun_bestial_apply : public SpellScript
         player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_BUFF, pet);
         player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_BUFF, player);
 
-        pet->CastCustomSpell(SPELL_HUNTER_BESTIAL_WRATH_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr, player->GetGUID());
+        pet->CastCustomSpell(SPELL_HUNTER_BESTIAL_WRATH_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr);
 
         auto summonedUnits = player->m_Controlled;
         for (auto const& unit : summonedUnits)
@@ -1619,7 +1480,7 @@ class spell_hun_bestial_apply : public SpellScript
             if (unit->GetCharmInfo() && unit->GetEntry() == 600612)
             {
                 player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_BUFF, unit);
-                unit->CastCustomSpell(SPELL_HUNTER_BESTIAL_WRATH_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr, player->GetGUID());
+                unit->CastCustomSpell(SPELL_HUNTER_BESTIAL_WRATH_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr);
             }
         }
     }
@@ -1757,13 +1618,13 @@ class spell_hun_kill_command : public SpellScript
         int32 damage = CalculatePct(ap, ratio);
 
         pet->Attack(target, true);
-        pet->CastCustomSpell(SPELL_HUNTER_KILL_COMMAND_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr, caster->GetGUID());
+        pet->CastCustomSpell(SPELL_HUNTER_KILL_COMMAND_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr);
 
         auto summonedUnits = caster->m_Controlled;
 
         for (auto const& unit : summonedUnits)
             if (unit->GetCharmInfo() && unit->GetEntry() == 600612)
-                unit->CastCustomSpell(SPELL_HUNTER_KILL_COMMAND_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr, caster->GetGUID());
+                unit->CastCustomSpell(SPELL_HUNTER_KILL_COMMAND_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr);
 
         if (Aura* aura = caster->GetAura(SPELL_HUNTER_TALENT_TIP_OF_SPEAR))
             caster->CastSpell(caster, SPELL_HUNTER_TALENT_TIP_OF_SPEAR_BUFF, true);
@@ -4294,9 +4155,6 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_intimidation);
     RegisterSpellScript(spell_hun_bestial_wrath);
     RegisterSpellScript(spell_hun_predators_thirst);
-    RegisterSpellScript(spell_hun_aspect_predator);
-    RegisterSpellScript(spell_hun_aspect_endurance);
-    RegisterSpellScript(spell_hun_aspect_path);
     RegisterSpellScript(spell_hun_aspect_cheetah);
     RegisterSpellScript(spell_hun_bestial_apply);
     RegisterSpellScript(spell_hun_black_arrow_reset);

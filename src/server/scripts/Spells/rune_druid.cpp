@@ -3956,7 +3956,8 @@ class rune_druid_guardian_of_elune : public AuraScript
         if (Aura* ironFur = caster->GetAura(SPELL_IRONFUR_AURA))
         {
             int32 increase = aurEff->GetAmount() + ironFur->GetDuration();
-            ironFur->SetDuration(increase);
+            int32 duration = std::min<int32>(ironFur->GetMaxDuration(), ironFur->GetDuration() + increase);
+            ironFur->SetDuration(duration);
         }
     }
 
@@ -4061,11 +4062,11 @@ class rune_druid_layered_mane : public SpellScript
         if (random > procChance)
             return;
 
-        Aura* ironfur = caster->GetAura(SPELL_IRONFUR_AURA);
-        int32 duration = ironfur->GetDuration();
-        ironfur->ModStackAmount(1);
-        ironfur->SetDuration(duration);
-        caster->RemoveSpellCooldown(SPELL_FRENZIED_REGENERATION, true);
+        if (Aura* ironfur = caster->GetAura(SPELL_IRONFUR_AURA))
+        {
+            ironfur->ModStackAmount(1);
+            caster->RemoveSpellCooldown(SPELL_FRENZIED_REGENERATION, true);
+        }
     }
 
     void Register() override

@@ -594,14 +594,15 @@ class spell_spinning_grip : public SpellScript
         {
             for (auto const& target : targets)
                 if (Unit* unit = target->ToUnit())
-                    unit->CastSpell(GetCaster(), 200394, TRIGGERED_FULL_MASK);
+                    if (unit->IsAlive())
+                        unit->CastSpell(GetCaster(), 200394, TRIGGERED_FULL_MASK);
         }
     }
 
 
     void Register() override
     {
-        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_spinning_grip::FindTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+        OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_spinning_grip::FindTargets, EFFECT_1, TARGET_UNIT_SRC_AREA_ENEMY);
     }
 };
 
