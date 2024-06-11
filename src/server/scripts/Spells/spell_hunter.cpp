@@ -122,6 +122,7 @@ enum HunterSpells
     SPELL_HUNTER_SPEARHEAD_BUFF = 80208,
     SPELL_HUNTER_FLANKING_STRIKE_PET_DAMAGE = 80198,
     SPELL_HUNTER_TWILIGHT_PIERCER = 85006,
+    SPELL_HUNTER_ASPECT_OF_THE_BEAST_BUFF = 80247,
 
     // Talents
     TALENT_HUNTER_SHADOW_CLOAK = 85034,
@@ -1463,7 +1464,7 @@ class spell_hun_bestial_apply : public SpellScript
             return;
 
         float ap = GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK);
-        int32 ratio = sSpellMgr->AssertSpellInfo(SPELL_HUNTER_BESTIAL_WRATH_DAMAGE)->GetEffect(EFFECT_1).CalcValue(player);
+        int32 ratio = sSpellMgr->AssertSpellInfo(SPELL_HUNTER_BESTIAL_WRATH_DAMAGE)->GetEffect(EFFECT_0).CalcValue(player);
         int32 damage = CalculatePct(ap, ratio);
 
         player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_BUFF, pet);
@@ -1799,6 +1800,48 @@ class spell_hun_bear_applier : public AuraScript
     {
         OnEffectApply += AuraEffectApplyFn(spell_hun_bear_applier::HandleProc, EFFECT_1, SPELL_AURA_MOD_ATTACK_POWER_PCT, AURA_EFFECT_HANDLE_REAL);
         OnEffectRemove += AuraEffectRemoveFn(spell_hun_bear_applier::HandleRemove, EFFECT_1, SPELL_AURA_MOD_ATTACK_POWER_PCT, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+class spell_hun_beast_applier : public AuraScript
+{
+    PrepareAuraScript(spell_hun_beast_applier);
+
+    void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Player* player = GetCaster()->ToPlayer();
+
+        if (!player || !player->IsAlive())
+            return;
+
+        Unit* pet = player->GetPet();
+
+        if (!pet || pet->isDead())
+            return;
+
+        player->AddAura(SPELL_HUNTER_ASPECT_OF_THE_BEAST_BUFF, pet);
+    }
+
+    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Player* player = GetCaster()->ToPlayer();
+
+        if (!player || !player->IsAlive())
+            return;
+
+        Unit* pet = player->GetPet();
+
+        if (!pet || pet->isDead())
+            return;
+
+        if (Aura* aura = pet->GetAura(SPELL_HUNTER_ASPECT_OF_THE_BEAST_BUFF))
+            aura->Remove();
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_hun_beast_applier::HandleApply, EFFECT_0, SPELL_AURA_ADD_FLAT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_hun_beast_applier::HandleRemove, EFFECT_0, SPELL_AURA_ADD_FLAT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
@@ -4227,6 +4270,7 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_animal_companion_check);
     RegisterSpellScript(spell_hun_expert_of_the_wilds);
     RegisterSpellScript(spell_hun_withering_fire_energy);
+    RegisterSpellScript(spell_hun_beast_applier);
 
     //new Hunter_AllMapScript();
     new npc_hunter_spell_stampeded();
