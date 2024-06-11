@@ -342,6 +342,7 @@ public:
     {
         LOG_INFO("server.loading", "Re-Loading config settings...");
         sWorld->LoadConfigSettings(true);
+        sWorld->InitializeConfigValues();
         sMapMgr->InitializeVisibilityDistanceInfo();
         handler->SendGlobalGMSysMessage("World config settings reloaded.");
         return true;

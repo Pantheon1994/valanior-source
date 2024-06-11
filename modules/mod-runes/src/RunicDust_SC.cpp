@@ -34,13 +34,17 @@ public:
 
     void AddRunicDustToLoot(uint32 minValue, Loot* loot)
     {
-        LootStoreItem runicDust(ITEM_RUNIC_DUST, 0, 100, 0, LOOT_MODE_DEFAULT, 0, minValue, minValue);
-
+        float multiplier = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_MULTIPLIER");
+        int augmentation = minValue * multiplier / 100;
+        uint32 value = minValue + augmentation;
+        LootStoreItem runicDust(ITEM_RUNIC_DUST, 0, 100, 0, LOOT_MODE_DEFAULT, 0, value, value);
         loot->AddItem(runicDust);
     }
 
     void AddRunicEssenceToLoot(uint32 minValue, Loot* loot)
     {
+
+
         LootStoreItem runicEssence(ITEM_RUNIC_ESSENCE, 0, 100, 0, LOOT_MODE_DEFAULT, 0, minValue, minValue);
         loot->AddItem(runicEssence);
     }
@@ -169,8 +173,31 @@ public:
     }
 };
 
+class RunicDust_PlayerScripts : public PlayerScript
+{
+public:
+    RunicDust_PlayerScripts() : PlayerScript("RunicDust_PlayerScripts") { }
+
+
+    void OnQuestRewardItem(Player* player, Item* item, uint32 count)
+    {
+        uint32 entry = item->GetEntry();
+
+        if (entry == ITEM_RUNIC_DUST)
+        {
+            float multiplier = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_MULTIPLIER");
+            int augmentation = count * multiplier / 100;
+
+            player->AddItem(ITEM_RUNIC_DUST, augmentation);
+
+        }
+    }
+
+};
+
 
 void AddSC_RunicDust_Scripts()
 {
     new RunicDust_MiscScript();
+    new RunicDust_PlayerScripts();
 }
