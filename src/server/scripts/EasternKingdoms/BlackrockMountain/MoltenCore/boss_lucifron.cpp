@@ -25,6 +25,7 @@ enum Spells
     SPELL_LUCIFRON_CURSE           = 19703,
     SPELL_SHADOW_SHOCK             = 20603,
     SPELL_WELL_OF_SOUL             = 2000061,
+    SPELL_IGNITED                  = 2000068,
 
     // ads
     SPELL_DOMINATE_MIND = 20604,
@@ -40,6 +41,7 @@ enum Events
     EVENT_LUCIFRON_CURSE    = 2,
     EVENT_SHADOW_SHOCK      = 3,
     EVENT_SHADOW_MARK       = 4,
+    EVENT_IGNITED,
 
     // Adds
     EVENT_DOMINATE_MIND,
@@ -68,6 +70,7 @@ public:
         void EnterCombat(Unit* /*victim*/) override
         {
             _EnterCombat();
+            events.ScheduleEvent(EVENT_IGNITED, 12000);
             events.ScheduleEvent(EVENT_IMPENDING_DOOM, urand(6000, 11000));
             events.ScheduleEvent(EVENT_SHADOW_SHOCK, 5000);
 
@@ -80,6 +83,12 @@ public:
         {
             switch (eventId)
             {
+                case EVENT_IGNITED:
+                {
+                    DoCastVictim(SPELL_IGNITED);
+                    events.RepeatEvent(12000);
+                    break;
+                }
                 case EVENT_IMPENDING_DOOM:
                 {
                     DoCastRandomTarget(SPELL_IMPENDING_DOOM);

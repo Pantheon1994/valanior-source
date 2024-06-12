@@ -1820,11 +1820,6 @@ class spell_warlock_summon_darkhound : public SpellScript
         if (!player || player->isDead())
             return;
 
-        Unit* target = GetExplTargetUnit();
-
-        if (!target || target->isDead())
-            return;
-
         int32 totalSummons = GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(player);
 
         for (size_t i = 0; i < totalSummons; i++)
@@ -2019,11 +2014,6 @@ class spell_warlock_summon_felboar : public SpellScript
             return;
 
         int32 totalSummons = GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(player);
-
-        Unit* target = GetExplTargetUnit();
-
-        if (!target || target->isDead())
-            return;
 
         for (size_t i = 0; i < totalSummons; i++)
         {

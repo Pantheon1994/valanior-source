@@ -63,14 +63,14 @@ public:
     struct boss_garrAI : public BossAI
     {
         boss_garrAI(Creature* creature) : BossAI(creature, DATA_GARR),
-            massEruptionTimer(600000)   // 10 mins
+            massEruptionTimer(300000)   // 5 mins
         {
         }
 
         void Reset() override
         {
             _Reset();
-            massEruptionTimer = 600000;
+            massEruptionTimer = 300000;
         }
 
         void EnterCombat(Unit* /*attacker*/) override
@@ -80,7 +80,7 @@ public:
             events.ScheduleEvent(EVENT_MAGMA_SHACKLES, 10000);
             events.ScheduleEvent(EVENT_SMALL_ERUPTION, 32000);
             events.ScheduleEvent(EVENT_EARTHQUAKE, 12000);
-            massEruptionTimer = 600000; // 10 mins
+            massEruptionTimer = 300000; //  min
         }
 
         void UpdateAI(uint32 diff) override
