@@ -4435,18 +4435,18 @@ class spell_warl_demon_spikes : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (!GetCaster() || GetCaster()->isDead())
+        Unit* target = eventInfo.GetActor();
+        if (!target || !target->IsAlive())
             return false;
 
-        if (Unit* caster = eventInfo.GetActor())
-        {
-            if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0 && eventInfo.GetSpellInfo() && caster->GetGUID() == GetCaster()->GetGUID() && GetCaster()->HasAura(SPELL_WARLOCK_DEMONIC_PROTECTION))
-                return true;
-        }
-        else
+        Unit* caster = eventInfo.GetActionTarget();
+        if (!caster || !caster->IsAlive())
             return false;
 
-        return false;
+        if (!GetCaster()->HasAura(SPELL_WARLOCK_DEMONIC_PROTECTION))
+            return false;
+
+        return target != caster;
     }
 
     void HandleEffectProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)

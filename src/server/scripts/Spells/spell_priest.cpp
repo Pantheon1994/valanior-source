@@ -149,6 +149,7 @@ enum PriestSpells
     TALENT_PRIEST_PAIN_AND_SUFFERING = 47580,
     TALENT_PRIEST_TWISTED_FAITH = 47573,
     TALENT_PRIEST_HOLY_BURST = 86278,
+    TALENT_PRIEST_TIMELY_FAITH = 86293,
 
     // Runes
     RUNE_PRIEST_CRYSTALLINE_REFLECTION_DAMAGE = 900366,
@@ -3195,7 +3196,7 @@ class spell_pri_holy_flame : public SpellScript
 
     void Register() override
     {
-        OnEffectHitTarget += SpellEffectFn(spell_pri_holy_flame::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_pri_holy_flame::HandleDummy, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
     }
 };
 
@@ -3533,8 +3534,9 @@ class spell_pri_surprise_burst : public AuraScript
     {
         Player* caster = GetCaster()->ToPlayer();
 
-        if (!caster)
+        if (!caster || caster->isDead())
             return;
+
         int32 holyFlameChance = aurEff->GetAmount();
         int32 holyStrikeChance = aurEff->GetBase()->GetEffect(EFFECT_1)->GetAmount();
 
@@ -3544,7 +3546,7 @@ class spell_pri_surprise_burst : public AuraScript
         {
             if (roll_chance_i(holyStrikeChance))
             {
-                caster->CastSpell(GetCaster(), TALENT_PRIEST_HOLY_BURST_PROC, TRIGGERED_FULL_MASK);
+                caster->CastSpell(caster, TALENT_PRIEST_HOLY_BURST_PROC, TRIGGERED_FULL_MASK);
                 caster->RemoveSpellCooldown(SPELL_PRIEST_HOLY_ERUPTION, true);
             }
         }
@@ -3552,7 +3554,7 @@ class spell_pri_surprise_burst : public AuraScript
         {
             if (roll_chance_i(holyFlameChance))
             {
-                caster->CastSpell(GetCaster(), TALENT_PRIEST_HOLY_BURST_PROC, TRIGGERED_FULL_MASK);
+                caster->CastSpell(caster, TALENT_PRIEST_HOLY_BURST_PROC, TRIGGERED_FULL_MASK);
                 caster->RemoveSpellCooldown(SPELL_PRIEST_HOLY_ERUPTION, true);
             }
         }
@@ -4569,6 +4571,14 @@ class spell_pri_prescience : public AuraScript
         if (!target || target->isDead())
             return;
 
+        if (Aura* timelyFaithTalent = caster->GetAuraOfRankedSpell(TALENT_PRIEST_TIMELY_FAITH))
+        {
+            int32 procChance = timelyFaithTalent->GetEffect(EFFECT_0)->GetAmount();
+
+            if (roll_chance_i(procChance))
+                caster->AddAura(TALENT_PRIEST_HOLY_BURST_PROC, caster);
+        }
+
         if (Aura* runeAura = GetFateMirrorAura(caster))
         {
             int32 procAura = runeAura->GetEffect(EFFECT_0)->GetAmount();
@@ -4609,11 +4619,6 @@ class spell_pri_prescience : public AuraScript
 
     void HandleRemoveEffect(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
-        Unit* caster = GetCaster();
-
-        if (!caster || caster->isDead())
-            return;
-
         Unit* target = GetUnitOwner();
 
         if (!target || target->isDead())
@@ -4622,8 +4627,8 @@ class spell_pri_prescience : public AuraScript
         // Remove Fate Mirror Rune Buff
         for (size_t i = 901558; i < 901564; i++)
         {
-            if (caster->HasAura(i))
-                caster->RemoveAura(i);
+            if (target->HasAura(i))
+                target->RemoveAura(i);
         }
     }
 
