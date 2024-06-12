@@ -7066,7 +7066,8 @@ void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply,
         {
             AuraApplicationMapBounds range = GetAppliedAuras().equal_range(spellInfo->Id);
             for (AuraApplicationMap::const_iterator itr = range.first; itr != range.second; ++itr)
-                if (!item || itr->second->GetBase()->GetCastItemGUID() == item->GetGUID())
+                if(Aura* aura = itr->second->GetBase())
+                if (!item || aura->GetCasterGUID() == item->GetGUID())
                     return;
         }
 

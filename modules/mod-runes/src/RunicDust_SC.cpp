@@ -141,7 +141,7 @@ public:
                 case LOCK_KEY_SKILL:
                     uint32 skillId = SkillByLockType(LockType(lock->Index[j]));
 
-                    if (skillId == SKILL_HERBALISM || skillId == SKILL_MINING || skillId == SKILL_FISHING)
+                    if (skillId == SKILL_HERBALISM || skillId == SKILL_MINING)
                     {
                         if (uint32 pureSkillValue = lootOwner->GetPureSkillValue(skillId))
                         {
