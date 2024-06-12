@@ -86,7 +86,7 @@ void AutoBalanceManager::InitializeScalingRaid()
         uint32 difficulty = fields[1].Get<uint32>();
         double healthModifier = fields[2].Get<double>();
         double damageModifier = fields[3].Get<double>();
-        
+
         AutobalanceScalingInfo info = { damageModifier, healthModifier, 0, 0 };
 
         m_ScalingDungeonDifficulty[mapId].insert(std::make_pair(Difficulty(difficulty), info));
@@ -239,46 +239,51 @@ float AutoBalanceManager::GetPlayerSpecializationHealthValueForScaling(Player* p
         return 0.25;
 
     switch (specId) {
-        case WARRIOR_ARMS: return 0.25;
-        case WARRIOR_FURY: return 0.25;
-        case WARRIOR_PROTECTION: return 0.15;
-        case WARRIOR_HOPLITE: return 0.25;
-        case MAGE_ARCANE: return 0.25;
-        case MAGE_FIRE: return 0.25;
-        case MAGE_FROST: return 0.25;
-        case MAGE_SPELLBLADE: return 0.25;
-        case DK_BLOOD: return 0.15;
-        case DK_FROST: return 0.25;
-        case DK_UNHOLY: return 0.25;
-        case DK_SOULWEAVER: return 0.10;
-        case DRUID_BALANCE: return 0.25;
-        case DRUID_FERAL: return 0.25;
-        case DRUID_RESTO: return 0.10;
-        case DRUID_GUARDIAN: return 0.15;
-        case HUNTER_BEAST: return 0.25;
-        case HUNTER_MARSKMANSHIP: return 0.25;
-        case HUNTER_SURVIVAL: return 0.25;
-        case HUNTER_DARK_RANGER: return 0.25;
-        case PALADIN_HOLY: return 0.10;
-        case PALADIN_PROTECTION: return 0.15;
-        case PALADIN_RETRIBUTION: return 0.25;
-        case PALADIN_INQUISITOR: return 0.25;
-        case ROGUE_ASSASSINATION: return 0.25;
-        case ROGUE_COMBAT: return 0.25;
-        case ROGUE_SUBTLETY: return 0.25;
-        case ROGUE_OUTLAW: return 0.25;
-        case SHAMAN_ELEMENTAL: return 0.25;
-        case SHAMAN_ENCHANCEMENT: return 0.25;
-        case SHAMAN_RESTORATION: return 0.10;
-        case SHAMAN_SPIRIT_MASTER: return 0.25;
-        case WARLOCK_AFFLICTION: return 0.25;
-        case WARLOCK_DEMONOLOGY: return 0.25;
-        case WARLOCK_DESTRUCTION: return 0.25;
-        case WARLOCK_DEMONBOUND: return 0.15;
-        case PRIEST_DISCI: return 0.10;
-        case PRIEST_HOLY: return 0.10;
-        case PRIEST_SHADOW: return 0.25;
-        case PRIEST_ABSOLUTION: return 0.25;
+        // DPS
+    case WARRIOR_ARMS: return 0.25;
+    case WARRIOR_FURY: return 0.25;
+    case WARRIOR_HOPLITE: return 0.25;
+    case MAGE_ARCANE: return 0.25;
+    case MAGE_FIRE: return 0.25;
+    case MAGE_FROST: return 0.25;
+    case MAGE_SPELLBLADE: return 0.25;
+    case DK_FROST: return 0.25;
+    case DK_UNHOLY: return 0.25;
+    case DRUID_BALANCE: return 0.25;
+    case DRUID_FERAL: return 0.25;
+    case HUNTER_BEAST: return 0.25;
+    case HUNTER_MARSKMANSHIP: return 0.25;
+    case HUNTER_SURVIVAL: return 0.25;
+    case HUNTER_DARK_RANGER: return 0.25;
+    case PALADIN_RETRIBUTION: return 0.25;
+    case PALADIN_INQUISITOR: return 0.25;
+    case ROGUE_ASSASSINATION: return 0.25;
+    case ROGUE_COMBAT: return 0.25;
+    case ROGUE_SUBTLETY: return 0.25;
+    case ROGUE_OUTLAW: return 0.25;
+    case SHAMAN_ELEMENTAL: return 0.25;
+    case SHAMAN_ENCHANCEMENT: return 0.25;
+    case WARLOCK_AFFLICTION: return 0.25;
+    case WARLOCK_DEMONOLOGY: return 0.25;
+    case WARLOCK_DESTRUCTION: return 0.25;
+    case PRIEST_SHADOW: return 0.25;
+    case PRIEST_ABSOLUTION: return 0.25;
+
+        // Heal
+    case DK_SOULWEAVER: return 0.10;
+    case DRUID_RESTO: return 0.10;
+    case PALADIN_HOLY: return 0.10;
+    case SHAMAN_RESTORATION: return 0.10;
+    case PRIEST_DISCI: return 0.10;
+    case PRIEST_HOLY: return 0.10;
+
+        // Tank
+    case WARRIOR_PROTECTION: return 0.15;
+    case DK_BLOOD: return 0.15;
+    case DRUID_GUARDIAN: return 0.15;
+    case PALADIN_PROTECTION: return 0.15;
+    case SHAMAN_SPIRIT_MASTER: return 0.15;
+    case WARLOCK_DEMONBOUND: return 0.15;
     }
 
     return 0.25;
@@ -292,28 +297,22 @@ float AutoBalanceManager::GetPlayerSpecializationDamageValueForScaling(Player* p
         return 0.25;
 
     switch (specId) {
+        // DPS
     case WARRIOR_ARMS: return 0.10;
     case WARRIOR_FURY: return 0.10;
-    case WARRIOR_PROTECTION: return 0.30;
     case WARRIOR_HOPLITE: return 0.10;
     case MAGE_ARCANE: return 0.10;
     case MAGE_FIRE: return 0.10;
     case MAGE_FROST: return 0.10;
     case MAGE_SPELLBLADE: return 0.10;
-    case DK_BLOOD: return 0.30;
     case DK_FROST: return 0.10;
     case DK_UNHOLY: return 0.10;
-    case DK_SOULWEAVER: return 0.40;
     case DRUID_BALANCE: return 0.10;
     case DRUID_FERAL: return 0.10;
-    case DRUID_RESTO: return 0.40;
-    case DRUID_GUARDIAN: return 0.30;
     case HUNTER_BEAST: return 0.10;
     case HUNTER_MARSKMANSHIP: return 0.10;
     case HUNTER_SURVIVAL: return 0.10;
     case HUNTER_DARK_RANGER: return 0.10;
-    case PALADIN_HOLY: return 0.40;
-    case PALADIN_PROTECTION: return 0.30;
     case PALADIN_RETRIBUTION: return 0.10;
     case PALADIN_INQUISITOR: return 0.10;
     case ROGUE_ASSASSINATION: return 0.10;
@@ -322,16 +321,27 @@ float AutoBalanceManager::GetPlayerSpecializationDamageValueForScaling(Player* p
     case ROGUE_OUTLAW: return 0.10;
     case SHAMAN_ELEMENTAL: return 0.10;
     case SHAMAN_ENCHANCEMENT: return 0.10;
-    case SHAMAN_RESTORATION: return 0.40;
-    case SHAMAN_SPIRIT_MASTER: return 0.30;
     case WARLOCK_AFFLICTION: return 0.10;
     case WARLOCK_DEMONOLOGY: return 0.10;
     case WARLOCK_DESTRUCTION: return 0.10;
-    case WARLOCK_DEMONBOUND: return 0.30;
-    case PRIEST_DISCI: return 0.40;
-    case PRIEST_HOLY: return 0.40;
     case PRIEST_SHADOW: return 0.10;
-    case PRIEST_ABSOLUTION: return 0.40;
+    case PRIEST_ABSOLUTION: return 0.10;
+
+        // Heal
+    case DK_SOULWEAVER: return 0.25;
+    case DRUID_RESTO: return 0.25;
+    case PALADIN_HOLY: return 0.25;
+    case SHAMAN_RESTORATION: return 0.25;
+    case PRIEST_DISCI: return 0.25;
+    case PRIEST_HOLY: return 0.25;
+
+        // Tank
+    case WARRIOR_PROTECTION: return 0.45;
+    case DK_BLOOD: return 0.45;
+    case DRUID_GUARDIAN: return 0.45;
+    case PALADIN_PROTECTION: return 0.45;
+    case SHAMAN_SPIRIT_MASTER: return 0.45;
+    case WARLOCK_DEMONBOUND: return 0.45;
     }
 
     return 0.25;
