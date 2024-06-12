@@ -2401,15 +2401,17 @@ class rune_warl_ruinous_bulwark : public AuraScript
         int32 amount = damage * healMultiplePct;
         ApplyPct(amount, aurEff->GetAmount());
 
+        amount = std::min<int32>(amount, caster->CountPctFromMaxHealth(maxHealthShield));
+
         if (Aura* shield = caster->GetAura(RUNE_WARLOCK_RUINOUS_BULWARK_SHIELD))
         {
             amount += shield->GetEffect(EFFECT_0)->GetAmount();
-            shield->Remove();
+            amount = std::min<int32>(amount, caster->CountPctFromMaxHealth(maxHealthShield));
+
+            shield->GetEffect(EFFECT_0)->SetAmount(amount);
         }
-
-        amount = std::min<int32>(amount, caster->CountPctFromMaxHealth(maxHealthShield));
-
-        caster->CastCustomSpell(RUNE_WARLOCK_RUINOUS_BULWARK_SHIELD, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
+        else
+            caster->CastCustomSpell(RUNE_WARLOCK_RUINOUS_BULWARK_SHIELD, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
     }
 
     void Register() override

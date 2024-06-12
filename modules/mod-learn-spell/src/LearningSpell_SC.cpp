@@ -58,7 +58,7 @@ public:
 
         uint32 accountId = player->GetSession()->GetAccountId();
 
-        if (player->getLevel() >= 40)
+        if (player->getLevel() == 40)
         {
             auto it = std::find(playersFirstAlpha.begin(), playersFirstAlpha.end(), accountId);
 

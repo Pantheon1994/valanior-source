@@ -419,7 +419,7 @@ class rune_pri_psychic_link : public AuraScript
 
         int32 spellID = eventInfo.GetSpellInfo()->Id;
 
-        if (spellID == TALENT_PRIEST_SHADOWY_APPARITIONS_DAMAGE || spellID == SPELL_PRIEST_SHADOW_WORD_PAIN || spellID == SPELL_PRIEST_VAMPIRIC_TOUCH)
+        if (spellID == TALENT_PRIEST_SHADOWY_APPARITIONS_DAMAGE || spellID == SPELL_PRIEST_SHADOW_WORD_PAIN || spellID == SPELL_PRIEST_VAMPIRIC_TOUCH || spellID == RUNE_PRIEST_PSYCHIC_LINK_DAMAGE)
             return;
 
         auto const& threatList = caster->getAttackers();

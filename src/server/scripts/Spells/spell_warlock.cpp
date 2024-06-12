@@ -1820,11 +1820,6 @@ class spell_warlock_summon_darkhound : public SpellScript
         if (!player || player->isDead())
             return;
 
-        Unit* target = GetExplTargetUnit();
-
-        if (!target || target->isDead())
-            return;
-
         int32 totalSummons = GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(player);
 
         for (size_t i = 0; i < totalSummons; i++)
@@ -2019,11 +2014,6 @@ class spell_warlock_summon_felboar : public SpellScript
             return;
 
         int32 totalSummons = GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(player);
-
-        Unit* target = GetExplTargetUnit();
-
-        if (!target || target->isDead())
-            return;
 
         for (size_t i = 0; i < totalSummons; i++)
         {
@@ -4435,18 +4425,18 @@ class spell_warl_demon_spikes : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (!GetCaster() || GetCaster()->isDead())
+        Unit* target = eventInfo.GetActor();
+        if (!target || !target->IsAlive())
             return false;
 
-        if (Unit* caster = eventInfo.GetActor())
-        {
-            if (eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0 && eventInfo.GetSpellInfo() && caster->GetGUID() == GetCaster()->GetGUID() && GetCaster()->HasAura(SPELL_WARLOCK_DEMONIC_PROTECTION))
-                return true;
-        }
-        else
+        Unit* caster = eventInfo.GetActionTarget();
+        if (!caster || !caster->IsAlive())
             return false;
 
-        return false;
+        if (!GetCaster()->HasAura(SPELL_WARLOCK_DEMONIC_PROTECTION))
+            return false;
+
+        return target != caster;
     }
 
     void HandleEffectProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)

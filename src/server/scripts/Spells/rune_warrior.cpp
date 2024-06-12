@@ -540,15 +540,20 @@ class spell_storm_of_swords : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        if (GetCaster()->HasAura(1719))
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (Aura* recklessness = caster->GetAura(1719))
         {
-            float remainingDuration = GetCaster()->GetAura(1719)->GetDuration();
-            GetCaster()->GetAura(1719)->SetDuration(remainingDuration + 1000);
+            float remainingDuration = recklessness->GetDuration();
+            recklessness->SetDuration(remainingDuration + 1000);
         }
         else
         {
-            GetCaster()->CastSpell(GetCaster(), 1719, TRIGGERED_FULL_MASK);
-            GetCaster()->GetAura(1719)->SetDuration(3000);
+            if (Aura* newRecklessness = caster->AddAura(1719, caster))
+                newRecklessness->SetDuration(3000);
         }
     }
 

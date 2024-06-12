@@ -2455,9 +2455,9 @@ class spell_dk_obliterate : public SpellScript
 
             if (consumeDiseases == true)
             {
-                target->RemoveAura(SPELL_DK_FROST_FEVER);
-                target->RemoveAura(SPELL_DK_BLOOD_PLAGUE);
-                target->RemoveAura(SPELL_DK_FESTERING_WOUND);
+                target->RemoveAura(SPELL_DK_FROST_FEVER, GetCaster()->GetGUID());
+                target->RemoveAura(SPELL_DK_BLOOD_PLAGUE, GetCaster()->GetGUID());
+                target->RemoveAura(SPELL_DK_FESTERING_WOUND, GetCaster()->GetGUID());
             }
         }
 
@@ -3117,7 +3117,7 @@ class spell_dk_festering_strike : public SpellScript
 
         uint32 randomAmount = urand(1, 2);
 
-        if (Aura* aura = target->GetAura(SPELL_DK_FESTERING_WOUND))
+        if (Aura* aura = target->GetAura(SPELL_DK_FESTERING_WOUND, GetCaster()->GetGUID()))
         {
             aura->ModStackAmount(randomAmount);
         }
@@ -3193,14 +3193,14 @@ class spell_dk_vile_contagion : public SpellScript
         {
             for (auto const& target : targetList)
                 if (Unit* unit = target->ToUnit())
-                    if (Aura* aura = initialTarget->GetAura(SPELL_DK_FESTERING_WOUND))
+                    if (Aura* aura = initialTarget->GetAura(SPELL_DK_FESTERING_WOUND, GetCaster()->GetGUID()))
                     {
                         if (unit->isDead())
                             continue;
                         int32 stackAmount = aura->GetStackAmount();
 
-                        caster->CastSpell(unit, SPELL_DK_FESTERING_WOUND, TRIGGERED_FULL_MASK);
-                        unit->GetAura(SPELL_DK_FESTERING_WOUND)->SetStackAmount(stackAmount);
+                        if (Aura* festeringWound = caster->AddAura(SPELL_DK_FESTERING_WOUND, unit))
+                            festeringWound->SetStackAmount(stackAmount);
                     }
         }
     }
@@ -3357,7 +3357,7 @@ class spell_dk_apocalyspe : public SpellScript
     {
         Unit* target = GetExplTargetUnit();
 
-        if (Aura* targetAura = target->GetAura(SPELL_DK_FESTERING_WOUND))
+        if (Aura* targetAura = target->GetAura(SPELL_DK_FESTERING_WOUND, GetCaster()->GetGUID()))
         {
             int32 stackAmount = targetAura->GetStackAmount();
             int32 maxFesteringWound = GetSpellInfo()->GetEffect(EFFECT_2).CalcValue(GetCaster());

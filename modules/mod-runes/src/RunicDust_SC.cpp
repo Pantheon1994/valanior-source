@@ -126,6 +126,15 @@ public:
 
     void OnAfterLootTemplateProcess(Loot* loot, LootTemplate const* tab, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError, uint16 lootMode, WorldObject* source)
     {
+        bool isFishing = store.GetEntryName() == "area id";
+
+        if (isFishing)
+        {
+            int valueFishing = sWorld->GetValue("CONFIG_FISHING_RUNIC_DUST_MIN");
+            AddRunicDustToLoot(valueFishing, loot);
+            AddRunicEssenceToLoot(valueFishing, loot);
+        }
+
         if (!source)
             return;
 

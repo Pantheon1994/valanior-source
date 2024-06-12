@@ -1968,6 +1968,24 @@ class rune_rog_sea_of_strikes : public AuraScript
     }
 };
 
+class rune_rog_perforing_knives : public AuraScript
+{
+    PrepareAuraScript(rune_rog_perforing_knives);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        if (eventInfo.GetActionTarget() == GetCaster())
+            return false;
+
+        return true;
+    }
+
+    void Register()
+    {
+        DoCheckProc += AuraCheckProcFn(rune_rog_perforing_knives::CheckProc);
+    }
+};
+
 void AddSC_rogue_perks_scripts()
 {
     RegisterSpellScript(rune_rog_venom_rush);
@@ -2025,4 +2043,5 @@ void AddSC_rogue_perks_scripts()
     RegisterSpellScript(rune_rog_fan_the_hammer);
     RegisterSpellScript(rune_rog_quick_draw);
     RegisterSpellScript(rune_rog_sea_of_strikes);
+    RegisterSpellScript(rune_rog_perforing_knives);
 }

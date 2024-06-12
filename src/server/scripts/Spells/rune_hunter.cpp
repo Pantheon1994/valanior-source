@@ -2283,8 +2283,8 @@ class rune_hunter_killer_cobra_apply : public AuraScript
 
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(rune_hunter_killer_cobra_apply::HandleProc, EFFECT_0, SPELL_AURA_MOD_SCALE, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(rune_hunter_killer_cobra_apply::HandleRemove, EFFECT_0, SPELL_AURA_MOD_SCALE, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(rune_hunter_killer_cobra_apply::HandleProc, EFFECT_0, SPELL_AURA_MECHANIC_IMMUNITY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(rune_hunter_killer_cobra_apply::HandleRemove, EFFECT_0, SPELL_AURA_MECHANIC_IMMUNITY, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
