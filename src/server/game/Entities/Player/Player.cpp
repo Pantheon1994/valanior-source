@@ -7675,8 +7675,6 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
     Loot* loot = 0;
     PermissionTypes permission = ALL_PERMISSION;
 
-    LOG_ERROR("loot", "Player::SendLoot");
-
     // remove FD and invisibility at all loots
     constexpr std::array<AuraType, 2> toRemove = {SPELL_AURA_MOD_INVISIBILITY, SPELL_AURA_FEIGN_DEATH};
     for (const auto& aura : toRemove)

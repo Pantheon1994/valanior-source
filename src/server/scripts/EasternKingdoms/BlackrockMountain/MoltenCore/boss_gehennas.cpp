@@ -27,6 +27,7 @@ enum Spells
     SPELL_SHADOW_BOLT_VICTIM = 19729,
     SPELL_HELLFIRE = 2000054,
     SPELL_INNER_FIRE = 2000057,
+    SPELL_IGNITED = 2000068,
 
     // Ads
 
@@ -43,6 +44,7 @@ enum Events
     EVENT_RAIN_OF_FIRE,
     EVENT_SHADOW_BOLT,
     EVENT_INNERFIRE,
+    EVENT_IGNITED,
 
 
     EVENT_STRIKE,
@@ -65,6 +67,7 @@ public:
         void EnterCombat(Unit* /*attacker*/) override
         {
             _EnterCombat();
+            events.ScheduleEvent(EVENT_IGNITED, 12000);
             events.ScheduleEvent(EVENT_SHADOW_IMPACT, 25000);
             events.ScheduleEvent(EVENT_RAIN_OF_FIRE, 10000);
             events.ScheduleEvent(EVENT_SHADOW_BOLT, urand(3000, 5000));
@@ -74,6 +77,12 @@ public:
         {
             switch (eventId)
             {
+                case EVENT_IGNITED:
+                {
+                    DoCastVictim(SPELL_IGNITED);
+                    events.RepeatEvent(12000);
+                    break;
+                }
                 case EVENT_SHADOW_IMPACT:
                 {
                     std::list<Unit*> targets;

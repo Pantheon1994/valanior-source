@@ -76,6 +76,7 @@ public:
         static ChatCommandTable commandTable =
         {
             { "reload runes",  HandleReloadCommand, SEC_MODERATOR,     Console::No },
+            { "reload luckyRunes",  HandleReloadLuckyCommand, SEC_MODERATOR,     Console::No },
             { "addRune",  HandleAddRuneCommand, SEC_MODERATOR,     Console::No },
             { "getRunes",  HandleGetRunesCommand, SEC_MODERATOR,     Console::No },
 
@@ -93,6 +94,16 @@ public:
         RunesManager::LoadAllLoadout();
         RunesManager::LoadAllSlotRune();
         RunesManager::LoadAllProgression();
+        Eluna::ReloadEluna();
+
+        return true;
+    }
+
+    static bool HandleReloadLuckyCommand(ChatHandler* handler, Optional<PlayerIdentifier> player)
+    {
+        LOG_INFO("Runes", "Reload Lucky Runes...");
+
+        RunesManager::LoadAllLuckyRunes();
         Eluna::ReloadEluna();
 
         return true;
