@@ -16301,23 +16301,31 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
     ProcTriggeredList procTriggered;
     // Fill procTriggered list
-    for (AuraApplicationMap::const_iterator itr = GetAppliedAuras().begin(); itr != GetAppliedAuras().end(); ++itr)
+
+    auto auraMap = GetAppliedAuras();
+
+    for (AuraApplicationMap::const_iterator itr = auraMap.begin(); itr != auraMap.end(); ++itr)
     {
         // Do not allow auras to proc from effect triggered by itself
         if (procAura && procAura->Id == itr->first)
             continue;
 
-        // Xinef: Generic Item Equipment cooldown, -1 is a special marker
-        if (itr->second->GetBase()->GetCastItemGUID() && HasSpellItemCooldown(itr->first, uint32(-1)))
+        Aura* aura = itr->second->GetBase();
+
+        if (!aura)
             continue;
 
-        ProcTriggeredData triggerData(itr->second->GetBase());
+        // Xinef: Generic Item Equipment cooldown, -1 is a special marker
+        if (aura->GetCastItemGUID() && HasSpellItemCooldown(itr->first, uint32(-1)))
+            continue;
+
+        ProcTriggeredData triggerData(aura);
         // Defensive procs are active on absorbs (so absorption effects are not a hindrance)
         bool active = damage || (procExtra & PROC_EX_BLOCK && isVictim);
         if (isVictim)
             procExtra &= ~PROC_EX_INTERNAL_REQ_FAMILY;
 
-        SpellInfo const* spellProto = itr->second->GetBase()->GetSpellInfo();
+        SpellInfo const* spellProto = aura->GetSpellInfo();
 
         // only auras that have trigger spell should proc from fully absorbed damage
         if (procExtra & PROC_EX_ABSORB && isVictim)
@@ -16360,9 +16368,9 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         bool hasTriggeredProc = false;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (itr->second->HasEffect(i))
+            if (aura->HasEffect(i))
             {
-                AuraEffect* aurEff = itr->second->GetBase()->GetEffect(i);
+                AuraEffect* aurEff = aura->GetEffect(i);
 
                 // Skip this auras
                 if (isNonTriggerAura[aurEff->GetAuraType()])
