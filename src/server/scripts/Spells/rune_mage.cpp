@@ -37,6 +37,8 @@ enum MageSpells
     SPELL_MAGE_CONE_OF_COLD = 42931,
     SPELL_MAGE_DEATH_BLOSSOM = 81556,
     SPELL_MAGE_DISPLACEMENT_AURA = 81510,
+    SPELL_MAGE_ENERGY_ARMOR = 81545,
+    SPELL_MAGE_ENERGY_ARMOR_TRIUNE = 300158,
     SPELL_MAGE_FINGERS_OF_FROST_R1 = 44543,
     SPELL_MAGE_FINGERS_OF_FROST_R2 = 44545,
     SPELL_MAGE_FINGERS_OF_FROST_AURA = 44544,
@@ -53,6 +55,8 @@ enum MageSpells
     SPELL_MAGE_INVISIBILITY = 66,
     SPELL_MAGE_GREATER_INVISIBILITY = 81511,
     SPELL_MAGE_GREATER_INVISIBILITY_AURA = 81513,
+    SPELL_MAGE_ICE_ARMOR = 43008,
+    SPELL_MAGE_ICE_ARMOR_TRIUNE = 300149,
     SPELL_MAGE_ICE_BARRIER = 43039,
     SPELL_MAGE_ICE_BARRIER_SLOW = 43040,
     SPELL_MAGE_ICE_BLOCK = 45438,
@@ -62,11 +66,15 @@ enum MageSpells
     SPELL_MAGE_LIVING_BOMB_MAIN_EXPLOSION = 55362,
     SPELL_MAGE_LIVING_BOMB_SECOND = 55354,
     SPELL_MAGE_LIVING_BOMB_SECOND_EXPLOSION = 55355,
+    SPELL_MAGE_MAGE_ARMOR = 43024,
+    SPELL_MAGE_MAGE_ARMOR_TRIUNE = 300150,
     SPELL_MAGE_MAGIC_BLOSSOM = 81561,
     SPELL_MAGE_MAGIC_STRIKE = 81546,
     SPELL_MAGE_METEOR = 81531,
     SPELL_MAGE_MIRROR_IMAGE_DAMAGE_REDUCTION = 55343,
     SPELL_MAGE_MIRROR_IMAGE_SUMMON_ID = 31216,
+    SPELL_MAGE_MOLTEN_ARMOR = 43046,
+    SPELL_MAGE_MOLTEN_ARMOR_TRIUNE = 300151,
     SPELL_MAGE_PHOENIX_FLAMES = 80029,
     SPELL_MAGE_PRISMATIC_BARRIER = 81523,
     SPELL_MAGE_GALVANIZING_BARRIER = 81560,
@@ -374,30 +382,50 @@ class spell_triune_armor : public SpellScript
 {
     PrepareSpellScript(spell_triune_armor);
 
-    bool HasPerkTriuneArmor()
+    Aura* GetTriuneArmorAura(Unit* caster)
     {
-        return (GetCaster()->HasAura(300143) ||
-            GetCaster()->HasAura(300144) ||
-            GetCaster()->HasAura(300145) ||
-            GetCaster()->HasAura(300146) ||
-            GetCaster()->HasAura(300147) ||
-            GetCaster()->HasAura(300148));
+        for (size_t i = 300143; i < 300149; i++)
+        {
+            if (caster->HasAura(i))
+                return caster->GetAura(i);
+        }
+
+        return nullptr;
     }
         
     void HandleProc()
     {
-        if (GetCaster()->HasSpell(43008) && GetCaster()->HasSpell(43024) && GetCaster()->HasSpell(43046))
-            if (HasPerkTriuneArmor())
-            {
-                GetCaster()->RemoveAura(43024);
-                GetCaster()->RemoveAura(43046);
-                GetCaster()->RemoveAura(43008);
+        Unit* caster = GetCaster();
 
-                GetCaster()->CastSpell(GetCaster(), 300149, TRIGGERED_FULL_MASK);
-                GetCaster()->CastSpell(GetCaster(), 300150, TRIGGERED_FULL_MASK);
-                GetCaster()->CastSpell(GetCaster(), 300151, TRIGGERED_FULL_MASK);
+        if (!caster || caster->isDead())
+            return;
+
+        if (GetTriuneArmorAura(caster))
+        {
+            if (caster->HasSpell(SPELL_MAGE_MAGE_ARMOR))
+            {
+                caster->RemoveAura(SPELL_MAGE_MAGE_ARMOR);
+                caster->CastSpell(caster, SPELL_MAGE_MAGE_ARMOR_TRIUNE, TRIGGERED_FULL_MASK);
             }
 
+            if (caster->HasSpell(SPELL_MAGE_MOLTEN_ARMOR))
+            {
+                caster->RemoveAura(SPELL_MAGE_MOLTEN_ARMOR);
+                caster->CastSpell(caster, SPELL_MAGE_MOLTEN_ARMOR_TRIUNE, TRIGGERED_FULL_MASK);
+            }
+
+            if (caster->HasSpell(SPELL_MAGE_ICE_ARMOR))
+            {
+                caster->RemoveAura(SPELL_MAGE_ICE_ARMOR);
+                caster->CastSpell(caster, SPELL_MAGE_ICE_ARMOR_TRIUNE, TRIGGERED_FULL_MASK);
+            }
+
+            if (caster->HasSpell(SPELL_MAGE_ENERGY_ARMOR))
+            {
+                caster->RemoveAura(SPELL_MAGE_ENERGY_ARMOR);
+                caster->CastSpell(caster, SPELL_MAGE_ENERGY_ARMOR_TRIUNE, TRIGGERED_FULL_MASK);
+            }
+        }
     }
 
     void Register() override
@@ -410,39 +438,49 @@ class spell_triune_armor_rune : public AuraScript
 {
     PrepareAuraScript(spell_triune_armor_rune);
 
-    void HandleProc(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    void HandleApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
-        if (!GetCaster())
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
             return;
 
-        if (GetCaster()->HasAura(43024))
-            GetCaster()->RemoveAura(43024);
+        if (caster->HasAura(SPELL_MAGE_MAGE_ARMOR))
+            caster->RemoveAura(SPELL_MAGE_MAGE_ARMOR);
 
-        if (GetCaster()->HasAura(43046))
-            GetCaster()->RemoveAura(43046);
+        if (caster->HasAura(SPELL_MAGE_MOLTEN_ARMOR))
+            caster->RemoveAura(SPELL_MAGE_MOLTEN_ARMOR);
 
-        if (GetCaster()->HasAura(43008))
-            GetCaster()->RemoveAura(43008);
+        if (caster->HasAura(SPELL_MAGE_ICE_ARMOR))
+            caster->RemoveAura(SPELL_MAGE_ICE_ARMOR);
+
+        if (caster->HasAura(SPELL_MAGE_ENERGY_ARMOR))
+            caster->RemoveAura(SPELL_MAGE_ENERGY_ARMOR);
     }
 
     void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
-        if (!GetCaster() || GetCaster()->isDead())
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
             return;
 
-        if (GetCaster()->HasAura(300149))
-            GetCaster()->RemoveAura(300149);
+        if (caster->HasAura(SPELL_MAGE_MAGE_ARMOR_TRIUNE))
+            caster->RemoveAura(SPELL_MAGE_MAGE_ARMOR_TRIUNE);
 
-        if (GetCaster()->HasAura(300150))
-            GetCaster()->RemoveAura(300150);
+        if (caster->HasAura(SPELL_MAGE_MOLTEN_ARMOR_TRIUNE))
+            caster->RemoveAura(SPELL_MAGE_MOLTEN_ARMOR_TRIUNE);
 
-        if (GetCaster()->HasAura(300151))
-            GetCaster()->RemoveAura(300151);
+        if (caster->HasAura(SPELL_MAGE_ICE_ARMOR_TRIUNE))
+            caster->RemoveAura(SPELL_MAGE_ICE_ARMOR_TRIUNE);
+
+        if (caster->HasAura(SPELL_MAGE_ENERGY_ARMOR_TRIUNE))
+            caster->RemoveAura(SPELL_MAGE_ENERGY_ARMOR_TRIUNE);
     }
 
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(spell_triune_armor_rune::HandleProc, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(spell_triune_armor_rune::HandleApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
         OnEffectRemove += AuraEffectRemoveFn(spell_triune_armor_rune::HandleRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
     }
 };
