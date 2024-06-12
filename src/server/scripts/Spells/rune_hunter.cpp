@@ -135,6 +135,11 @@ class rune_hunter_bullseye : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         Unit* victim = eventInfo.GetActionTarget();
 
         if (!victim || victim->isDead())
@@ -145,13 +150,15 @@ class rune_hunter_bullseye : public AuraScript
         if (healthPct > GetAura()->GetEffect(EFFECT_1)->GetAmount())
             return;
 
-        GetCaster()->CastSpell(GetCaster(), RUNE_HUNTER_BULLSEYE_BUFF, TRIGGERED_FULL_MASK);
+        caster->CastSpell(caster, RUNE_HUNTER_BULLSEYE_BUFF, TRIGGERED_FULL_MASK);
 
-        Aura* buff = GetCaster()->GetAura(RUNE_HUNTER_BULLSEYE_BUFF);
-        int32 maxStack = aurEff->GetAmount();
+        if (Aura* buff = caster->GetAura(RUNE_HUNTER_BULLSEYE_BUFF))
+        {
+            int32 maxStack = aurEff->GetAmount();
 
-        if (int32 currentStack = buff->GetStackAmount() > maxStack)
-            buff->SetStackAmount(maxStack);
+            if (int32 currentStack = buff->GetStackAmount() > maxStack)
+                buff->SetStackAmount(maxStack);
+        }
     }
 
     void Register()
@@ -171,6 +178,11 @@ class rune_hunter_50cal : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         Unit* victim = eventInfo.GetActionTarget();
 
         if (!victim || victim->isDead())
@@ -184,7 +196,7 @@ class rune_hunter_50cal : public AuraScript
         int32 damage = CalculatePct(int32(damageDealt), aurEff->GetAmount());
         int32 amount = std::max<int32>(0, damage);
 
-        GetCaster()->CastCustomSpell(RUNE_HUNTER_50CAL_DAMAGE, SPELLVALUE_BASE_POINT0, amount, victim, TRIGGERED_FULL_MASK);
+        caster->CastCustomSpell(RUNE_HUNTER_50CAL_DAMAGE, SPELLVALUE_BASE_POINT0, amount, victim, TRIGGERED_FULL_MASK);
     }
 
     void Register()
@@ -205,22 +217,20 @@ class rune_hunter_sniper_training : public AuraScript
         if (!caster || caster->isDead())
             return;
 
-        Aura* movementCheck = caster->GetAura(RUNE_HUNTER_SNIPER_TRAINING_CHECK);
+        if (Aura* movementCheck = caster->GetAura(RUNE_HUNTER_SNIPER_TRAINING_CHECK))
+        {
+            int32 currentStacks = movementCheck->GetStackAmount();
 
-        if (!movementCheck)
-            return;
+            if (currentStacks < aurEff->GetAmount())
+                return;
 
-        int32 currentStacks = movementCheck->GetStackAmount();
+            int32 buffAura = GetAura()->GetSpellInfo()->GetEffect(EFFECT_1).TriggerSpell;
 
-        if (currentStacks < aurEff->GetAmount())
-            return;
+            if (caster->HasAura(buffAura))
+                return;
 
-        int32 buffAura = GetAura()->GetSpellInfo()->GetEffect(EFFECT_1).TriggerSpell;
-
-        if (caster->HasAura(buffAura))
-            return;
-
-        caster->CastSpell(caster, buffAura, TRIGGERED_FULL_MASK);
+            caster->CastSpell(caster, buffAura, TRIGGERED_FULL_MASK);
+        }
     }
 
     void Register() override
@@ -235,6 +245,11 @@ class rune_hunter_serpent_touch : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return false;
+
         Unit* victim = eventInfo.GetActionTarget();
 
         if (!victim || victim->isDead() || victim == GetCaster())
@@ -302,7 +317,12 @@ class rune_hunter_poison_injection : public SpellScript
 
     void HandleProc()
     {
-        if (!GetRuneAura() || GetCaster()->isDead())
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (!GetRuneAura())
             return;
 
         Unit* victim = GetExplTargetUnit();
@@ -311,18 +331,16 @@ class rune_hunter_poison_injection : public SpellScript
             return;
 
         int32 latentPoisonID = GetRuneAura()->GetSpellInfo()->GetEffect(EFFECT_0).TriggerSpell;
-        Aura* latentPoisonAura = victim->GetAura(latentPoisonID);
+        if (Aura* latentPoisonAura = victim->GetAura(latentPoisonID))
+        {
+            int32 damagePct = latentPoisonAura->GetEffect(EFFECT_0)->GetAmount();
+            int32 attackPower = std::max<int32>(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK), GetCaster()->GetTotalAttackPowerValue(RANGED_ATTACK));
+            float damage = int32(CalculatePct(attackPower, damagePct));
+            int32 amount = std::max<int32>(0, damage);
 
-        if (!latentPoisonAura)
-            return;
-
-        int32 damagePct = latentPoisonAura->GetEffect(EFFECT_0)->GetAmount();
-        int32 attackPower = std::max<int32>(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK), GetCaster()->GetTotalAttackPowerValue(RANGED_ATTACK));
-        float damage = int32(CalculatePct(attackPower, damagePct));
-        int32 amount = std::max<int32>(0, damage);
-
-        GetCaster()->CastCustomSpell(RUNE_HUNTER_POISON_INJECTION_DAMAGE, SPELLVALUE_BASE_POINT0, amount, victim, TRIGGERED_FULL_MASK);
-        victim->RemoveAura(latentPoisonID);
+            caster->CastCustomSpell(RUNE_HUNTER_POISON_INJECTION_DAMAGE, SPELLVALUE_BASE_POINT0, amount, victim, TRIGGERED_FULL_MASK);
+            victim->RemoveAura(latentPoisonID);
+        }
     }
 
     void Register()
@@ -471,36 +489,31 @@ class rune_hunter_natural_mending : public AuraScript
             if (!target || target->isDead())
                 return;
 
-            Aura* runeAura = GetAura();
-
-            if (!runeAura)
-                return;
-
-            int32 spellFocus = eventInfo.GetSpellInfo()->CalcPowerCost(target, eventInfo.GetSchoolMask());
-
-            if (spellFocus <= 0)
-                return;
-
-            int32 cooldownReduction = runeAura->GetEffect(EFFECT_1)->GetAmount();
-            int32 focusAccumulated = runeAura->GetEffect(EFFECT_2)->GetAmount() + spellFocus;
-            int32 focusThreshold = aurEff->GetAmount();
-
-            if (focusAccumulated >= focusThreshold)
+            if (Aura* runeAura = GetAura())
             {
-                target->ModifySpellCooldown(SPELL_HUNTER_TRUESHOT, -cooldownReduction);
-                focusAccumulated -= focusThreshold;
+                int32 spellFocus = eventInfo.GetSpellInfo()->CalcPowerCost(target, eventInfo.GetSchoolMask());
+
+                if (spellFocus <= 0)
+                    return;
+
+                int32 cooldownReduction = runeAura->GetEffect(EFFECT_1)->GetAmount();
+                int32 focusAccumulated = runeAura->GetEffect(EFFECT_2)->GetAmount() + spellFocus;
+                int32 focusThreshold = aurEff->GetAmount();
 
                 if (focusAccumulated >= focusThreshold)
                 {
                     target->ModifySpellCooldown(SPELL_HUNTER_TRUESHOT, -cooldownReduction);
                     focusAccumulated -= focusThreshold;
+
+                    if (focusAccumulated >= focusThreshold)
+                    {
+                        target->ModifySpellCooldown(SPELL_HUNTER_TRUESHOT, -cooldownReduction);
+                        focusAccumulated -= focusThreshold;
+                    }
                 }
+                runeAura->GetEffect(EFFECT_2)->SetAmount(focusAccumulated);
             }
-
-            runeAura->GetEffect(EFFECT_2)->SetAmount(focusAccumulated);
         }
-
-
     }
 
     void Register() override
@@ -516,6 +529,11 @@ class rune_hunter_rejuvenating_wind : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         Unit* target = GetCaster();
 
         if (!target || target->isDead())
@@ -526,7 +544,7 @@ class rune_hunter_rejuvenating_wind : public AuraScript
         int32 maxTicks = sSpellMgr->GetSpellInfo(RUNE_HUNTER_REJUVENATING_WIND_HOT)->GetMaxTicks();
         int32 amount = heal / maxTicks;
 
-        GetCaster()->CastCustomSpell(RUNE_HUNTER_REJUVENATING_WIND_HOT, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
+        caster->CastCustomSpell(RUNE_HUNTER_REJUVENATING_WIND_HOT, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
     }
 
     void Register()
@@ -568,6 +586,11 @@ class rune_hunter_third_degree_burn : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         Unit* victim = eventInfo.GetActionTarget();
 
         if (!victim || victim->isDead())
@@ -575,7 +598,7 @@ class rune_hunter_third_degree_burn : public AuraScript
 
         int32 debuffSpell = GetAura()->GetSpellInfo()->GetEffect(EFFECT_0).TriggerSpell;
 
-        GetCaster()->CastSpell(victim, debuffSpell, TRIGGERED_FULL_MASK);
+        caster->CastSpell(victim, debuffSpell, TRIGGERED_FULL_MASK);
     }
 
     void Register()
@@ -803,25 +826,23 @@ class rune_hunter_killer_instinct : public SpellScript
 
     void HandleDummy(SpellEffIndex effIndex)
     {
-        Aura* rune = GetRuneAura();
+        if (Aura* rune = GetRuneAura())
+        {
+            Unit* victim = GetHitUnit();
+            int32 pct = rune->GetEffect(EFFECT_0)->GetAmount();
+            int32 healthThreshold = rune->GetEffect(EFFECT_1)->GetAmount();
 
-        if (!rune)
-            return;
+            // GetCaster()->CastCustomSpell(victim, triggered_spell_id, &basepoints0, &basepoints1 / 2, nullptr, TRIGGERED_FULL_MASK);
 
-        Unit* victim = GetHitUnit();
-        int32 pct = rune->GetEffect(EFFECT_0)->GetAmount();
-        int32 healthThreshold = rune->GetEffect(EFFECT_1)->GetAmount();
+            if (!victim || victim->isDead())
+                return;
 
-        // GetCaster()->CastCustomSpell(victim, triggered_spell_id, &basepoints0, &basepoints1 / 2, nullptr, TRIGGERED_FULL_MASK);
-
-        if (!victim || victim->isDead())
-            return;
-
-        if (victim->GetHealthPct() <= healthThreshold) {
-            int32 damage = GetEffectValue();
-            int32 finalDamage = CalculatePct(damage, pct);
-            GetCaster()->CastCustomSpell(RUNE_HUNTER_KILLER_INSTINCT_DAMAGE, SPELLVALUE_BASE_POINT0, finalDamage, victim, TRIGGERED_IGNORE_AURA_SCALING);
-        }
+            if (victim->GetHealthPct() <= healthThreshold) {
+                int32 damage = GetEffectValue();
+                int32 finalDamage = CalculatePct(damage, pct);
+                GetCaster()->CastCustomSpell(RUNE_HUNTER_KILLER_INSTINCT_DAMAGE, SPELLVALUE_BASE_POINT0, finalDamage, victim, TRIGGERED_IGNORE_AURA_SCALING);
+            }
+        }  
     }
 
     void Register() override
@@ -1324,11 +1345,12 @@ class rune_hunter_aspect_of_the_storm : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Player* player = GetCaster()->ToPlayer();
-        int32 attackPower = std::max<int32>(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK), GetCaster()->GetTotalAttackPowerValue(RANGED_ATTACK));
-        float damage = int32(CalculatePct(attackPower, aurEff->GetAmount()));
 
         if (!player || player->isDead())
             return;
+
+        int32 attackPower = std::max<int32>(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK), GetCaster()->GetTotalAttackPowerValue(RANGED_ATTACK));
+        float damage = int32(CalculatePct(attackPower, aurEff->GetAmount()));
 
         Pet* pet = player->GetPet();
 
@@ -1619,12 +1641,17 @@ class rune_hunter_snake_bite : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
-        if (!GetRuneAura() || GetCaster()->isDead())
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (!GetRuneAura())
             return;
 
         int32 buffAura = GetRuneAura()->GetSpellInfo()->GetEffect(EFFECT_0).TriggerSpell;
 
-        GetCaster()->AddAura(buffAura, GetCaster());
+        caster->AddAura(buffAura, caster);
     }
 
     void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
@@ -1700,15 +1727,19 @@ class rune_hunter_scent_tracking : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
-        if (!GetRuneAura() || GetCaster()->isDead())
+        Player* caster = GetCaster()->ToPlayer();
+
+        if (!caster || caster->isDead())
             return;
 
-        if (Player* caster = GetCaster()->ToPlayer())
-            caster->RemoveSpellCooldown(SPELL_HUNTER_BARBED_SHOT, true);
+        if (!GetRuneAura())
+            return;
+
+        caster->RemoveSpellCooldown(SPELL_HUNTER_BARBED_SHOT, true);
 
         int32 buffAura = GetRuneAura()->GetSpellInfo()->GetEffect(EFFECT_0).TriggerSpell;
 
-        GetCaster()->AddAura(buffAura, GetCaster());
+        caster->AddAura(buffAura, caster);
     }
 
     void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
@@ -2192,7 +2223,6 @@ class rune_hunter_killer_cobra_apply : public AuraScript
 
     Aura* GetRuneAura()
     {
-
         if (GetCaster()->HasAura(500784))
             return GetCaster()->GetAura(500784);
 
@@ -2755,20 +2785,18 @@ class rune_hunter_true_aimed_shot : public AuraScript
         if (!caster || caster->isDead())
             return;
 
-        Aura* movementCheck = GetCaster()->GetAura(RUNE_HUNTER_TRUE_AIMED_SHOT_CHECK);
+        if (Aura* movementCheck = GetCaster()->GetAura(RUNE_HUNTER_TRUE_AIMED_SHOT_CHECK))
+        {
+            if (movementCheck->GetStackAmount() < aurEff->GetAmount())
+                return;
 
-        if (!movementCheck)
-            return;
+            movementCheck->SetStackAmount(aurEff->GetAmount());
 
-        if (movementCheck->GetStackAmount() < aurEff->GetAmount())
-            return;
+            if (caster->HasAura(RUNE_HUNTER_TRUE_AIMED_SHOT_BUFF))
+                return;
 
-        movementCheck->SetStackAmount(aurEff->GetAmount());
-
-        if (GetCaster()->HasAura(RUNE_HUNTER_TRUE_AIMED_SHOT_BUFF))
-            return;
-
-        GetCaster()->CastSpell(GetCaster(), RUNE_HUNTER_TRUE_AIMED_SHOT_BUFF, TRIGGERED_FULL_MASK);
+            caster->CastSpell(caster, RUNE_HUNTER_TRUE_AIMED_SHOT_BUFF, TRIGGERED_FULL_MASK);
+        }
     }
 
     void Register() override
@@ -3439,16 +3467,14 @@ class rune_hunter_focalised_trueshot_remove : public AuraScript
         if (!player || player->isDead())
             return;
 
-        Aura* listenerAura = player->GetAura(RUNE_HUNTER_FOCALISED_TRUESHOT_LISTENER);
+        if (Aura* listenerAura = player->GetAura(RUNE_HUNTER_FOCALISED_TRUESHOT_LISTENER))
+        {
+            int32 stackAmount = listenerAura->GetStackAmount();
 
-        if (!listenerAura)
-            return;
-
-        int32 stackAmount = listenerAura->GetStackAmount();
-
-        player->RemoveAura(listenerAura);
-        player->CastSpell(player, RUNE_HUNTER_FOCALISED_TRUESHOT_BUFF, TRIGGERED_FULL_MASK);
-        player->GetAura(RUNE_HUNTER_FOCALISED_TRUESHOT_BUFF)->SetStackAmount(stackAmount);
+            player->RemoveAura(listenerAura);
+            player->CastSpell(player, RUNE_HUNTER_FOCALISED_TRUESHOT_BUFF, TRIGGERED_FULL_MASK);
+            player->GetAura(RUNE_HUNTER_FOCALISED_TRUESHOT_BUFF)->SetStackAmount(stackAmount);
+        }
     }
 
     void Register() override
@@ -3471,23 +3497,23 @@ class rune_hunter_unerring_vision : public AuraScript
         if (!caster->HasAura(SPELL_HUNTER_TRUESHOT))
             return;
 
-        Aura* buffAura = caster->GetAura(RUNE_HUNTER_UNERRING_VISION_BUFF);
+        if (Aura* buffAura = caster->GetAura(RUNE_HUNTER_UNERRING_VISION_BUFF))
+        {
+            int32 currentStacks = buffAura->GetStackAmount();
 
-        if (!buffAura)
+            if (currentStacks >= aurEff->GetAmount())
+            {
+                buffAura->RefreshDuration();
+                return;
+            }
+
+            caster->CastSpell(caster, RUNE_HUNTER_UNERRING_VISION_BUFF, TRIGGERED_FULL_MASK);
+        }
+        else
         {
             caster->CastSpell(caster, RUNE_HUNTER_UNERRING_VISION_BUFF, TRIGGERED_FULL_MASK);
             return;
-        }
-
-        int32 currentStacks = buffAura->GetStackAmount();
-
-        if (currentStacks >= aurEff->GetAmount())
-        {
-            buffAura->RefreshDuration();
-            return;
-        }
-
-        caster->CastSpell(caster, RUNE_HUNTER_UNERRING_VISION_BUFF, TRIGGERED_FULL_MASK);
+        } 
     }
 
     void Register() override
@@ -3507,30 +3533,29 @@ class rune_hunter_calling_the_shots : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Aura* runeAura = GetAura();
-        Player* target = GetTarget()->ToPlayer();
-
-        if (!target || target->isDead())
-            return;
-
-        if (!runeAura || !target)
-            return;
-
-        int32 spellFocus = eventInfo.GetSpellInfo()->CalcPowerCost(target, eventInfo.GetSchoolMask());
-
-        if (spellFocus <= 0)
-            return;
-
-        int32 cooldownReduction = runeAura->GetEffect(EFFECT_1)->GetAmount();
-        int32 focusAccumulated = runeAura->GetEffect(EFFECT_2)->GetAmount() + spellFocus;
-        int32 focusThreshold = aurEff->GetAmount();
-
-        for (focusAccumulated; focusAccumulated > focusThreshold; focusAccumulated -= focusThreshold)
+        if (Aura* runeAura = GetAura())
         {
-            target->ModifySpellCooldown(SPELL_HUNTER_TRUESHOT, -cooldownReduction);
-        }
+            Player* target = GetTarget()->ToPlayer();
 
-        runeAura->GetEffect(EFFECT_2)->SetAmount(focusAccumulated);
+            if (!target || target->isDead())
+                return;
+
+            int32 spellFocus = eventInfo.GetSpellInfo()->CalcPowerCost(target, eventInfo.GetSchoolMask());
+
+            if (spellFocus <= 0)
+                return;
+
+            int32 cooldownReduction = runeAura->GetEffect(EFFECT_1)->GetAmount();
+            int32 focusAccumulated = runeAura->GetEffect(EFFECT_2)->GetAmount() + spellFocus;
+            int32 focusThreshold = aurEff->GetAmount();
+
+            for (focusAccumulated; focusAccumulated > focusThreshold; focusAccumulated -= focusThreshold)
+            {
+                target->ModifySpellCooldown(SPELL_HUNTER_TRUESHOT, -cooldownReduction);
+            }
+
+            runeAura->GetEffect(EFFECT_2)->SetAmount(focusAccumulated);
+        }
     }
 
     void Register() override
