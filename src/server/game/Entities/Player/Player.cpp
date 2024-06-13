@@ -3764,7 +3764,7 @@ bool Player::resetTalents(bool noResetCost)
     // pussywizard: removed saving to db, nothing important happens and saving only spells and talents may cause data integrity problems (eg. with skills saved to db)
     SetFreeTalentPoints(talentPointsForLevel);
 
-    if (!noResetCost)
+    /*if (!noResetCost)
     {
         ModifyMoney(-(int32)resetCost);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GOLD_SPENT_FOR_TALENTS, resetCost);
@@ -3772,7 +3772,7 @@ bool Player::resetTalents(bool noResetCost)
 
         m_resetTalentsCost = resetCost;
         m_resetTalentsTime = GameTime::GetGameTime().count();
-    }
+    }*/
 
     return true;
 }
