@@ -3710,18 +3710,6 @@ bool Player::resetTalents(bool noResetCost)
         return false;
     m_usedTalentCount = 0;
 
-    // xinef: check if we have enough money
-    uint32 resetCost = 0;
-    if (!noResetCost && !sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST))
-    {
-        resetCost = resetTalentsCost();
-        if (!HasEnoughMoney(resetCost))
-        {
-            SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
-            return false;
-        }
-    }
-
     RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT, true);
 
     // xinef: reset talents
