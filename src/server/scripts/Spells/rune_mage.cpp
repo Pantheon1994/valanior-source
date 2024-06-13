@@ -1570,17 +1570,18 @@ class spell_sun_kings_blessing_proc : public SpellScript
 
         if (caster->HasAura(PASSIVE_MAGE_HOT_STREAK_BUFF))
         {
-            caster->CastSpell(caster, RUNE_MAGE_SUN_KINGS_BLESSING_LISTENER, TRIGGERED_FULL_MASK);
-
-            if (caster->GetAura(RUNE_MAGE_SUN_KINGS_BLESSING_LISTENER)->GetStackAmount() < maxStack)
-                return;
-            else
+            if (Aura* aura = caster->AddAura(RUNE_MAGE_SUN_KINGS_BLESSING_LISTENER, caster))
             {
-                caster->GetAura(RUNE_MAGE_SUN_KINGS_BLESSING_LISTENER)->SetStackAmount(maxStack);
-                caster->AddAura(RUNE_MAGE_SUN_KINGS_BLESSING_BUFF, caster);
-                caster->RemoveAura(RUNE_MAGE_SUN_KINGS_BLESSING_LISTENER);
-                return;
-            }
+                if (aura->GetStackAmount() < maxStack)
+                    return;
+                else
+                {
+                    aura->SetStackAmount(maxStack);
+                    caster->AddAura(RUNE_MAGE_SUN_KINGS_BLESSING_BUFF, caster);
+                    aura->Remove();
+                    return;
+                }
+            } 
         }
 
         int32 buffAura = GetRuneAura(caster)->GetEffect(EFFECT_2)->GetAmount();

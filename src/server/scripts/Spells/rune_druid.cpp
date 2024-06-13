@@ -605,8 +605,11 @@ class rune_druid_natural_order : public AuraScript
         if (!GetRuneAura(caster) || caster->isDead())
             return;
 
-        caster->AddAura(SPELL_FRENZIED_REGENERATION, caster);
-        caster->AddAura(SPELL_IRONFUR, caster);
+        if (caster->GetShapeshiftForm() == FORM_BEAR || caster->GetShapeshiftForm() == FORM_DIREBEAR)
+        {
+            caster->AddAura(SPELL_FRENZIED_REGENERATION, caster);
+            caster->CastSpell(caster, SPELL_IRONFUR, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+        }
     }
 
     void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
@@ -619,8 +622,11 @@ class rune_druid_natural_order : public AuraScript
         if (!GetRuneAura(caster))
             return;
 
-        caster->AddAura(SPELL_FRENZIED_REGENERATION, caster);
-        caster->AddAura(SPELL_IRONFUR, caster);
+        if (caster->GetShapeshiftForm() == FORM_BEAR || caster->GetShapeshiftForm() == FORM_DIREBEAR)
+        {
+            caster->AddAura(SPELL_FRENZIED_REGENERATION, caster);
+            caster->CastSpell(caster, SPELL_IRONFUR, TRIGGERED_IGNORE_POWER_AND_REAGENT_COST);
+        }
     }
 
     void Register() override

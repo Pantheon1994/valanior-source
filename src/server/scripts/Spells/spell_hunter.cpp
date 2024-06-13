@@ -123,6 +123,7 @@ enum HunterSpells
     SPELL_HUNTER_FLANKING_STRIKE_PET_DAMAGE = 80198,
     SPELL_HUNTER_TWILIGHT_PIERCER = 85006,
     SPELL_HUNTER_ASPECT_OF_THE_BEAST_BUFF = 80247,
+    SPELL_HUNTER_BARBED_SHOT = 80172,
 
     // Talents
     TALENT_HUNTER_SHADOW_CLOAK = 85034,
@@ -2039,15 +2040,31 @@ class spell_hun_barbed_shot : public SpellScript
         player->AddAura(80174, pet);
     }
 
-    void HandleEnergy(SpellEffIndex effIndex)
+    void Register() override
     {
-        GetCaster()->CastSpell(GetCaster(), 80173, TRIGGERED_FULL_MASK);
+        OnCast += SpellCastFn(spell_hun_barbed_shot::HandleBuff);
+    }
+};
+
+class spell_hun_barbed_shot_focus : public AuraScript
+{
+    PrepareAuraScript(spell_hun_barbed_shot_focus);
+
+    void OnPeriodic(AuraEffect const* aurEff)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        int32 amount = GetAura()->GetEffect(EFFECT_2)->GetAmount();
+
+        caster->EnergizeBySpell(caster, SPELL_HUNTER_BARBED_SHOT, amount, POWER_FOCUS);
     }
 
     void Register() override
     {
-        OnCast += SpellCastFn(spell_hun_barbed_shot::HandleBuff);
-        OnEffectHit += SpellEffectFn(spell_hun_barbed_shot::HandleEnergy, EFFECT_1, SPELL_EFFECT_SCHOOL_DAMAGE);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_barbed_shot_focus::OnPeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
 
@@ -4215,6 +4232,7 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_death_chakram);
     RegisterSpellScript(spell_hun_cobra_shot);
     RegisterSpellScript(spell_hun_barbed_shot);
+    RegisterSpellScript(spell_hun_barbed_shot_focus);
     RegisterSpellScript(spell_hun_murder_crows_reset);
     RegisterSpellScript(spell_hun_murder_crows_check);
     RegisterSpellScript(spell_hun_bloodshed);

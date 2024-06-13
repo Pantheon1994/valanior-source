@@ -1402,8 +1402,8 @@ class rune_sha_static_accumulation_proc : public SpellScript
 
         if (roll_chance_i(procChance))
         {
-            caster->CastSpell(caster, SPELL_SHAMAN_MAELSTROM_WEAPON_PROC, TRIGGERED_FULL_MASK);
-            caster->GetAura(SPELL_SHAMAN_MAELSTROM_WEAPON_PROC)->SetStackAmount(maelstromWeaponspStacks);
+            if (Aura* aura = caster->AddAura(SPELL_SHAMAN_MAELSTROM_WEAPON_PROC, caster))
+                aura->SetStackAmount(maelstromWeaponspStacks);
         }
 
         maelstromWeaponspStacks = 0;
