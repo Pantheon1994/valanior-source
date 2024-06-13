@@ -51,14 +51,7 @@ public:
 
     void AddBonusRunicDustAndRunicEssence(Creature* creature, Player* player, Loot* loot) {
 
-        uint32 diff = player->getLevel() - creature->getLevel();
-
         uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
-        bool isTargetLevelMax = creature->getLevel() >= 60;
-        bool isPlayerLevelMax = maxLevel == 60;
-
-        if (diff > 10)
-            return;
 
         Map* map = creature->GetMap();
 
