@@ -460,31 +460,6 @@ class spell_warr_intercept : public SpellScript
     }
 };
 
-// 47475 - Slam
-class spell_warr_slam : public SpellScript
-{
-    PrepareSpellScript(spell_warr_slam);
-
-    void HandleDummy(SpellEffIndex effIndex)
-    {
-        int32 damage = GetEffectValue();
-        ApplyPct(damage, GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
-
-        if (Unit* target = GetHitUnit())
-        {
-            damage = GetCaster()->SpellDamageBonusDone(target, GetSpellInfo(), uint32(damage), SPELL_DIRECT_DAMAGE, effIndex);
-            damage = target->SpellDamageBonusTaken(GetCaster(), GetSpellInfo(), uint32(damage), SPELL_DIRECT_DAMAGE);
-        }
-
-        SetHitDamage(damage);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_warr_slam::HandleDummy, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-    }
-};
-
 // -58872 - Damage Shield
 class spell_warr_damage_shield : public AuraScript
 {
@@ -1123,22 +1098,22 @@ class spell_warr_heroic_strike : public SpellScript
 //};
 
 // 47450 - Heroic Throw
-class spell_warr_heroic_throw : public SpellScript
-{
-    PrepareSpellScript(spell_warr_heroic_throw);
-
-    void HandleHit(SpellEffIndex effIndex)
-    {
-        int32 damage = GetEffectValue();
-        ApplyPct(damage, GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
-        SetHitDamage(damage);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_warr_heroic_throw::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-    }
-};
+//class spell_warr_heroic_throw : public SpellScript
+//{
+//    PrepareSpellScript(spell_warr_heroic_throw);
+//
+//    void HandleHit(SpellEffIndex effIndex)
+//    {
+//        int32 damage = GetEffectValue();
+//        ApplyPct(damage, GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
+//        SetHitDamage(damage);
+//    }
+//
+//    void Register() override
+//    {
+//        OnEffectHitTarget += SpellEffectFn(spell_warr_heroic_throw::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+//    }
+//};
 
 
 // 47486 - Mortal Strike
@@ -2441,7 +2416,7 @@ void AddSC_warrior_spell_scripts()
     RegisterSpellScript(spell_warr_vigilance);
     RegisterSpellScript(spell_warr_vigilance_trigger);
     RegisterSpellScript(spell_warr_t3_prot_8p_bonus);
-    RegisterSpellScript(spell_warr_heroic_throw);
+    //RegisterSpellScript(spell_warr_heroic_throw);
     RegisterSpellScript(spell_ap_to_hit_damage);
     RegisterSpellScript(spell_warr_whirlwind);
     RegisterSpellScript(spell_healing_deep_wound);

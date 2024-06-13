@@ -1928,41 +1928,6 @@ class rune_pal_inner_light_proc : public AuraScript
     }
 };
 
-class rune_pal_inner_light_damage : public AuraScript
-{
-    PrepareAuraScript(rune_pal_inner_light_damage);
-
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        return eventInfo.GetDamageInfo();
-    }
-
-    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-    {
-        Unit* victim = GetCaster();
-        Unit* target = eventInfo.GetActor();
-
-        if (!victim || victim->isDead())
-            return;
-
-        if (!target || target->isDead())
-            return;
-
-        float ap = int32(CalculatePct(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK), aurEff->GetAmount()));
-        float sp = int32(CalculatePct(GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY), aurEff->GetBase()->GetEffect(EFFECT_1)->GetAmount()));
-        int32 amount = std::max<int32>(0, int32(ap + sp));
-
-        victim->CastCustomSpell(RUNE_PALADIN_INNER_LIGHT_DAMAGE, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
-
-    }
-
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(rune_pal_inner_light_damage::CheckProc);
-        OnEffectProc += AuraEffectProcFn(rune_pal_inner_light_damage::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
-    }
-};
-
 class rune_pal_divine_vindication : public AuraScript
 {
     PrepareAuraScript(rune_pal_divine_vindication);
@@ -3307,7 +3272,6 @@ void AddSC_paladin_perks_scripts()
     RegisterSpellScript(rune_pal_avenging_guardian);
     RegisterSpellScript(rune_pal_gift_of_the_golden_valkyr);
     RegisterSpellScript(rune_pal_inner_light_proc);
-    RegisterSpellScript(rune_pal_inner_light_damage);
     RegisterSpellScript(rune_pal_divine_vindication);
     RegisterSpellScript(rune_pal_light_storm);
     RegisterSpellScript(rune_pal_tempest_of_the_lightbringer);
