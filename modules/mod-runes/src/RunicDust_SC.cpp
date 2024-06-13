@@ -43,15 +43,21 @@ public:
 
     void AddRunicEssenceToLoot(uint32 minValue, Loot* loot)
     {
-
-
         LootStoreItem runicEssence(ITEM_RUNIC_ESSENCE, 0, 100, 0, LOOT_MODE_DEFAULT, 0, minValue, minValue);
         loot->AddItem(runicEssence);
     }
 
+
+
     void AddBonusRunicDustAndRunicEssence(Creature* creature, Player* player, Loot* loot) {
 
-        if ((player->getLevel() - creature->getLevel()) >= 10)
+        uint32 diff = player->getLevel() - creature->getLevel();
+
+        uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+        bool isTargetLevelMax = creature->getLevel() >= 60;
+        bool isPlayerLevelMax = maxLevel == 60;
+
+        if (diff > 10 && !isPlayerLevelMax && !isTargetLevelMax)
             return;
 
         Map* map = creature->GetMap();

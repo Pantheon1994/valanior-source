@@ -788,8 +788,10 @@ class spell_last_defender : public AuraScript
                 auraEff->SetStackAmount(size);
         }
         else {
-            Aura* aura = unit->AddAura(spellId, unit);
-            aura->SetStackAmount(size);
+            if (Aura* aura = unit->AddAura(spellId, unit))
+            {
+                aura->SetStackAmount(size);
+            }
         }
     }
 

@@ -2554,25 +2554,45 @@ class spell_sha_spirit_link : public AuraScript
 
         Unit* caster = GetCaster();
 
+        if (!caster || caster->isDead())
+            return 0;
+
+        Unit* owner = GetCaster()->GetOwner();
+
+        if (!owner || owner->isDead())
+            return 0;
+
         auto const& allyList = group->GetMemberSlots();
 
+        if (!group)
+            return 0;
+
         uint8 count = 0;
+
         for (auto const& target : allyList)
+        {
             if (Player* member = ObjectAccessor::FindPlayer(target.guid)) {
-                float distance = member->GetDistance(caster->GetPosition());
-                if (member->IsAlive() && distance <= 10.0f)
-                    count += 1;
+                if (member->IsAlive()) {
+                    float distance = member->GetDistance(caster->GetPosition());
+                    if (distance <= 10.0f)
+                        count += 1;
+                }
             }
-
-
+        }
         return count;
     }
 
     void OnPeriodic(AuraEffect const* aurEff)
     {
+
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         Unit* owner = GetCaster()->GetOwner();
 
-        if (!owner)
+        if (!owner || owner->isDead())
             return;
 
         Group* group = owner->ToPlayer()->GetGroup();
@@ -2581,6 +2601,7 @@ class spell_sha_spirit_link : public AuraScript
             return;
 
         uint32 totalHealth = 0;
+        Position position = GetCaster()->GetPosition();
 
         auto const& allyList = group->GetMemberSlots();
 
@@ -2589,15 +2610,23 @@ class spell_sha_spirit_link : public AuraScript
                 if (member->IsAlive())
                     totalHealth += member->GetHealthPct();
 
-        uint32 pctAmount = totalHealth / GetMemberGroupCountAliveAndAtDistance(group);
+        uint8 groupCount = GetMemberGroupCountAliveAndAtDistance(group);
+
+        if (groupCount == 0)
+            return;
+
+        uint32 pctAmount = totalHealth / groupCount;
 
         for (auto const& target : allyList)
             if (Player* member = ObjectAccessor::FindPlayer(target.guid)) {
-                float distance = member->GetDistance(GetCaster()->GetPosition());
-                uint32 amount = member->CountPctFromMaxHealth(pctAmount);
+                if (member->IsAlive())
+                {
+                    float distance = member->GetDistance(position);
+                    uint32 amount = member->CountPctFromMaxHealth(pctAmount);
 
-                if (member->IsAlive() && distance <= 10.0f)
-                    member->SetHealth(amount);
+                    if (distance <= 10.0f)
+                        member->SetHealth(amount);
+                }
             }
     }
 

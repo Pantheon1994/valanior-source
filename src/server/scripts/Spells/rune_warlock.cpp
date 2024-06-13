@@ -1141,8 +1141,10 @@ class rune_warl_dread_calling : public AuraScript
         if (caster->HasAura(procSpell))
             caster->RemoveAura(procSpell);
 
-        Aura* buff = caster->AddAura(procSpell, caster);
-        buff->SetStackAmount(stackNbr);
+        if (Aura* buff = caster->AddAura(procSpell, caster))
+        {
+            buff->SetStackAmount(stackNbr);
+        }
     }
 
     void Register() override

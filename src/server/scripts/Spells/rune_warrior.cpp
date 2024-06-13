@@ -374,11 +374,17 @@ class spell_sweeping_rage_proc : public AuraScript
         if (!GetCaster()->HasAura(200244))
             return;
 
-        int32 stackAmount = GetCaster()->GetAura(200244)->GetStackAmount();
+
+        Aura* aura = GetCaster()->GetAura(200244);
+
+        if (!aura)
+            return;
+
+        int32 stackAmount = aura->GetStackAmount();
 
         GetCaster()->RemoveAura(200244);
         GetCaster()->CastSpell(GetCaster(), 200245, TRIGGERED_FULL_MASK);
-        GetCaster()->GetAura(200245)->SetStackAmount(stackAmount);
+        aura->SetStackAmount(stackAmount);
     }
 
     void Register() override

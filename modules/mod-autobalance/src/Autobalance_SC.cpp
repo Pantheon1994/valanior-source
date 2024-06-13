@@ -19,9 +19,14 @@ class Autobalance_PlayerScripts : public PlayerScript
 public:
     Autobalance_PlayerScripts() : PlayerScript("Autobalance_PlayerScripts") { }
 
+    void OnPlayerLearnTalents(Player* player, uint32 talentId, uint32 talentRank, uint32 spellid)
+    {
+        AutoBalanceManager::InitializePlayerRoleDependingOnTalentTree(player);
+    }
+
     void OnLogin(Player* player) override
     {
-
+        AutoBalanceManager::InitializePlayerRoleDependingOnTalentTree(player);
     }
 
     void OnCreate(Player* player)

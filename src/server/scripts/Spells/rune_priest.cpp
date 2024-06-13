@@ -2410,8 +2410,10 @@ class rune_pri_ancient_madness : public AuraScript
             if (caster->HasAura(buffAura))
                 caster->RemoveAura(buffAura);
 
-            caster->AddAura(buffAura, caster);
-            caster->GetAura(buffAura)->SetStackAmount(stackAmount);
+            if (Aura* aura = caster->AddAura(buffAura, caster))
+            {
+                aura->SetStackAmount(stackAmount);
+            }
         }
     }
 

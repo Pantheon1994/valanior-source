@@ -3035,6 +3035,10 @@ class spell_dk_tombstone : public SpellScript
         int32 absorbPct = value->GetEffect(EFFECT_1).CalcValue(caster);
 
         Aura* aura = caster->GetAura(SPELL_DK_BONE_SHIELD);
+
+        if (!aura)
+            return;
+
         int32 stackAmount = aura->GetStackAmount();
 
         if (stackAmount <= removalAmount)

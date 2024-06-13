@@ -1481,8 +1481,10 @@ class rune_druid_germination : public SpellScript
         target->RemoveAura(SPELL_REJUVENATION);
         caster->AddAura(SPELL_REJUVENATION, target);
 
-        Aura* rejuvAura = target->GetAura(SPELL_REJUVENATION);
-        rejuvAura->SetStackAmount(2);
+        if (Aura* rejuvAura = target->GetAura(SPELL_REJUVENATION))
+        {
+            rejuvAura->SetStackAmount(2);
+        }
         // rejuvAura->RefreshDuration();
         // rejuvAura->GetEffect(EFFECT_0)->ResetTicks();
         target->RemoveAura(RUNE_DRUID_GERMINATION_LISTENER);
@@ -2725,9 +2727,11 @@ class rune_druid_knowledge_agreement_remove : public AuraScript
 
         caster->AddAura(RUNE_DRUID_KNOWLEDGE_AGREEMENT_AFTERBUFF, caster);
 
-        Aura* afterBuff = caster->GetAura(RUNE_DRUID_KNOWLEDGE_AGREEMENT_AFTERBUFF);
-        afterBuff->SetStackAmount(stackAmount);
-        afterBuff->SetDuration(duration);
+        if (Aura* afterBuff = caster->GetAura(RUNE_DRUID_KNOWLEDGE_AGREEMENT_AFTERBUFF))
+        {
+            afterBuff->SetStackAmount(stackAmount);
+            afterBuff->SetDuration(duration);
+        }
 
         caster->RemoveAura(RUNE_DRUID_KNOWLEDGE_AGREEMENT_BUFF);
     }
@@ -3436,8 +3440,10 @@ class rune_druid_tigers_tenacity_cast : public SpellScript
 
         int32 stack = GetRuneAura(caster)->GetEffect(EFFECT_0)->GetAmount();
 
-        caster->AddAura(RUNE_DRUID_TIGERS_TENACITY_LISTENER, caster);
-        caster->GetAura(RUNE_DRUID_TIGERS_TENACITY_LISTENER)->SetStackAmount(stack);
+        if (Aura* aura = caster->AddAura(RUNE_DRUID_TIGERS_TENACITY_LISTENER, caster))
+        {
+            aura->SetStackAmount(stack);
+        }
     }
 
     void Register() override
