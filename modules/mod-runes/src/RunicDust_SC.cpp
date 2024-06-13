@@ -57,7 +57,7 @@ public:
         bool isTargetLevelMax = creature->getLevel() >= 60;
         bool isPlayerLevelMax = maxLevel == 60;
 
-        if (diff > 10 && !isPlayerLevelMax && !isTargetLevelMax)
+        if (diff > 10)
             return;
 
         Map* map = creature->GetMap();

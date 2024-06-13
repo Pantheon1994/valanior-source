@@ -630,15 +630,7 @@ Rune RunesManager::GetRandomRune(Player* player, uint8 quality)
         }
     }
     uint32 currentSpec = PlayerSpecialization::GetCurrentSpecId(player);
-    uint32 preferredSpecId = PlayerSpecialization::GetPreferredSpecId(player);
-    SpecValue specValue;
-
-    if (preferredSpecId) {
-        specValue = PlayerSpecialization::GetSpecValue(preferredSpecId);
-    }
-    else {
-        specValue = PlayerSpecialization::GetSpecValue(currentSpec);
-    }
+    SpecValue specValue = PlayerSpecialization::GetSpecValue(currentSpec);
 
     for (const auto& pair : m_Runes) {
         bool isClassAllowed = pair.second.allowableClass & player->getClassMask();
