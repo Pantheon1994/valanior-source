@@ -3472,8 +3472,9 @@ class rune_hunter_focalised_trueshot_remove : public AuraScript
             int32 stackAmount = listenerAura->GetStackAmount();
 
             player->RemoveAura(listenerAura);
-            player->CastSpell(player, RUNE_HUNTER_FOCALISED_TRUESHOT_BUFF, TRIGGERED_FULL_MASK);
-            player->GetAura(RUNE_HUNTER_FOCALISED_TRUESHOT_BUFF)->SetStackAmount(stackAmount);
+
+            if (Aura* aura = player->AddAura(RUNE_HUNTER_FOCALISED_TRUESHOT_BUFF, player))
+                aura->SetStackAmount(stackAmount);
         }
     }
 
