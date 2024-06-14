@@ -750,29 +750,7 @@ void MythicManager::OnKill(Player* player, Creature* killed)
     else
         mythic->OnKillCreature(player, killed);
 
-    bool isEnabled = sWorld->GetValue("CONFIG_MYTHIC_ENABLED_DISTRUBTION_KEY");
-
-    if (killed->IsDungeonBoss() && isEnabled) {
-        if (Group* group = player->GetGroup()) {
-            auto const& allyList = group->GetMemberSlots();
-            for (auto const& target : allyList)
-            {
-                Player* member = ObjectAccessor::FindPlayer(target.guid);
-                if (member) {
-                    MythicKey* key = GetCurrentPlayerMythicKey(member);
-                    if (!key) {
-                        GenerateFirstRandomMythicKey(member);
-                    }
-                }
-            }
-        }
-        else {
-            MythicKey* key = GetCurrentPlayerMythicKey(player);
-            if (!key) {
-                GenerateFirstRandomMythicKey(player);
-            }
-        }
-    }
+   
 }
 
 void MythicManager::OnPlayerDie(Player* player, Creature* killed)
