@@ -72,6 +72,14 @@ public:
 
     void OnMapChanged(Player* player)
     {
+        Map* map = player->GetMap();
+
+        if (!map)
+            return;
+
+        if (!map->IsDungeon())
+            return;
+
         sMythicMgr->ListenCreationMythicOnMapChanged(player);
 
         bool showUI = sMythicMgr->ShouldShowMythicUI(player);
