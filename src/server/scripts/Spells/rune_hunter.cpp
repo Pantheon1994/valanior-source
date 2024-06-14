@@ -2102,12 +2102,12 @@ class rune_hunter_howl : public AuraScript
 
             if (pet && pet->IsAlive())
             {
-                if (pet->HasAura(SPELL_HUNTER_BESTIAL_WRATH_AURA))
-                    pet->GetAura(SPELL_HUNTER_BESTIAL_WRATH_AURA)->SetDuration(duration);
+                if (Aura* petAura = pet->GetAura(SPELL_HUNTER_BESTIAL_WRATH_AURA))
+                    petAura->SetDuration(duration);
                 else
                 {
-                    player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, pet);
-                    pet->GetAura(SPELL_HUNTER_BESTIAL_WRATH_AURA)->SetDuration(duration);
+                    if (Aura* playerWrath = player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, pet))
+                        playerWrath->SetDuration(duration);
                 }
             }
 
@@ -2119,24 +2119,24 @@ class rune_hunter_howl : public AuraScript
                 if (unit->isDead())
                     continue;
 
-                if (unit->HasAura(SPELL_HUNTER_BESTIAL_WRATH_AURA))
-                    unit->GetAura(SPELL_HUNTER_BESTIAL_WRATH_AURA)->SetDuration(duration);
+                if (Aura* unitAura = unit->GetAura(SPELL_HUNTER_BESTIAL_WRATH_AURA))
+                    unitAura->SetDuration(duration);
                 else
                 {
-                    player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, unit);
-                    unit->GetAura(SPELL_HUNTER_BESTIAL_WRATH_AURA)->SetDuration(duration);
+                    if (Aura* unitWrath = player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, pet))
+                        unitWrath->SetDuration(duration);
                 }
             }
         }
         else
         {
-            player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, player);
-            player->GetAura(SPELL_HUNTER_BESTIAL_WRATH_AURA)->SetDuration(baseDuration);
+            if (Aura* playerAura = player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, player))
+                playerAura->SetDuration(baseDuration);
 
             if (pet && pet->IsAlive())
             {
-                player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, pet);
-                pet->GetAura(SPELL_HUNTER_BESTIAL_WRATH_AURA)->SetDuration(baseDuration);
+                if (Aura* petWrath = player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, pet))
+                    petWrath->SetDuration(baseDuration);
             }
 
             if (summonedUnits.size() == 0)
@@ -2147,8 +2147,8 @@ class rune_hunter_howl : public AuraScript
                 if (unit->isDead())
                     continue;
 
-                player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, unit);
-                unit->GetAura(SPELL_HUNTER_BESTIAL_WRATH_AURA)->SetDuration(baseDuration);
+                if (Aura* unitWrath = player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, unit))
+                    unitWrath->SetDuration(baseDuration);
             }
         }
     }
@@ -2249,7 +2249,7 @@ class rune_hunter_killer_cobra_apply : public AuraScript
         if (!GetCaster() || GetCaster()->isDead())
             return;
 
-        if (!GetRuneAura() || GetCaster()->isDead())
+        if (!GetRuneAura())
             return;
 
         int32 buffAura = GetRuneAura()->GetSpellInfo()->GetEffect(EFFECT_0).TriggerSpell;
