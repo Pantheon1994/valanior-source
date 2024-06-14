@@ -426,7 +426,6 @@ bool MythicManager::IsStatTypeAllowableSpec(uint32 currentSpec, uint32 statType)
 
 void MythicManager::UpdatePlayerKey(Player* player, int8 upgrade)
 {
-
     if (!player)
         return;
 
@@ -605,6 +604,9 @@ void MythicManager::GenerateMythicKeyByLevelAndDungeonId(Player* player, uint32 
 
 MythicKey* MythicManager::GetCurrentPlayerMythicKey(Player* player)
 {
+    if (!player)
+        return nullptr;
+
     auto itr = MythicPlayerKeyStore.find(player->GetGUID().GetCounter());
     if (itr != MythicPlayerKeyStore.end()) {
         return &itr->second;
