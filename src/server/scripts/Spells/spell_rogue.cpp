@@ -2036,22 +2036,22 @@ class spell_rog_retaliation : public AuraScript
 
         uint32 chance = CalculatePct(caster->GetUnitParryChance(), aurEff->GetAmount());
 
-        if (!roll_chance_i(chance))
-            return;
-
-        if (Aura* runeAura = GetQuickRiposteAura(caster))
+        if (roll_chance_i(chance))
         {
-            int32 procSpell = runeAura->GetEffect(EFFECT_0)->GetAmount();
-            caster->AddAura(procSpell, caster);
-        }
+            caster->RemoveSpellCooldown(SPELL_ROGUE_RIPOSTE, true);
 
-        if (Aura* runeAura = GetCunningRetaliationAura(caster))
-        {
-            int32 procSpell = runeAura->GetEffect(EFFECT_0)->GetAmount();
-            caster->AddAura(procSpell, caster);
-        }
+            if (Aura* runeAura = GetQuickRiposteAura(caster))
+            {
+                int32 procSpell = runeAura->GetEffect(EFFECT_0)->GetAmount();
+                caster->AddAura(procSpell, caster);
+            }
 
-        caster->RemoveSpellCooldown(SPELL_ROGUE_RIPOSTE, true);
+            if (Aura* runeAura = GetCunningRetaliationAura(caster))
+            {
+                int32 procSpell = runeAura->GetEffect(EFFECT_0)->GetAmount();
+                caster->AddAura(procSpell, caster);
+            }
+        }  
     }
 
     void Register() override

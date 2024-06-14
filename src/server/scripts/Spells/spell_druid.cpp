@@ -114,6 +114,7 @@ enum DruidSpells
     SPELL_DRUID_SOOTHE_BEAR                 = 80562,
     SPELL_DRUID_REMOVE_CORRUPTION_BEAR      = 80563,
     SPELL_DRUID_BRISTLING_FUR_PROC          = 80565,
+    SPELL_DRUID_THRASH_BEAR_BASE            = 80561,
     SPELL_DRUID_THRASH_BEAR                 = 80583,
     SPELL_DRUID_GUARDIAN_HEALTH             = 80569,
     SPELL_DRUID_GUARDIAN_OF_URSOC           = 80568,
@@ -2591,6 +2592,24 @@ class spell_dru_bristling_fur : public AuraScript
     }
 };
 
+class spell_dru_thrash_bear : public AuraScript
+{
+    PrepareAuraScript(spell_dru_thrash_bear);
+
+    void OnReApply(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        SpellInfo const* value = sSpellMgr->AssertSpellInfo(SPELL_DRUID_THRASH_BEAR_BASE);
+        uint32 maxStack = value->GetEffect(EFFECT_2).CalcValue(GetCaster());
+        if (aurEff->GetBase()->GetStackAmount() > maxStack)
+            aurEff->GetBase()->SetStackAmount(maxStack);
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_dru_thrash_bear::OnReApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAPPLY);
+    }
+};
+
 class spell_dru_pulverize : public SpellScript
 {
     PrepareSpellScript(spell_dru_pulverize);
@@ -3410,4 +3429,5 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_starfire_aoe);
     RegisterSpellScript(spell_dru_incapacitating_roar);
     RegisterSpellScript(spell_dru_natural_lifeform);
+    RegisterSpellScript(spell_dru_thrash_bear);
 }

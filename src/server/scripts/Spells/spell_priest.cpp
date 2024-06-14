@@ -1371,7 +1371,9 @@ class spell_pri_shadow_word_death : public SpellScript
         if (!target || target->isDead())
             return;
 
-        if (!GetDeathspeakerBuff(caster))
+        if (Aura* buff = GetDeathspeakerBuff(caster))
+            buff->Remove();
+        else
         {
             if (Aura* painAndSuffering = caster->GetAuraOfRankedSpell(TALENT_PRIEST_PAIN_AND_SUFFERING))
                 damage -= CalculatePct(damage, painAndSuffering->GetEffect(EFFECT_1)->GetAmount());
