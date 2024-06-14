@@ -124,6 +124,9 @@ uint32 Mythic::GetBossIndex(uint32 creatureId)
 
 void Mythic::OnCompleteMythicDungeon(Player* player)
 {
+    if (!player)
+        return;
+
     Done = true;
 
    int8 upgrade = CalculateUpgradeKey();
