@@ -498,7 +498,7 @@ Mythic* MythicManager::GetMythicPlayer(Player* player)
         return nullptr;
 
     if (itr != MythicStore.end())
-        if(itr->second && itr->second->GetDungeonMapId() == player->GetMapId())
+        if(itr->second && itr->second->Dungeon && itr->second->Dungeon->GetInstanceId() == player->GetInstanceId())
             return itr->second.get();
 
     return nullptr;
