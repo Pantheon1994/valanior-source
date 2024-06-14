@@ -45,7 +45,7 @@ public:
     {
         bool isEnabled = sWorld->GetValue("CONFIG_MYTHIC_ENABLED_DISTRUBTION_KEY");
 
-        if (killed->IsDungeonBoss() && isEnabled) {
+        if (killed->IsDungeonBoss() && isEnabled && killer->GetMap()->GetDifficulty() == DUNGEON_DIFFICULTY_EPIC) {
             if (Group* group = killer->GetGroup()) {
                 auto const& allyList = group->GetMemberSlots();
                 for (auto const& target : allyList)

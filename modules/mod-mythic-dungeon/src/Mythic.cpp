@@ -255,9 +255,10 @@ void Mythic::GiveRewards()
     {
         if (Player* player = playerIteration->GetSource())
         {
-            uint32 runicDust = reward.runicDust * (BonusMultiplier / 100);
-            uint32 runicEssence = reward.runicEssence * (BonusMultiplier / 100);
-            uint32 tokenCount = reward.tokenCount * (BonusMultiplier / 100);
+            float bonus = (BonusMultiplier / 100);;
+            uint32 runicDust = reward.runicDust * bonus;
+            uint32 runicEssence = reward.runicEssence * bonus;
+            uint32 tokenCount = reward.tokenCount * bonus;
 
             player->AddItem(70008, runicDust);
             player->AddItem(70009, runicEssence);

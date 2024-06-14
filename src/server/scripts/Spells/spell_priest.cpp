@@ -4242,7 +4242,7 @@ class spell_pri_heal : public SpellScript
 
     Aura* GetEverlastingLightAura(Unit* caster)
     {
-        for (size_t i = 901046; i < 901052; i++)
+        for (size_t i = 901048; i < 901053; i++)
         {
             if (caster->HasAura(i))
                 return caster->GetAura(i);

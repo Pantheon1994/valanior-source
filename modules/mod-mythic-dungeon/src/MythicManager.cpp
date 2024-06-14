@@ -42,7 +42,7 @@ void MythicManager::InitializeMythicDungeons()
 {
     MythicDungeonStore = {};
 
-    QueryResult result = WorldDatabase.Query("SELECT id, amountToKill, timeToComplete, mapId, `name`, position_x, position_y, position_z, orientation, itemId,`bonus` FROM dungeon_mythic WHERE `enable` = 1");
+    QueryResult result = WorldDatabase.Query("SELECT id, amountToKill, timeToComplete, mapId, `name`, position_x, position_y, position_z, orientation, itemId, `bonus` FROM dungeon_mythic WHERE `enable` = 1");
 
     if (!result)
         return;
