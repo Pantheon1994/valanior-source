@@ -55,6 +55,11 @@ public:
 
         Map* map = creature->GetMap();
 
+        int32 diff = player->getLevel() - creature->getLevel();
+
+        if (diff > 10)
+            return;
+
         const int CONFIG_DROP_RUNIC_ESSENCE_NORMAL_CREATURE = sWorld->GetValue("CONFIG_DROP_RUNIC_ESSENCE_NORMAL_CREATURE");
         const int CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS = sWorld->GetValue("CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS");
         const int CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS = sWorld->GetValue("CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS");

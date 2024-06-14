@@ -1940,7 +1940,7 @@ class rune_merciless : public AuraScript
 
     Aura* GetRuneAura()
     {
-        for (size_t i = 201253; i < 201259; i++)
+        for (size_t i = 201253; i < 201258; i++)
         {
             if (GetCaster()->HasAura(i))
                 return GetCaster()->GetAura(i);
@@ -1951,11 +1951,14 @@ class rune_merciless : public AuraScript
 
     void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
-        if (!GetCaster() || GetCaster()->isDead())
+
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
             return;
 
         if (Aura* runeAura = GetRuneAura())
-            GetCaster()->CastSpell(GetCaster(), runeAura->GetEffect(EFFECT_1)->GetAmount(), TRIGGERED_FULL_MASK);
+            GetCaster()->CastSpell(caster, runeAura->GetEffect(EFFECT_0)->GetAmount(), TRIGGERED_FULL_MASK);
     }
 
     void Register() override
@@ -3163,7 +3166,7 @@ void AddSC_warrior_perks_scripts()
     RegisterSpellScript(rune_devastator);
     RegisterSpellScript(rune_battle_scarred_veteran);
     RegisterSpellScript(rune_bonegrinder);
-    RegisterSpellScript(rune_merciless);
+    // RegisterSpellScript(rune_merciless);
     RegisterSpellScript(rune_hack_and_slash);
     RegisterSpellScript(rune_heavy_blocks);
     RegisterSpellScript(rune_impenetrable_shield);
