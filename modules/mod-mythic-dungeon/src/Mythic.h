@@ -41,6 +41,7 @@ public:
     void OnCompleteMythicDungeon(Player* player);
     uint32 GetDungeonMapId() { return Dungeon->GetId(); };
     void OnPlayerRelease(Player* player);
+    Map* Dungeon;
 
 private:
 
@@ -61,7 +62,6 @@ private:
     Player* KeyOwner;
     uint32 DungeonId;
     uint32 TimeToComplete;
-    Map* Dungeon;
     int StartTimer;
     uint32 Countdown;
     uint8 Iteration;
