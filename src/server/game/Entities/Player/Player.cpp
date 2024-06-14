@@ -10381,7 +10381,7 @@ void Player::InitDataForForm(bool reapplyMods)
 
     // update auras at form change, ignore this at mods reapply (.reset stats/etc) when form not change.
     if (!reapplyMods)
-        UpdateEquipSpellsAtFormChange();
+        // UpdateEquipSpellsAtFormChange();
 
     UpdateAttackPowerAndDamage();
     UpdateAttackPowerAndDamage(true);

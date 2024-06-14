@@ -3493,7 +3493,7 @@ class spell_warl_malefic_rapture : public SpellScript
 
                         if (auraInfo->SpellFamilyFlags[2] & 0x80000000 && auraInfo->SpellFamilyName == SPELLFAMILY_WARLOCK)
                         {
-                            caster->CastSpell(target, SPELL_WARLOCK_MALEFIC_RAPTURE_DAMAGE, TRIGGERED_FULL_MASK);
+                            target->CastSpell(target, SPELL_WARLOCK_MALEFIC_RAPTURE_DAMAGE, TRIGGERED_FULL_MASK, nullptr, nullptr, caster->GetGUID());
 
                             if (durationIncrease > 0)
                                 aura->SetDuration(aura->GetDuration() + durationIncrease);

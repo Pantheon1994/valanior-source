@@ -312,12 +312,33 @@ void AutoBalanceManager::InitializePlayerRoleDependingOnTalentTree(Player* playe
             if (const TalentEntry* itrTalentInfo = sTalentStore.LookupEntry(talentPos->talent_id))
             {
                 uint32 tab = itrTalentInfo->TalentTab;
+                bool hasTalent = false;
+
+                for (uint8 j = 0; j < MAX_TALENT_RANK; ++j)
+                {
+                    if (itrTalentInfo->RankID[j])
+                    {
+                        if (player->HasSpell(itrTalentInfo->RankID[j]) || player->HasAura(itrTalentInfo->RankID[j]))
+                        {
+                            hasTalent = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!hasTalent)
+                    continue;
+
                 if (IsATalentDps(tab)) dpsTalentCount += 1;
                 if (IsATalentTank(tab)) tankTalentCount += 1;
                 if (IsATalentHeal(tab)) healTalentCount += 1;
             }
         }
     }
+
+    LOG_ERROR("dpsTalentCount", "dpsTalentCount {}", dpsTalentCount);
+    LOG_ERROR("dpsTalentCount", "tankTalentCount {}", tankTalentCount);
+    LOG_ERROR("dpsTalentCount", "healTalentCount {}", healTalentCount);
 
     if (tankTalentCount > 20)
     {
@@ -389,6 +410,7 @@ bool AutoBalanceManager::IsATalentTank(uint32 tab)
     case TALENT_TREE_PALADIN_PROTECTION:
     case TALENT_TREE_DRUID_GUARDIAN:
     case TALENT_TREE_DEATH_KNIGHT_BLOOD:
+    case TALENT_TREE_WARLOCK_DEMONBOUND:
         return true;
     default:
         return false;
