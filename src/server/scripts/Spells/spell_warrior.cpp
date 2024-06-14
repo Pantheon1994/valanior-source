@@ -1860,6 +1860,9 @@ class spell_warr_berserkers_way : public AuraScript
     {
         Player* caster = GetUnitOwner()->ToPlayer();
 
+        if (!caster || caster->isDead())
+            return;
+
         caster->removeSpell(SPELL_WARRIOR_BERSERKER_STANCE, SPEC_MASK_ALL, false);
         caster->removeSpell(SPELL_WARRIOR_RAGING_BLOW, SPEC_MASK_ALL, false);
         caster->removeSpell(SPELL_WARRIOR_TITANS_GRIP, SPEC_MASK_ALL, false);
