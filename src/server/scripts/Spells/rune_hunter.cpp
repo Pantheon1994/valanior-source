@@ -1840,7 +1840,7 @@ class rune_hunter_brutal_companion : public AuraScript
         int32 damage = CalculatePct(ap, ratio);
 
         pet->Attack(target, true);
-        pet->CastCustomSpell(SPELL_HUNTER_KILL_COMMAND_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr, caster->GetGUID());
+        pet->CastCustomSpell(SPELL_HUNTER_KILL_COMMAND_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr);
 
         auto summonedUnits = caster->m_Controlled;
 

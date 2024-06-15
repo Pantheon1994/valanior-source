@@ -2847,10 +2847,10 @@ class rune_mage_cold_front : public AuraScript
 
         if (Player* player = caster->ToPlayer())
         {
-            if (caster->HasAura(RUNE_MAGE_COLD_FRONT_BUFF))
+            if (Aura* buff = caster->GetAura(RUNE_MAGE_COLD_FRONT_BUFF))
             {
                 caster->CastSpell(target, SPELL_MAGE_FROZEN_ORB, TRIGGERED_FULL_MASK);
-                caster->RemoveAura(RUNE_MAGE_COLD_FRONT_BUFF);
+                buff->Remove();
             }
         }
     }
@@ -2862,11 +2862,11 @@ class rune_mage_cold_front : public AuraScript
         if (!caster || caster->isDead())
             return;
 
-        if (caster->HasAura(RUNE_MAGE_COLD_FRONT_LISTENER))
-            caster->RemoveAura(RUNE_MAGE_COLD_FRONT_LISTENER);
+        if (Aura* listener = caster->GetAura(RUNE_MAGE_COLD_FRONT_LISTENER))
+            listener->Remove();
 
-        if (caster->HasAura(RUNE_MAGE_COLD_FRONT_BUFF))
-            caster->RemoveAura(RUNE_MAGE_COLD_FRONT_BUFF);
+        if (Aura* buff = caster->GetAura(RUNE_MAGE_COLD_FRONT_BUFF))
+            buff->Remove();
     }
 
     void Register() override

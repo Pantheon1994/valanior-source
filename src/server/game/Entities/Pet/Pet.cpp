@@ -1130,6 +1130,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     {
     case HUNTER_PET:
     {
+        AddAura(SPELL_PET_AVOIDANCE, this);
         SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
         SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
         SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, uint32(sObjectMgr->GetXPForLevel(petlevel) * sWorld->getRate(RATE_XP_PET_NEXT_LEVEL)));
@@ -1582,6 +1583,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         }
         case NPC_ANIMAL_COMPANION:
         {
+            AddAura(SPELL_PET_AVOIDANCE, this);
             SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
             AddAura(TALENT_HUNTER_ANIMAL_COMPANION_DEBUFF, this);
