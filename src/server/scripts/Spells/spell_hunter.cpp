@@ -47,7 +47,6 @@ enum HunterSpells
     SPELL_HUNTER_ASPECT_OF_THE_BEAST_PET = 61669,
     SPELL_HUNTER_ASPECT_OF_THE_VIPER = 34074,
     SPELL_HUNTER_ASPECT_OF_THE_VIPER_ENERGIZE = 34075,
-    SPELL_HUNTER_BESTIAL_WRATH = 19574,
     SPELL_HUNTER_CHIMERA_SHOT_SERPENT = 53353,
     SPELL_HUNTER_CHIMERA_SHOT_VIPER = 53358,
     SPELL_HUNTER_CHIMERA_SHOT_SCORPID = 53359,
@@ -70,8 +69,9 @@ enum HunterSpells
     SPELL_HUNTER_WYVERN_STING_DOT = 80156,
     SPELL_HUNTER_WILDFIRE_BOMB = 80188,
     SPELL_HUNTER_KILL_SHOT = 61006,
+    SPELL_HUNTER_BESTIAL_WRATH = 80133,
+    SPELL_HUNTER_BESTIAL_WRATH_AURA = 80132,
     SPELL_HUNTER_BESTIAL_WRATH_DAMAGE = 80229,
-    SPELL_HUNTER_BESTIAL_WRATH_BUFF = 80132,
     SPELL_HUNTER_SPEARHEAD = 80206,
     SPELL_HUNTER_VICIOUS_VIPER = 61609,
     SPELL_HUNTER_VIPER_ATTACK_SPEED = 60144,
@@ -1468,8 +1468,8 @@ class spell_hun_bestial_apply : public SpellScript
         int32 ratio = sSpellMgr->AssertSpellInfo(SPELL_HUNTER_BESTIAL_WRATH_DAMAGE)->GetEffect(EFFECT_0).CalcValue(player);
         int32 damage = CalculatePct(ap, ratio);
 
-        player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_BUFF, pet);
-        player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_BUFF, player);
+        player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, pet);
+        player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, player);
 
         pet->CastCustomSpell(SPELL_HUNTER_BESTIAL_WRATH_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr);
 
@@ -1481,7 +1481,7 @@ class spell_hun_bestial_apply : public SpellScript
 
             if (unit->GetCharmInfo() && unit->GetEntry() == 600612)
             {
-                player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_BUFF, unit);
+                player->AddAura(SPELL_HUNTER_BESTIAL_WRATH_AURA, unit);
                 unit->CastCustomSpell(SPELL_HUNTER_BESTIAL_WRATH_DAMAGE, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, nullptr);
             }
         }
@@ -2004,20 +2004,58 @@ class spell_hun_cobra_shot : public SpellScript
 {
     PrepareSpellScript(spell_hun_cobra_shot);
 
+    Aura* GetRuneKillerCobra(Unit* caster)
+    {
+        for (size_t i = 500784; i < 500790; i++)
+        {
+            if (caster->HasAura(i))
+                return caster->GetAura(i);
+        }
+
+        return nullptr;
+    }
+
     void HandleCast()
     {
-        Player* target = GetCaster()->ToPlayer();
+        Unit* caster = GetCaster();
 
-        if (!target || !target->IsAlive())
+        if (!caster || caster->isDead())
             return;
 
-        int32 amount = sSpellMgr->GetSpellInfo(SPELL_HUNTER_COBRA_SHOT)->GetEffect(EFFECT_1).CalcValue(target);
-        target->ModifySpellCooldown(SPELL_HUNTER_KILL_COMMAND, amount);
+        if (Player* player = caster->ToPlayer())
+        {
+            int32 amount = sSpellMgr->GetSpellInfo(SPELL_HUNTER_COBRA_SHOT)->GetEffect(EFFECT_1).CalcValue(player);
+            if (GetRuneKillerCobra(caster) && caster->HasAura(SPELL_HUNTER_BESTIAL_WRATH_AURA))
+                player->RemoveSpellCooldown(SPELL_HUNTER_KILL_COMMAND, true);
+            else
+                player->ModifySpellCooldown(SPELL_HUNTER_KILL_COMMAND, amount);
+        }
+    }
+
+    void HandleHitTarget(SpellEffIndex effIndex)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        int32 damage = GetHitDamage();
+
+        if (Aura* runeAura = GetRuneKillerCobra(caster))
+            if (caster->HasAura(SPELL_HUNTER_BESTIAL_WRATH_AURA))
+            {
+                int32 increase = runeAura->GetEffect(EFFECT_0)->GetAmount();
+
+                AddPct(damage, increase);
+            }
+
+        SetHitDamage(damage);
     }
 
     void Register() override
     {
         OnCast += SpellCastFn(spell_hun_cobra_shot::HandleCast);
+        OnEffectHitTarget += SpellEffectFn(spell_hun_cobra_shot::HandleHitTarget, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 

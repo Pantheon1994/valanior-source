@@ -2217,93 +2217,6 @@ class rune_hunter_sustained_anger : public AuraScript
     }
 };
 
-class rune_hunter_killer_cobra_apply : public AuraScript
-{
-    PrepareAuraScript(rune_hunter_killer_cobra_apply);
-
-    Aura* GetRuneAura()
-    {
-        if (GetCaster()->HasAura(500784))
-            return GetCaster()->GetAura(500784);
-
-        if (GetCaster()->HasAura(500785))
-            return GetCaster()->GetAura(500785);
-
-        if (GetCaster()->HasAura(500786))
-            return GetCaster()->GetAura(500786);
-
-        if (GetCaster()->HasAura(500787))
-            return GetCaster()->GetAura(500787);
-
-        if (GetCaster()->HasAura(500788))
-            return GetCaster()->GetAura(500788);
-
-        if (GetCaster()->HasAura(500789))
-            return GetCaster()->GetAura(500789);
-
-        return nullptr;
-    }
-
-    void HandleProc(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        if (!GetCaster() || GetCaster()->isDead())
-            return;
-
-        if (!GetRuneAura())
-            return;
-
-        int32 buffAura = GetRuneAura()->GetSpellInfo()->GetEffect(EFFECT_0).TriggerSpell;
-
-        GetCaster()->AddAura(buffAura, GetCaster());
-    }
-
-    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
-    {
-        if (!GetCaster() || GetCaster()->isDead())
-            return;
-
-        if (GetCaster()->HasAura(500790))
-            GetCaster()->RemoveAura(500790);
-
-        if (GetCaster()->HasAura(500791))
-            GetCaster()->RemoveAura(500791);
-
-        if (GetCaster()->HasAura(500792))
-            GetCaster()->RemoveAura(500792);
-
-        if (GetCaster()->HasAura(500793))
-            GetCaster()->RemoveAura(500793);
-
-        if (GetCaster()->HasAura(500794))
-            GetCaster()->RemoveAura(500794);
-
-        if (GetCaster()->HasAura(500795))
-            GetCaster()->RemoveAura(500795);
-    }
-
-    void Register() override
-    {
-        OnEffectApply += AuraEffectApplyFn(rune_hunter_killer_cobra_apply::HandleProc, EFFECT_0, SPELL_AURA_MECHANIC_IMMUNITY, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(rune_hunter_killer_cobra_apply::HandleRemove, EFFECT_0, SPELL_AURA_MECHANIC_IMMUNITY, AURA_EFFECT_HANDLE_REAL);
-    }
-};
-
-class rune_hunter_killer_cobra : public AuraScript
-{
-    PrepareAuraScript(rune_hunter_killer_cobra);
-
-    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-    {
-        if (Player* caster = GetCaster()->ToPlayer())
-            caster->RemoveSpellCooldown(SPELL_HUNTER_KILL_COMMAND, true);
-    }
-
-    void Register()
-    {
-        OnEffectProc += AuraEffectProcFn(rune_hunter_killer_cobra::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
-    }
-};
-
 class rune_hunter_thunderslash_aura : public AuraScript
 {
     PrepareAuraScript(rune_hunter_thunderslash_aura);
@@ -4567,8 +4480,6 @@ void AddSC_hunter_perks_scripts()
     RegisterSpellScript(rune_hunter_howl);
     RegisterSpellScript(rune_hunter_barbed_wrath);
     RegisterSpellScript(rune_hunter_sustained_anger);
-    RegisterSpellScript(rune_hunter_killer_cobra_apply);
-    RegisterSpellScript(rune_hunter_killer_cobra);
     RegisterSpellScript(rune_hunter_thunderslash_aura);
     RegisterSpellScript(rune_hunter_thunderslash);
     RegisterSpellScript(rune_hunter_wild_instincts);

@@ -1669,7 +1669,7 @@ class spell_gen_obsidian_armor : public AuraScript
         int32 amount = apAmount + spRatio + stamRatio;
 
         GetEffect(EFFECT_0)->ChangeAmount(amount);
-        caster->CastCustomSpell(spellId, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
+        caster->CastCustomSpell(spellId, SPELLVALUE_BASE_POINT0, amount, caster);
         //caster->CastSpell(caster, spellId, true, nullptr, aurEff);
     }
 
