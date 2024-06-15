@@ -192,7 +192,6 @@ void MythicManager::SaveMythicKey(Player* player, uint32 newDungeonId, uint32 le
 void MythicManager::Update(uint32 diff)
 {
     if (MythicStore.empty()) {
-        std::cerr << "MythicStore is empty." << std::endl;
         return;
     }
 

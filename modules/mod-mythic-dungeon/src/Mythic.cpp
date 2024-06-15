@@ -45,7 +45,6 @@ void Mythic::Update(uint32 diff)
         if (playerList.IsEmpty())
             return;
 
-
         Countdown += diff;
         StartTimer -= diff;
 
