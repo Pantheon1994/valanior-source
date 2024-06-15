@@ -362,8 +362,8 @@ class spell_mastery_ignite : public AuraScript
                     amount += remainingAmount;
                 }
 
-                int32 totalTicks = sSpellMgr->AssertSpellInfo(MASTERY_MAGE_IGNITE_DOTS)->GetMaxTicks();
-                amount = std::max<int32>(1, amount / totalTicks);
+                amount /= 9;
+                amount = std::max<int32>(1, amount);
 
                 player->CastCustomSpellTrigger(MASTERY_MAGE_IGNITE_DOTS, SPELLVALUE_BASE_POINT0, amount, eventInfo.GetProcTarget(), TRIGGERED_IGNORE_AURA_SCALING);
             }
