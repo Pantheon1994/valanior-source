@@ -1151,6 +1151,7 @@ class rune_rog_doomblade : public AuraScript
                     maxValue = oldDamage;
 
                 dot->ChangeAmount(maxValue);
+                doombladeDot->RefreshDuration();
             }
         }
         else {
