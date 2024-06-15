@@ -1144,16 +1144,18 @@ class rune_rog_doomblade : public AuraScript
             {
                 int32 remainingDamage = dot->GetAmount() * dot->GetRemaningTicks();
                 amount += remainingDamage / 8;
-                target->RemoveAura(dot->GetBase());
+
+                uint32 maxValue = amount;
+
+                if (amount > oldDamage)
+                    maxValue = oldDamage;
+
+                dot->ChangeAmount(maxValue);
             }
         }
-
-        uint32 maxValue = amount;
-
-        if (amount > oldDamage)
-            maxValue = oldDamage;
-
-        caster->CastCustomSpell(RUNE_ROGUE_DOOMBLADE_DOT, SPELLVALUE_BASE_POINT0, maxValue, target, TRIGGERED_FULL_MASK);
+        else {
+            caster->CastCustomSpell(RUNE_ROGUE_DOOMBLADE_DOT, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
+        }
     }
 
     void Register()
