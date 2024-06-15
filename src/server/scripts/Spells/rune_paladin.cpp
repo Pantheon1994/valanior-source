@@ -996,22 +996,27 @@ class rune_pal_empyreal_ward : public SpellScript
 
     Aura* GetRuneAura()
     {
-        if (GetCaster()->HasAura(400504))
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return nullptr;
+
+        if (caster->HasAura(400504))
             return GetCaster()->GetAura(400504);
 
-        if (GetCaster()->HasAura(400505))
+        if (caster->HasAura(400505))
             return GetCaster()->GetAura(400505);
 
-        if (GetCaster()->HasAura(400506))
+        if (caster->HasAura(400506))
             return GetCaster()->GetAura(400506);
 
-        if (GetCaster()->HasAura(400507))
+        if (caster->HasAura(400507))
             return GetCaster()->GetAura(400507);
 
-        if (GetCaster()->HasAura(400508))
+        if (caster->HasAura(400508))
             return GetCaster()->GetAura(400508);
 
-        if (GetCaster()->HasAura(400509))
+        if (caster->HasAura(400509))
             return GetCaster()->GetAura(400509);
 
         return nullptr;
@@ -1039,22 +1044,27 @@ class rune_pal_echoing_hands_freedom : public AuraScript
 
     void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
-        if (GetCaster()->HasAura(400516))
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (caster->HasAura(400516))
             GetCaster()->AddAura(400522, GetTarget());
 
-        if (GetCaster()->HasAura(400517))
+        if (caster->HasAura(400517))
             GetCaster()->AddAura(400523, GetTarget());
 
-        if (GetCaster()->HasAura(400518))
+        if (caster->HasAura(400518))
             GetCaster()->AddAura(400524, GetTarget());
 
-        if (GetCaster()->HasAura(400519))
+        if (caster->HasAura(400519))
             GetCaster()->AddAura(400525, GetTarget());
 
-        if (GetCaster()->HasAura(400520))
+        if (caster->HasAura(400520))
             GetCaster()->AddAura(400526, GetTarget());
 
-        if (GetCaster()->HasAura(400521))
+        if (caster->HasAura(400521))
             GetCaster()->AddAura(400527, GetTarget());
     }
 
@@ -1070,23 +1080,28 @@ class rune_pal_echoing_hands_protection : public AuraScript
 
     void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
-        if (GetCaster()->HasAura(400516))
-            GetCaster()->AddAura(400528, GetTarget());
+        Unit* caster = GetCaster();
 
-        if (GetCaster()->HasAura(400517))
-            GetCaster()->AddAura(400529, GetTarget());
+        if (!caster || caster->isDead())
+            return;
 
-        if (GetCaster()->HasAura(400518))
-            GetCaster()->AddAura(400530, GetTarget());
+        if (caster->HasAura(400516))
+            caster->AddAura(400528, GetTarget());
 
-        if (GetCaster()->HasAura(400519))
-            GetCaster()->AddAura(400531, GetTarget());
+        if (caster->HasAura(400517))
+            caster->AddAura(400529, GetTarget());
 
-        if (GetCaster()->HasAura(400520))
-            GetCaster()->AddAura(400532, GetTarget());
+        if (caster->HasAura(400518))
+            caster->AddAura(400530, GetTarget());
 
-        if (GetCaster()->HasAura(400521))
-            GetCaster()->AddAura(400533, GetTarget());
+        if (caster->HasAura(400519))
+            caster->AddAura(400531, GetTarget());
+
+        if (caster->HasAura(400520))
+            caster->AddAura(400532, GetTarget());
+
+        if (caster->HasAura(400521))
+            caster->AddAura(400533, GetTarget());
     }
 
     void Register() override

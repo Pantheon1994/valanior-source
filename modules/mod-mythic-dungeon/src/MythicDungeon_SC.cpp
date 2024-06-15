@@ -45,7 +45,7 @@ public:
     {
         bool isEnabled = sWorld->GetValue("CONFIG_MYTHIC_ENABLED_DISTRUBTION_KEY");
 
-        if (killed->IsDungeonBoss() && isEnabled) {
+        if (killed->IsDungeonBoss() && isEnabled && killer->GetMap()->GetDifficulty() == DUNGEON_DIFFICULTY_EPIC) {
             if (Group* group = killer->GetGroup()) {
                 auto const& allyList = group->GetMemberSlots();
                 for (auto const& target : allyList)
@@ -78,7 +78,16 @@ public:
             return;
 
         if (!map->IsDungeon())
+        {
+            sEluna->SendShowMythicUI(player, false, false);
             return;
+        }
+
+        if (map->GetInstanceId() == 0)
+        {
+            sEluna->SendShowMythicUI(player, false, false);
+            return;
+        }
 
         sMythicMgr->ListenCreationMythicOnMapChanged(player);
 
@@ -215,7 +224,7 @@ public:
         if (!selectedPlayer)
             return false;
 
-        sMythicMgr->UpdatePlayerKey(selectedPlayer, 3);
+        sMythicMgr->UpdatePlayerKey(selectedPlayer->GetGUID(), 3);
         return true;
     }
 

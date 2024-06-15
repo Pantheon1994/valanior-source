@@ -42,7 +42,7 @@ void MythicManager::InitializeMythicDungeons()
 {
     MythicDungeonStore = {};
 
-    QueryResult result = WorldDatabase.Query("SELECT id, amountToKill, timeToComplete, mapId, `name`, position_x, position_y, position_z, orientation, itemId,`bonus` FROM dungeon_mythic WHERE `enable` = 1");
+    QueryResult result = WorldDatabase.Query("SELECT id, amountToKill, timeToComplete, mapId, `name`, position_x, position_y, position_z, orientation, itemId, `bonus` FROM dungeon_mythic WHERE `enable` = 1");
 
     if (!result)
         return;
@@ -207,6 +207,18 @@ void MythicManager::AddMythicDungeon(uint32 instanceId, Mythic* m)
     auto it = MythicStore.find(instanceId);
     if (it == MythicStore.end()) {
         MythicStore[instanceId] = std::unique_ptr<Mythic>(m);
+    }
+}
+
+void MythicManager::RemoveAnyOtherMythicDungeon(Player* player)
+{
+    for (auto it = MythicStore.begin(); it != MythicStore.end(); it++)
+    {
+        if (Mythic* oldMythic = it->second.get())
+        {
+            if (oldMythic->KeyOwnerGuid == player->GetGUID())
+                MythicStore.erase(it);
+        }
     }
 }
 
@@ -423,9 +435,13 @@ bool MythicManager::IsStatTypeAllowableSpec(uint32 currentSpec, uint32 statType)
     }
 }
 
-
-void MythicManager::UpdatePlayerKey(Player* player, int8 upgrade)
+void MythicManager::UpdatePlayerKey(ObjectGuid guid, int8 upgrade)
 {
+    Player* player = ObjectAccessor::FindPlayer(guid);
+
+    if (!player)
+        return;
+
     MythicKey* key = GetCurrentPlayerMythicKey(player);
 
     if (!key)
@@ -601,6 +617,9 @@ void MythicManager::GenerateMythicKeyByLevelAndDungeonId(Player* player, uint32 
 
 MythicKey* MythicManager::GetCurrentPlayerMythicKey(Player* player)
 {
+    if (!player)
+        return nullptr;
+
     auto itr = MythicPlayerKeyStore.find(player->GetGUID().GetCounter());
     if (itr != MythicPlayerKeyStore.end()) {
         return &itr->second;
@@ -707,8 +726,9 @@ void MythicManager::ListenCreationMythicOnMapChanged(Player* leader)
     if (!dungeon)
         return;
 
-    Mythic* mythic = new Mythic(leader, it->second->dungeonId, it->second->level, dungeon.bonusMultiplier);
+    RemoveAnyOtherMythicDungeon(leader);
 
+    Mythic* mythic = new Mythic(leader->GetGUID(), leader->GetMap(), it->second->dungeonId, it->second->level, dungeon.bonusMultiplier);
     AddMythicDungeon(leader->GetInstanceId(), mythic);
 
     AsyncCreationMythic.erase(it);

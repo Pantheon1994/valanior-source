@@ -2795,7 +2795,7 @@ class spell_sha_spirit_of_storm_proc : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_SHAMAN_SPIRIT_OF_STORM_PROC || eventInfo.GetSpellInfo()->Id == SPELL_SHAMAN_FOCUS_THINE_FOE_STORM))
+        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_SHAMAN_SPIRIT_OF_STORM_PROC || eventInfo.GetSpellInfo()->Id == SPELL_SHAMAN_FOCUS_THINE_FOE_STORM || eventInfo.GetSpellInfo()->Id == SPELL_SHAMAN_LIGHTNING_SHIELD))
             return false;
         return true;
     }

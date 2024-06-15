@@ -19,7 +19,7 @@ struct MythicBossState {
 class Mythic {
 
 public:
-    Mythic(Player* keyOwner, uint32 dungeonId, uint32 level, uint32 bonus);
+    Mythic(ObjectGuid guid, Map* map, uint32 dungeonId, uint32 level, uint32 bonusMultiplier);
     ~Mythic();
 
     typedef std::vector<MythicBossState> StateBossMythicContainer;
@@ -42,6 +42,7 @@ public:
     uint32 GetDungeonMapId() { return Dungeon->GetId(); };
     void OnPlayerRelease(Player* player);
     Map* Dungeon;
+    ObjectGuid KeyOwnerGuid;
 
 private:
 
@@ -59,7 +60,6 @@ private:
 
     Position LastestPosition;
     Group* m_Group;
-    Player* KeyOwner;
     uint32 DungeonId;
     uint32 TimeToComplete;
     int StartTimer;
