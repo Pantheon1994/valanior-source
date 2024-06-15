@@ -45,9 +45,6 @@ void OnboardingManager::SendEventDependingOnTheProgression(Player* player)
             }
             break;
         case STEP_UPGRADE_A_RUNE:
-            if (player->GetItemCount(70008, true) < 1000) {
-                player->AddItem(70008, 1000 - player->GetItemCount(70008, true));
-            }
             break;
         case STEP_DISCOVER_MORE_RUNE:
             break;
