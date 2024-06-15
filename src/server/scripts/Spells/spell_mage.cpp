@@ -3805,7 +3805,7 @@ class spell_mage_scorch : public SpellScript
 
     void Register() override
     {
-        AfterCast += SpellCastFn(spell_mage_scorch::HandleCast);
+        BeforeCast += SpellCastFn(spell_mage_scorch::HandleCast);
         OnEffectHitTarget += SpellEffectFn(spell_mage_scorch::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
