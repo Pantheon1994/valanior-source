@@ -1133,19 +1133,27 @@ class rune_rog_doomblade : public AuraScript
         if (!target || target->isDead())
             return;
 
+        int32 oldDamage = eventInfo.GetDamageInfo()->GetDamage();
         int32 damage = eventInfo.GetDamageInfo()->GetDamage();
         int32 amount = CalculatePct(damage, aurEff->GetAmount());
         amount /= 8;
 
         if (Aura* doombladeDot = target->GetAura(RUNE_ROGUE_DOOMBLADE_DOT))
+        {
             if (AuraEffect* dot = doombladeDot->GetEffect(EFFECT_0))
             {
                 int32 remainingDamage = dot->GetAmount() * dot->GetRemaningTicks();
                 amount += remainingDamage / 8;
                 target->RemoveAura(dot->GetBase());
             }
+        }
 
-        caster->CastCustomSpell(RUNE_ROGUE_DOOMBLADE_DOT, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
+        uint32 maxValue = amount;
+
+        if (amount > oldDamage)
+            maxValue = oldDamage;
+
+        caster->CastCustomSpell(RUNE_ROGUE_DOOMBLADE_DOT, SPELLVALUE_BASE_POINT0, maxValue, target, TRIGGERED_FULL_MASK);
     }
 
     void Register()
