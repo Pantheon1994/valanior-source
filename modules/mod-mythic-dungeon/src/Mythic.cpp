@@ -123,12 +123,12 @@ uint32 Mythic::GetBossIndex(uint32 creatureId)
 
 void Mythic::OnCompleteMythicDungeon(Player* player)
 {
-    if (!player)
+    if (!player || Done)
         return;
 
     Done = true;
 
-   int8 upgrade = CalculateUpgradeKey();
+    int8 upgrade = CalculateUpgradeKey();
 
     Map::PlayerList const& playerList = Dungeon->GetPlayers();
     for (auto playerIteration = playerList.begin(); playerIteration != playerList.end(); ++playerIteration)
@@ -139,6 +139,7 @@ void Mythic::OnCompleteMythicDungeon(Player* player)
     SaveMythicDungeon();
     sMythicMgr->UpdatePlayerKey(KeyOwnerGuid, upgrade);
     sMythicMgr->RemoveMythic(player->GetInstanceId());
+
 }
 
 void Mythic::OnKillBoss(Player* player, Creature* killed)
@@ -172,7 +173,7 @@ void Mythic::OnKillBoss(Player* player, Creature* killed)
 
 void Mythic::OnKillCreature(Player* player, Creature* killed)
 {
-    if (IsDungeonNotStarted())
+    if (IsDungeonDone() || IsDungeonNotStarted())
         return;
 
     if (EnemyForces >= 100)

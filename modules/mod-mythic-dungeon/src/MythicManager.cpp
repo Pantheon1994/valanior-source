@@ -758,6 +758,9 @@ void MythicManager::OnKill(Player* player, Creature* killed)
     if (!player)
         return;
 
+    if (IsDungeonDone() || IsDungeonNotStarted())
+        return;
+
     Map* map = player->GetMap();
 
     Mythic* mythic = GetMythicPlayer(player);
