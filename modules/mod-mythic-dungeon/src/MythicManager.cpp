@@ -197,7 +197,6 @@ void MythicManager::Update(uint32 diff)
 
     for (auto it = MythicStore.begin(); it != MythicStore.end(); ) {
         if (it->second) {
-            std::cerr << "Updating Mythic instance with key: " << it->first << std::endl;
             try {
                 it->second->Update(diff);
             }
