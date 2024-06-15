@@ -855,7 +855,7 @@ void Player::UpdateParryPercentage()
 
         AuraEffectList const& mParryByCrit = GetAuraEffectsByType(SPELL_AURA_MOD_PARRY_PERCENT_FROM_CRITICAL_STRIKE);
         for (AuraEffectList::const_iterator i = mParryByCrit.begin(); i != mParryByCrit.end(); ++i) {
-            float critChance = GetTotalPercentageModValue(CRIT_PERCENTAGE);
+            float critChance = GetTotalPercentageModValue(CRIT_PERCENTAGE) + GetRatingBonusValue(CR_CRIT_MELEE);
             nondiminishing += CalculatePct(critChance, (*i)->GetAmount());
         }
 

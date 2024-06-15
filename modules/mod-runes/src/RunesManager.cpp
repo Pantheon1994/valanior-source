@@ -1314,13 +1314,6 @@ void RunesManager::DisableRune(Player* player, uint64 runeSpellId)
         return;
     }
 
-    bool knownRune = KnowRuneId(player, runeSpellId);
-
-    if (!knownRune) {
-        SendPlayerMessage(player, "You do not know this Rune.");
-        return;
-    }
-
     Rune rune = GetRuneBySpellId(runeSpellId);
 
     if (!rune) {

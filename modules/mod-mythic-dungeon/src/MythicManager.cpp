@@ -328,7 +328,7 @@ bool MythicManager::IsItemAllowableClass(uint32 classPlayer, uint32 classId, uin
             return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_ROGUE
                 || classPlayer == CLASS_PALADIN || classPlayer == CLASS_PRIEST;
         case ITEM_SUBCLASS_WEAPON_MACE2:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_PALADIN
+            return classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_PALADIN
                 || classPlayer == CLASS_DRUID;
         case ITEM_SUBCLASS_WEAPON_POLEARM:
             return classPlayer == CLASS_HUNTER || classPlayer == CLASS_PALADIN || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DRUID;

@@ -473,6 +473,8 @@ namespace lfg
         /// Return Lfg dungeon entry for given dungeon id
         uint32 GetLFGDungeonEntry(uint32 id);
 
+        void TeleportDeadPlayer(Player* player);
+
         // cs_lfg
         /// Get current player roles
         uint8 GetRoles(ObjectGuid guid);

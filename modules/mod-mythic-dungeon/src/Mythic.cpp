@@ -237,10 +237,12 @@ bool Mythic::MeetTheConditionsToCompleteTheDungeon()
     bool allBossesAreDead = true;
 
     for (auto ij = StateBossMythicStore.begin(); ij != StateBossMythicStore.end(); ++ij)
+    {
         if (ij->alive == true)
         {
             allBossesAreDead = false;
         }
+    }
 
     return allBossesAreDead && EnemyForces >= 100.0f;
 }

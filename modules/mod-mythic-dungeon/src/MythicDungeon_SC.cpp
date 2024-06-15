@@ -14,6 +14,11 @@
 #include "MapMgr.h"
 #include "MythicManager.h"
 #include "ScriptedGossip.h"
+#include "LFG.h"
+
+enum DungeonsEntry {
+    SCARLET_MONASTERY = 189
+};
 
  // Add player scripts
 class MythicDungeon_PlayerScripts : public PlayerScript
@@ -109,10 +114,35 @@ public:
         sMythicMgr->OnPlayerDie(killed, killer);
     }
 
+    void SpecialTeleportationHandling(Player* player)
+    {
+        uint32 mapId = player->GetMapId();
+    }
+
 
     void OnPlayerReleasedGhost(Player* player)
     {
-        if (player->GetMap()->IsDungeon()) {
+        Mythic* mythic = sMythicMgr->GetMythicPlayer(player);
+
+        Map* map = player->GetMap();
+
+        if (mythic) {
+            MythicDungeon dungeon;
+            sMythicMgr->GetMythicDungeonByDungeonId(mythic->DungeonId, dungeon);
+            player->ResurrectPlayer(25.f, false);
+            player->TeleportTo(player->GetMapId(), dungeon.x, dungeon.y, dungeon.z, dungeon.o);
+        }
+
+
+        bool inLfg = sLFGMgr->inLfgDungeonMap(player->GetGUID(), player->GetMapId(), map->GetDifficulty());
+
+        if (inLfg)
+        {
+            player->ResurrectPlayer(25.f, false);
+            sLFGMgr->TeleportDeadPlayer(player);
+        }
+
+        if (map->IsRaid()) {
             AreaTriggerTeleport const* at = sObjectMgr->GetMapEntranceTrigger(player->GetMapId());
             player->ResurrectPlayer(25.f, false);
             player->TeleportTo(player->GetMapId(), at->target_X, at->target_Y, at->target_Z, at->target_Orientation);

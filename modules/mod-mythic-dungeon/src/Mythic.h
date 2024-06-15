@@ -43,6 +43,7 @@ public:
     void OnPlayerRelease(Player* player);
     Map* Dungeon;
     ObjectGuid KeyOwnerGuid;
+    uint32 DungeonId;
 
 private:
 
@@ -60,7 +61,6 @@ private:
 
     Position LastestPosition;
     Group* m_Group;
-    uint32 DungeonId;
     uint32 TimeToComplete;
     int StartTimer;
     uint32 Countdown;

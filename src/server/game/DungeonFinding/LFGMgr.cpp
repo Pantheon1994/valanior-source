@@ -2102,6 +2102,18 @@ namespace lfg
        @param[in]     out Teleport out (true) or in (false)
        @param[in]     fromOpcode Function called from opcode handlers? (Default false)
     */
+
+
+    void LFGMgr::TeleportDeadPlayer(Player* player)
+    {
+        Group* group = player->GetGroup();
+        ObjectGuid gguid = player->GetGroup() ? player->GetGroup()->GetGUID() : player->GetGUID();
+        LFGDungeonData const* at = GetLFGDungeon(GetDungeon(gguid));
+
+        if(at)
+            player->TeleportTo(player->GetMapId(), at->x, at->y, at->z, at->o);
+    }
+
     void LFGMgr::TeleportPlayer(Player* player, bool out, WorldLocation const* teleportLocation /*= nullptr*/)
     {
         LFGDungeonData const* dungeon = nullptr;

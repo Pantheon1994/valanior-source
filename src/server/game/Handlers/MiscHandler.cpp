@@ -85,7 +85,7 @@ void WorldSession::HandleRepopRequestOpcode(WorldPacket& recv_data)
 
     Map* map = GetPlayer()->GetMap();
 
-    if (map && map->IsDungeon())
+    if ((map->IsRaid() || map->IsDungeon()))
         return;
 
     GetPlayer()->BuildPlayerRepop();

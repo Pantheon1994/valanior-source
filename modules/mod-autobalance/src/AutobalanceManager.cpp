@@ -336,10 +336,6 @@ void AutoBalanceManager::InitializePlayerRoleDependingOnTalentTree(Player* playe
         }
     }
 
-    LOG_ERROR("dpsTalentCount", "dpsTalentCount {}", dpsTalentCount);
-    LOG_ERROR("dpsTalentCount", "tankTalentCount {}", tankTalentCount);
-    LOG_ERROR("dpsTalentCount", "healTalentCount {}", healTalentCount);
-
     if (tankTalentCount > 20)
     {
         m_PlayerRoles[player->GetGUID().GetCounter()].isTank = true;
