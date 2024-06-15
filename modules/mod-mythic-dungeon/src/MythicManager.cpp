@@ -210,6 +210,18 @@ void MythicManager::AddMythicDungeon(uint32 instanceId, Mythic* m)
     }
 }
 
+void MythicManager::RemoveAnyOtherMythicDungeon(Player* player)
+{
+    for (auto it = MythicStore.begin(); it != MythicStore.end(); it++)
+    {
+        if (Mythic* oldMythic = it->second.get())
+        {
+            if (oldMythic->KeyOwnerGuid == player->GetGUID())
+                MythicStore.erase(it);
+        }
+    }
+}
+
 void MythicManager::RemoveMythic(uint32 instanceId)
 {
     MythicStore.erase(instanceId);
@@ -423,8 +435,10 @@ bool MythicManager::IsStatTypeAllowableSpec(uint32 currentSpec, uint32 statType)
     }
 }
 
-void MythicManager::UpdatePlayerKey(Player* player, int8 upgrade)
+void MythicManager::UpdatePlayerKey(ObjectGuid guid, int8 upgrade)
 {
+    Player* player = ObjectAccessor::FindPlayer(guid);
+
     if (!player)
         return;
 
@@ -712,8 +726,9 @@ void MythicManager::ListenCreationMythicOnMapChanged(Player* leader)
     if (!dungeon)
         return;
 
-    Mythic* mythic = new Mythic(leader, it->second->dungeonId, it->second->level, dungeon.bonusMultiplier);
+    RemoveAnyOtherMythicDungeon(leader);
 
+    Mythic* mythic = new Mythic(leader->GetGUID(), leader->GetMap(), it->second->dungeonId, it->second->level, dungeon.bonusMultiplier);
     AddMythicDungeon(leader->GetInstanceId(), mythic);
 
     AsyncCreationMythic.erase(it);

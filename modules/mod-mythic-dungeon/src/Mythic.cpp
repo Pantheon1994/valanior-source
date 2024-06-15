@@ -8,11 +8,11 @@
 #include "Chat.h"
 #include "LuaEngine.h"
 
-Mythic::Mythic(Player* keyOwner, uint32 dungeonId, uint32 level, uint32 bonusMultiplier)
+Mythic::Mythic(ObjectGuid guid, Map* map, uint32 dungeonId, uint32 level, uint32 bonusMultiplier)
 {
     EnemyForces = 0.f;
     DungeonId = dungeonId;
-    Dungeon = keyOwner->GetMap();
+    Dungeon = map;
     TimeToComplete = sMythicMgr->GetTimeToCompleteByDungeonId(dungeonId);
     StartTimer = 10 * IN_MILLISECONDS;
     Countdown = 0;
@@ -23,8 +23,7 @@ Mythic::Mythic(Player* keyOwner, uint32 dungeonId, uint32 level, uint32 bonusMul
     ElapsedTime = 0;
     Deaths = 0;
     Level = level;
-    m_Group = keyOwner->GetGroup();
-    KeyOwner = keyOwner;
+    KeyOwnerGuid = guid;
     BonusMultiplier = bonusMultiplier;
     StateBossMythicStore = sMythicMgr->GetMythicBossesByDungeonId(dungeonId);
 }
@@ -138,7 +137,7 @@ void Mythic::OnCompleteMythicDungeon(Player* player)
 
     GiveRewards();
     SaveMythicDungeon();
-    sMythicMgr->UpdatePlayerKey(KeyOwner, upgrade);
+    sMythicMgr->UpdatePlayerKey(KeyOwnerGuid, upgrade);
     sMythicMgr->RemoveMythic(player->GetInstanceId());
 }
 
@@ -258,7 +257,7 @@ void Mythic::GiveRewards()
     {
         if (Player* player = playerIteration->GetSource())
         {
-            float bonus = (BonusMultiplier / 100);;
+            float bonus = (BonusMultiplier / 100);
             uint32 runicDust = reward.runicDust * bonus;
             uint32 runicEssence = reward.runicEssence * bonus;
             uint32 tokenCount = reward.tokenCount * bonus;

@@ -117,7 +117,7 @@ public:
     void GenerateFirstRandomMythicKey(Player* player);
     void GenerateMythicKeyByLevelAndDungeonId(Player* player, uint32 level, uint32 dungeonId);
 
-    void UpdatePlayerKey(Player* player, int8 upgrade);
+    void UpdatePlayerKey(ObjectGuid guid, int8 upgrade);
     bool ForceCompleteMythic(Player* player);
 
     uint32 GetRandomMythicDungeonForPlayer(Player* player);
@@ -158,7 +158,7 @@ public:
     bool ShouldShowMythicUI(Player* player);
     void OnKill(Player* player, Creature* killed);
     void OnPlayerDie(Player* player, Creature* killed);
-
+    void RemoveAnyOtherMythicDungeon(Player* player);
     void Update(Creature* creature);
 
 private:

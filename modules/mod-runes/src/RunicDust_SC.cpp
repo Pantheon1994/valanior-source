@@ -200,9 +200,7 @@ public:
         {
             float multiplier = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_MULTIPLIER");
             int augmentation = count * multiplier / 100;
-
             player->AddItem(ITEM_RUNIC_DUST, augmentation);
-
         }
     }
 

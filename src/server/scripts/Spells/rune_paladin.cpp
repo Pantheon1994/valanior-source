@@ -999,7 +999,7 @@ class rune_pal_empyreal_ward : public SpellScript
         Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
-            return;
+            return nullptr;
 
         if (caster->HasAura(400504))
             return GetCaster()->GetAura(400504);
