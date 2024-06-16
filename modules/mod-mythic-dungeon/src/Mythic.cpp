@@ -33,14 +33,16 @@ Mythic::~Mythic()
 
 }
 
-
 void Mythic::Update(uint32 diff)
 {
+    if (!Dungeon)
+        return;
+
     if (IsDungeonDone())
         return;
 
     if (IsDungeonNotStarted()) {
-        Map::PlayerList const& playerList = Dungeon->GetPlayers();
+        auto playerList = Dungeon->GetPlayers();
 
         if (playerList.IsEmpty())
             return;
