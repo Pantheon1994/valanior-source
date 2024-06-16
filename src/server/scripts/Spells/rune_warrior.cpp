@@ -2061,22 +2061,26 @@ class rune_steel_impact : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        DamageInfo* damageInfo = eventInfo.GetDamageInfo();
-
-        if (!damageInfo || !damageInfo->GetDamage())
-        {
-            return false;
-        }
-
-        return eventInfo.GetActionTarget()->IsAlive();
+        return eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0;
     }
 
     void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        int32 damagePct = aurEff->GetAmount();
-        int32 damageAmount = CalculatePct(static_cast<int32>(eventInfo.GetDamageInfo()->GetDamage()), damagePct);
+        Unit* caster = GetCaster();
 
-        GetCaster()->CastCustomSpell(RUNE_WARR_STEEL_IMPACT_PROC, SPELLVALUE_BASE_POINT0, damageAmount, eventInfo.GetActionTarget(), TRIGGERED_FULL_MASK);
+        if (!caster || caster->isDead())
+            return;
+
+        Unit* target = eventInfo.GetDamageInfo()->GetVictim();
+
+        if (!target || target->isDead())
+            return;
+
+        int32 damage = eventInfo.GetDamageInfo()->GetDamage();
+        int32 damagePct = aurEff->GetAmount();
+        int32 amount = CalculatePct(damage, damagePct);
+
+        caster->CastCustomSpell(RUNE_WARR_STEEL_IMPACT_PROC, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
     }
 
     void Register() override
