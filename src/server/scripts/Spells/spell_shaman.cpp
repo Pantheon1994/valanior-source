@@ -3216,7 +3216,6 @@ class spell_sha_fury_of_the_elements_storm : public SpellScript
         if (GetLingeringStormAura(caster))
         {
             int32 buffSpell = GetLingeringStormAura(caster)->GetEffect(EFFECT_0)->GetAmount();
-
             if (caster->HasAura(buffSpell))
                 caster->RemoveAura(buffSpell);
         }
@@ -3233,12 +3232,15 @@ class spell_sha_fury_of_the_elements_storm : public SpellScript
             caster->CastSpell(caster, SPELL_SHAMAN_FURY_OF_THE_ELEMENTS_STORM_ECHO, TRIGGERED_FULL_MASK);
         }
 
-        // Grants Fire Expert Rune damage buff, x% per target hit.
-        if (GetLingeringStormAura(caster))
+        if (Aura* aura = GetLingeringStormAura(caster))
         {
-            int32 buffSpell = GetLingeringStormAura(caster)->GetEffect(EFFECT_0)->GetAmount();
-            caster->CastSpell(caster, buffSpell, TRIGGERED_FULL_MASK);
-            caster->GetAura(buffSpell)->SetStackAmount(targets.size());
+            if (AuraEffect* effect = aura->GetEffect(EFFECT_0)) {
+                int32 buffSpell = effect->GetAmount();
+                caster->AddAura(buffSpell, caster);
+                if (Aura* amount = caster->GetAura(buffSpell)) {
+                    amount->SetStackAmount(targets.size());
+                }
+            }
         }
     }
 
