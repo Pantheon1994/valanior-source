@@ -191,24 +191,12 @@ void MythicManager::SaveMythicKey(Player* player, uint32 newDungeonId, uint32 le
 
 void MythicManager::Update(uint32 diff)
 {
-    if (MythicStore.empty()) {
+    if (MythicStore.empty())
         return;
-    }
 
     for (auto it = MythicStore.begin(); it != MythicStore.end(); ) {
         if (it->second) {
-            try {
-                it->second->Update(diff);
-            }
-            catch (const std::exception& e) {
-                std::cerr << "Exception caught during Mythic::Update: " << e.what() << std::endl;
-            }
-            catch (...) {
-                std::cerr << "Unknown exception caught during Mythic::Update." << std::endl;
-            }
-        }
-        else {
-            std::cerr << "Mythic instance is null for key: " << it->first << std::endl;
+            it->second->Update(diff);
         }
         ++it;
     }
