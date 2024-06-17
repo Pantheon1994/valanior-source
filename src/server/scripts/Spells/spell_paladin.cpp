@@ -2162,6 +2162,8 @@ class spell_pal_inquisition : public SpellScript
             player->ModifySpellCooldown(SPELL_PALADIN_DIVINE_ZEAL, reduction);
         }
 
+        if (caster->GetPower(POWER_ENERGY) < 5)
+            caster->SetPower(POWER_ENERGY, caster->GetPower(POWER_ENERGY) + 1);
     }
 
     void Register() override
