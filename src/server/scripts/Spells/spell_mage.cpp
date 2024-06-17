@@ -2920,9 +2920,15 @@ class spell_mage_flurry_of_slashes_listener : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         uint32 reduction = aurEff->GetAmount();
-        if (Player* caster = GetCaster()->ToPlayer())
-            caster->ModifySpellCooldown(SPELL_MAGE_FLURRY_OF_SLASHES, reduction);
+
+        if (Player* player = caster->ToPlayer())
+            player->ModifySpellCooldown(SPELL_MAGE_FLURRY_OF_SLASHES, reduction);
     }
 
     void Register() override
@@ -3440,7 +3446,7 @@ class spell_mage_enchant_conduit : public AuraScript
             if (!caster || caster->isDead())
                 return;
 
-            int32 amount = CalculatePct(caster->GetMaxPower(POWER_MANA), 0.5);
+            int32 amount = CalculatePct(caster->GetMaxPower(POWER_MANA), aurEff->GetAmount());
 
             if (Aura* T1B4buff = caster->GetAura(T1_MAGE_MAGEBLADE_4PC_BUFF))
                 AddPct(amount, T1B4buff->GetEffect(EFFECT_0)->GetAmount());

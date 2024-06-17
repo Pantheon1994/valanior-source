@@ -27,6 +27,7 @@ enum WarlockSpells
     SPELL_WARLOCK_DRAIN_LIFE = 47857,
     SPELL_WARLOCK_DRAIN_SOUL = 47855,
     SPELL_WARLOCK_FIERY_SYMBOL = 83108,
+    SPELL_WARLOCK_FIERY_SYMBOL_BUFF = 83229,
     SPELL_WARLOCK_FRAILTY = 83103,
     SPELL_WARLOCK_HAVOC_AURA = 83062,
     SPELL_WARLOCK_IMMOLATE = 47811,
@@ -2576,6 +2577,13 @@ class rune_warl_charred_flesh : public AuraScript
             return;
 
         if (Aura* fierySymbol = target->GetAura(SPELL_WARLOCK_FIERY_SYMBOL))
+        {
+            int32 duration = fierySymbol->GetDuration() + aurEff->GetAmount();
+            duration = std::min<int32>(duration, fierySymbol->GetMaxDuration());
+            fierySymbol->SetDuration(duration);
+        }
+
+        if (Aura* fierySymbol = caster->GetAura(SPELL_WARLOCK_FIERY_SYMBOL_BUFF))
         {
             int32 duration = fierySymbol->GetDuration() + aurEff->GetAmount();
             duration = std::min<int32>(duration, fierySymbol->GetMaxDuration());

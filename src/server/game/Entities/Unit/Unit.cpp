@@ -20219,6 +20219,10 @@ void Unit::RewardRage(uint32 damage, uint32 weaponSpeedHitFactor, bool attacker)
 
     float rageconversion = ((0.0091107836f * getLevel() * getLevel()) + 3.225598133f * getLevel()) + 4.2652911f;
 
+    // Nerf rage generation at level 60
+    if (getLevel() == 60)
+        rageconversion += 360;
+
     // Unknown if correct, but lineary adjust rage conversion above level 70
     if (getLevel() > 70)
         rageconversion += 13.27f * (getLevel() - 70);

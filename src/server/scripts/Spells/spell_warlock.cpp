@@ -733,11 +733,11 @@ private:
 
     PetStats GetSpApStamina(uint32 spellId) {
 
-        spellsStaminaApSp[FELGUARD_SCALING_STAMINA_AP_SP] = { 85, 87, 45 };
+        spellsStaminaApSp[FELGUARD_SCALING_STAMINA_AP_SP] = { 125, 87, 45 };
         spellsStaminaApSp[FELHUNTER_SCALING_STAMINA_AP_SP] = { 75, 65, 65 };
         spellsStaminaApSp[IMP_SCALING_STAMINA_AP_SP] = { 75, 20, 75 };
         spellsStaminaApSp[SUCCUBUS_SCALING_STAMINA_AP_SP] = { 75, 35, 75 };
-        spellsStaminaApSp[VOIDWAKLER_SCALING_STAMINA_AP_SP] = { 100, 35, 55 };
+        spellsStaminaApSp[VOIDWAKLER_SCALING_STAMINA_AP_SP] = { 150, 35, 55 };
         spellsStaminaApSp[DARKGLARE_SCALING_STAMINA_AP_SP] = { 60, 35, 65 };
         spellsStaminaApSp[DEMONIC_TYRANT_SCALING_STAMINA_AP_SP] = { 60, 35, 75 };
         spellsStaminaApSp[DOOMGUARD_SCALING_STAMINA_AP_SP] = { 85, 45, 87 };
@@ -752,11 +752,11 @@ private:
 
     float GetArmorScaling(uint32 spellId) {
 
-        spellsArmor[FELGUARD_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 80.f;
+        spellsArmor[FELGUARD_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 180.f;
         spellsArmor[FELHUNTER_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 60.f;
         spellsArmor[IMP_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 60.f;
         spellsArmor[SUCCUBUS_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 75.f;
-        spellsArmor[VOIDWAKLER_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 100.f;
+        spellsArmor[VOIDWAKLER_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 220.f;
         spellsArmor[DARKGLARE_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 60.f;
         spellsArmor[DEMONIC_TYRANT_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 60.f;
         spellsArmor[DOOMGUARD_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 80.f;
@@ -2141,11 +2141,6 @@ class spell_warlock_summon_darkglare : public SpellScript
         if (!player || player->isDead())
             return;
 
-        Unit* target = GetExplTargetUnit();
-
-        if (!target || target->isDead())
-            return;
-
         int32 duration = GetSpellInfo()->GetDuration();
         TempSummon* summon = GetCaster()->SummonCreatureGuardian(GUARDIAN_WARLOCK_DARKGLARE, player, player, duration, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
@@ -2996,7 +2991,7 @@ class spell_warl_chaos_bolt : public SpellScript
         int32 damage = GetHitDamage();
 
         // Damage increased by an amount equal to your critical chances.
-        int32 critChance = caster->GetFloatValue(static_cast<uint16>(PLAYER_SPELL_CRIT_PERCENTAGE1) + SPELL_SCHOOL_FIRE);
+        int32 critChance = std::max(caster->GetFloatValue(static_cast<uint16>(PLAYER_SPELL_CRIT_PERCENTAGE1) + SPELL_SCHOOL_FIRE), caster->GetFloatValue(static_cast<uint16>(PLAYER_SPELL_CRIT_PERCENTAGE1) + SPELL_SCHOOL_SHADOW));
         AddPct(damage, critChance);
 
         // increase damage by random amount.
@@ -3629,27 +3624,27 @@ private:
     std::list<CopyAura> aurasCopied;
 };
 
-class spell_warl_grimoire_of_sacrifice : public AuraScript
-{
-    PrepareAuraScript(spell_warl_grimoire_of_sacrifice);
-
-    void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-    {
-        PreventDefaultAction();
-
-        int32 amount = GetCaster()->CalculateSpellDamageWithRatio(SPELL_SCHOOL_MASK_SHADOW, 0.375f);
-        int32 chance = aurEff->GetAmount();
-
-        if (roll_chance_i(chance)) {
-            GetCaster()->CastSpell(GetCaster()->GetVictim(), SPELL_WARLOCK_GRIMOIRE_OF_SACRIFICE_DAMAGE, TRIGGERED_FULL_MASK);
-        }
-    }
-
-    void Register() override
-    {
-        OnEffectProc += AuraEffectProcFn(spell_warl_grimoire_of_sacrifice::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
-    }
-};
+//class spell_warl_grimoire_of_sacrifice : public AuraScript
+//{
+//    PrepareAuraScript(spell_warl_grimoire_of_sacrifice);
+//
+//    void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+//    {
+//        PreventDefaultAction();
+//
+//        int32 amount = GetCaster()->CalculateSpellDamageWithRatio(SPELL_SCHOOL_MASK_SHADOW, 0.375f);
+//        int32 chance = aurEff->GetAmount();
+//
+//        if (roll_chance_i(chance)) {
+//            GetCaster()->CastSpell(GetCaster()->GetVictim(), SPELL_WARLOCK_GRIMOIRE_OF_SACRIFICE_DAMAGE, TRIGGERED_FULL_MASK);
+//        }
+//    }
+//
+//    void Register() override
+//    {
+//        OnEffectProc += AuraEffectProcFn(spell_warl_grimoire_of_sacrifice::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+//    }
+//};
 
 class spell_warl_channel_demonfire : public SpellScript
 {
@@ -4677,7 +4672,7 @@ class spell_warl_demonbolt : public SpellScript
 
             if (Aura* aura = caster->GetAura(SPELL_WARLOCK_DEMONIC_CORE_BUFF))
             {
-                aura->ModCharges(-1);
+                aura->ModStackAmount(-1);
 
                 if (Aura* set_T1_2pc = caster->GetAura(T1_WARLOCK_DEMONO_2PC))
                 {
@@ -5609,7 +5604,7 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warl_burning_rush);
     RegisterSpellScript(spell_warl_malefic_rapture);
     RegisterSpellScript(spell_warl_malefic_rapture_damage);
-    RegisterSpellScript(spell_warl_grimoire_of_sacrifice);
+    //RegisterSpellScript(spell_warl_grimoire_of_sacrifice);
     RegisterSpellScript(spell_warl_channel_demonfire);
     RegisterSpellScript(spell_warlock_soul_strike);
     RegisterSpellScript(spell_warl_nether_portal_proc);

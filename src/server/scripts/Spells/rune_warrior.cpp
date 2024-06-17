@@ -40,6 +40,7 @@ enum SpellsWarrior
     SPELL_WARR_REVENGE_BUFF = 57830,
     SPELL_WARR_SPEAR_SWIPE = 84561,
 
+    RUNE_WARR_BEST_SERVED_COLD_SHIELD = 200496,
     RUNE_WARR_DEVASTATOR_PROC = 200868,
     RUNE_WARR_FATALITY_MARK = 201207,
     RUNE_WARR_FATALITY_DAMAGE = 201208,
@@ -916,22 +917,13 @@ class spell_best_served_cold : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* target = GetTarget();
 
         if (!caster || caster->isDead())
             return;
 
-        if (!target || GetCaster()->isDead())
-            return;
+        uint32 amount = int32(CalculatePct(caster->GetMaxHealth(), aurEff->GetAmount()));
 
-        uint32 amount = int32(CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), aurEff->GetAmount()));
-
-        Aura* shield = caster->GetAura(200496);
-
-        if (shield)
-            amount += shield->GetEffect(EFFECT_0)->GetAmount();
-
-        caster->CastCustomSpell(200496, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
+        caster->CastCustomSpell(RUNE_WARR_BEST_SERVED_COLD_SHIELD, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
     }
 
     void Register() override
@@ -2384,7 +2376,10 @@ class rune_brutal_vitality : public AuraScript
         {
             int32 amount = CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), aurEff->GetAmount());
             int32 currentAbsorb = aura->GetEffect(EFFECT_0)->GetAmount();
-            aura->GetEffect(EFFECT_0)->ChangeAmount(amount + currentAbsorb);
+            int32 maxShieldAmount = CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), aura->GetEffect(EFFECT_1)->GetAmount());
+            amount = std::min<int32>(maxShieldAmount, amount + currentAbsorb);
+
+            aura->GetEffect(EFFECT_0)->ChangeAmount(amount);
         }
     }
 
