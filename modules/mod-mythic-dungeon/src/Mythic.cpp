@@ -40,8 +40,12 @@ void Mythic::Update(uint32 diff)
 
     if (IsDungeonNotStarted()) {
 
-        Map::PlayerList const& playerList = Dungeon->GetPlayers();
-        auto copyList = playerList;
+        Map* dungeon = Dungeon;
+
+        if (!dungeon)
+            return;
+
+        Map::PlayerList const& playerList = dungeon->GetPlayers();
 
         Countdown += diff;
         StartTimer -= diff;
@@ -49,7 +53,7 @@ void Mythic::Update(uint32 diff)
         if (Countdown > 1000) {
             Iteration -= 1;
             Countdown = 0;
-            for (auto playerIteration = copyList.begin(); playerIteration != copyList.end(); ++playerIteration) {
+            for (auto playerIteration = playerList.begin(); playerIteration != playerList.end(); ++playerIteration) {
                 if (Player* player = playerIteration->GetSource()) {
                     std::string countdownMessage = "Start in " + std::to_string(Iteration) + "...";
                     ChatHandler(player->GetSession()).SendSysMessage(countdownMessage);
@@ -60,7 +64,7 @@ void Mythic::Update(uint32 diff)
         if (StartTimer <= 0) {
             StartTimer = 0;
             Started = true;
-            for (auto playerIteration = copyList.begin(); playerIteration != copyList.end(); ++playerIteration) {
+            for (auto playerIteration = playerList.begin(); playerIteration != playerList.end(); ++playerIteration) {
                 if (Player* player = playerIteration->GetSource()) {
                     player->ClearUnitState(UNIT_STATE_ROOT);
                     player->SetControlled(false, UNIT_STATE_ROOT);
