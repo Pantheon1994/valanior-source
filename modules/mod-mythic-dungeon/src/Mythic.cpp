@@ -41,9 +41,7 @@ void Mythic::Update(uint32 diff)
     if (IsDungeonNotStarted()) {
 
         Map::PlayerList const& playerList = Dungeon->GetPlayers();
-
-        if (playerList.IsEmpty())
-            return;
+        auto copyList = playerList;
 
         Countdown += diff;
         StartTimer -= diff;
@@ -51,7 +49,7 @@ void Mythic::Update(uint32 diff)
         if (Countdown > 1000) {
             Iteration -= 1;
             Countdown = 0;
-            for (auto playerIteration = playerList.begin(); playerIteration != playerList.end(); ++playerIteration) {
+            for (auto playerIteration = copyList.begin(); playerIteration != copyList.end(); ++playerIteration) {
                 if (Player* player = playerIteration->GetSource()) {
                     std::string countdownMessage = "Start in " + std::to_string(Iteration) + "...";
                     ChatHandler(player->GetSession()).SendSysMessage(countdownMessage);
@@ -62,7 +60,7 @@ void Mythic::Update(uint32 diff)
         if (StartTimer <= 0) {
             StartTimer = 0;
             Started = true;
-            for (auto playerIteration = playerList.begin(); playerIteration != playerList.end(); ++playerIteration) {
+            for (auto playerIteration = copyList.begin(); playerIteration != copyList.end(); ++playerIteration) {
                 if (Player* player = playerIteration->GetSource()) {
                     player->ClearUnitState(UNIT_STATE_ROOT);
                     player->SetControlled(false, UNIT_STATE_ROOT);
@@ -72,7 +70,7 @@ void Mythic::Update(uint32 diff)
         }
     }
     else {
-        if(IsAllowedTimeOver())
+        if (IsAllowedTimeOver())
             ElapsedTime += diff;
 
         if (ElapsedTime >= TimeToComplete && !ChestDecrapeted && !Done) {
@@ -80,6 +78,7 @@ void Mythic::Update(uint32 diff)
         }
     }
 }
+
 
 
 void Mythic::SaveMythicDungeon()
