@@ -89,6 +89,8 @@ enum PaladinSpells
     SPELL_PALADIN_SANCTIFIED_FLAME = 86516,
     SPELL_PALADIN_RIGHTEOUS_BARRAGE_WAVE = 86519,
     SPELL_PALADIN_REPRIMAND = 86514,
+    SPELL_PALADIN_INQUISITION_ENERGY_GENERATION = 2200039,
+
 
     // Talents
     TALENT_PALADIN_BREAK_THEIR_KNEECAPS_PROC = 86555,
@@ -1173,6 +1175,33 @@ class spell_pal_consecration : public SpellScript
     }
 };
 
+class spell_pal_consecration_inquisition : public SpellScript
+{
+    PrepareSpellScript(spell_pal_consecration_inquisition);
+
+    void HandleDamage(SpellEffIndex effIndex)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        Unit* target = GetHitUnit();
+
+        if (!target || target->isDead())
+            return;
+
+        target->CastSpell(target, SPELL_PALADIN_CONSECRATION, true, nullptr, nullptr, caster->GetGUID());
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_pal_consecration_inquisition::HandleDamage, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+
+
 class spell_pal_seraphim : public AuraScript
 {
     PrepareAuraScript(spell_pal_seraphim);
@@ -2116,6 +2145,8 @@ class spell_pal_gods_judgement : public AuraScript
     }
 };
 
+
+
 class spell_pal_inquisition : public SpellScript
 {
     PrepareSpellScript(spell_pal_inquisition);
@@ -2161,14 +2192,39 @@ class spell_pal_inquisition : public SpellScript
             uint32 reduction = GetSpellInfo()->GetEffect(EFFECT_1).CalcValue();
             player->ModifySpellCooldown(SPELL_PALADIN_DIVINE_ZEAL, reduction);
         }
-
-        if (caster->GetPower(POWER_ENERGY) < 5)
-            caster->SetPower(POWER_ENERGY, caster->GetPower(POWER_ENERGY) + 1);
     }
 
     void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_pal_inquisition::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+class spell_pal_inquisition_critical_energy_generation : public AuraScript
+{
+    PrepareAuraScript(spell_pal_inquisition_critical_energy_generation);
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        LOG_ERROR("PROC", "PROC");
+
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        uint32 count = 1;
+
+        if (eventInfo.GetHitMask() == PROC_EX_CRITICAL_HIT)
+            count += 1;
+
+        if ((caster->GetPower(POWER_ENERGY) + count) < 5)
+            caster->SetPower(POWER_ENERGY, caster->GetPower(POWER_ENERGY) + count);
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(spell_pal_inquisition_critical_energy_generation::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
     }
 };
 
@@ -2182,6 +2238,7 @@ class spell_pal_way_of_the_inquisitor : public AuraScript
 
         target->learnSpell(SPELL_PALADIN_SEAL_OF_DISCIPLINE);
         target->learnSpell(SPELL_PALADIN_SANCTIFIED_FLAME);
+        target->learnSpell(SPELL_PALADIN_INQUISITION_ENERGY_GENERATION);
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
@@ -2190,6 +2247,8 @@ class spell_pal_way_of_the_inquisitor : public AuraScript
 
         target->removeSpell(SPELL_PALADIN_SEAL_OF_DISCIPLINE, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_PALADIN_SANCTIFIED_FLAME, SPEC_MASK_ALL, false);
+        target->removeSpell(SPELL_PALADIN_INQUISITION_ENERGY_GENERATION, SPEC_MASK_ALL, false);
+
     }
 
     void Register() override
@@ -2898,4 +2957,6 @@ void AddSC_paladin_spell_scripts()
     RegisterSpellScript(spell_pal_shield_mastery);
     RegisterSpellScript(spell_pal_hammer_of_wrath);
     RegisterSpellScript(spell_pal_holy_weapon_efficiency);
+    RegisterSpellScript(spell_pal_inquisition_critical_energy_generation);
+    RegisterSpellScript(spell_pal_consecration_inquisition);
 }
