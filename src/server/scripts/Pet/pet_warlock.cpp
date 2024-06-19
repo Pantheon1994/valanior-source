@@ -1378,10 +1378,13 @@ struct npc_pet_warlock_dreadstalker : public ScriptedAI
     {
         if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
         {
+            if (owner->isDead())
+                return;
+
             if (Aura* aura = owner->GetAura(SPELL_WARLOCK_DEMONIC_CORE_BUFF))
                 aura->SetCharges(aura->GetCharges() + 1);
             else
-                owner->CastCustomSpell(SPELL_WARLOCK_DEMONIC_CORE_BUFF, SPELLVALUE_AURA_CHARGE, 1, owner, true);
+                owner->AddAura(SPELL_WARLOCK_DEMONIC_CORE_BUFF, owner);
 
             // Remove a Stack of Demonic Servitude from Reign of Tyranny
             if (Aura* runeAura = GetReignofTyrannyAura(owner))

@@ -1769,97 +1769,89 @@ class spell_pal_crusaders_might : public AuraScript
     }
 };
 
-class spell_pal_glimmer_of_light_heal : public AuraScript
+class spell_pal_glimmer_of_light : public AuraScript
 {
-    PrepareAuraScript(spell_pal_glimmer_of_light_heal);
+    PrepareAuraScript(spell_pal_glimmer_of_light);
 
-    std::list <Unit*> FindTargets()
+    std::list <Unit*> FindDamageTargets()
     {
-        Player* caster = GetCaster()->ToPlayer();
+        std::list<Unit*> targets;
+        Acore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(GetCaster(), GetCaster(), 40);
+        Acore::UnitListSearcher<Acore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> searcher(GetCaster(), targets, u_check);
+        Cell::VisitAllObjects(GetCaster(), searcher, 40);
+
+        auto targetAvailable = targets;
+
+        targetAvailable.remove_if(Acore::UnitAuraCheck(false, 80087, GetCaster()->GetGUID()));
+
+        return targetAvailable;
+    }
+
+    std::list <Unit*> FindHealTargets()
+    {
+        std::list<Unit*> targets;
+        Acore::AnyFriendlyUnitInObjectRangeCheck u_check(GetCaster(), GetCaster(), 40);
+        Acore::UnitListSearcher<Acore::AnyFriendlyUnitInObjectRangeCheck> searcher(GetCaster(), targets, u_check);
+        Cell::VisitAllObjects(GetCaster(), searcher, 40);
+
+        auto targetAvailable = targets;
+
+        targetAvailable.remove_if(Acore::UnitAuraCheck(false, 80087, GetCaster()->GetGUID()));
+
+        /*Player* caster = GetCaster()->ToPlayer();
         std::list <Unit*> targetAvailable;
         auto const& allyList = caster->GetGroup()->GetMemberSlots();
-
+        
         for (auto const& target : allyList)
         {
             Player* player = ObjectAccessor::FindPlayer(target.guid);
-            if (player)
-                if (player->HasAura(80087))
-                    if (player->GetAura(80087)->GetCasterGUID() == GetCaster()->GetGUID())
-                    {
-                        Unit* dummy = player->ToUnit();
-                        if (dummy)
-                            targetAvailable.push_back(dummy);
-                    }
+            if (!player || player->isDead())
+                continue;
+
+            if (Aura* aura = player->GetAura(80087, player->GetGUID()))
+            {
+                Unit* dummy = player->ToUnit();
+                if (dummy && dummy->IsAlive())
+                    targetAvailable.push_back(dummy);
+            }
         }
+        */
+
         return targetAvailable;
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        if (!GetCaster() || !GetCaster()->IsAlive())
+        Unit* caster = GetCaster();
+
+        if (!caster || !caster->IsAlive())
             return;
 
-        for (auto const& targetheal : FindTargets())
+        for (auto const& targetheal : FindHealTargets())
         {
-            GetCaster()->CastSpell(targetheal, 80086, TRIGGERED_FULL_MASK);
+            if (targetheal->isDead())
+                continue;
+
+            caster->CastSpell(targetheal, 80086, TRIGGERED_FULL_MASK);
         }
-    }
 
-    bool CheckProc(ProcEventInfo& eventInfo)
-    {
-        Player* player = GetCaster()->ToPlayer();
-        if (!player->GetGroup())
-            return false;
-        return true;
-    }
+        auto targetList = FindDamageTargets();
 
-    void Register() override
-    {
-        DoCheckProc += AuraCheckProcFn(spell_pal_glimmer_of_light_heal::CheckProc);
-        OnEffectProc += AuraEffectProcFn(spell_pal_glimmer_of_light_heal::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
-    }
-};
-
-class spell_pal_glimmer_of_light_damage : public AuraScript
-{
-    PrepareAuraScript(spell_pal_glimmer_of_light_damage);
-
-    std::list <Unit*> FindTargets()
-    {
-        auto const& threatList = GetCaster()->getAttackers();
-
-        if (threatList.empty()) return {};
-
-
-        std::list <Unit*> targetAvailable;
-
-        for (auto const& target : threatList)
-        {
-            if (target)
-                if (target->HasAura(80087))
-                    if (target->GetAura(80087)->GetCasterGUID() == GetCaster()->GetGUID())
-                    {
-                        Unit* dummy = target->ToUnit();
-                        if (dummy)
-                            targetAvailable.push_back(dummy);
-                    }
-        }return targetAvailable;
-    }
-
-    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-    {
-        if (!GetCaster() || !GetCaster()->IsAlive())
+        if (targetList.empty())
             return;
 
-        for (auto const& targetdamage : FindTargets())
+        for (auto const& target : targetList)
         {
-            GetCaster()->CastSpell(targetdamage, 80085, TRIGGERED_FULL_MASK);
+            if (target->isDead())
+                continue;
+
+            caster->CastSpell(target, 80085, TRIGGERED_FULL_MASK);
         }
     }
 
     void Register() override
     {
-        OnEffectProc += AuraEffectProcFn(spell_pal_glimmer_of_light_damage::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        OnEffectProc += AuraEffectProcFn(spell_pal_glimmer_of_light::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
     }
 };
 
@@ -1869,15 +1861,23 @@ class spell_pal_glimmer_of_light_listener : public SpellScript
 
     void HandleProc()
     {
-        if (GetCaster()->HasSpell(80084))
-            if (!GetExplTargetUnit()->HasAura(80087))
-                GetCaster()->CastSpell(GetExplTargetUnit(), 80087, TRIGGERED_FULL_MASK);
-        if (GetCaster()->HasSpell(80084))
-        {
-            int32 duration = GetExplTargetUnit()->GetAura(80087)->GetMaxDuration();
-            GetExplTargetUnit()->GetAura(80087)->SetDuration(duration);
-        }
+        Unit* caster = GetCaster();
 
+        if (!caster || caster->isDead())
+            return;
+
+        Unit* target = GetExplTargetUnit();
+
+        if (!target || target->isDead())
+            return;
+
+        if (Aura* talent = caster->GetAura(80084))
+        {
+            if (Aura* targetDebuff = target->GetAura(80087))
+                targetDebuff->RefreshDuration();
+            else
+                caster->AddAura(80087, target);
+        }
     }
 
     void Register()
@@ -2868,8 +2868,7 @@ void AddSC_paladin_spell_scripts()
     RegisterSpellScript(spell_pal_shield_of_vengeance_absorb);
     RegisterSpellScript(spell_pal_shield_of_vengeance_damage); 
     RegisterSpellScript(spell_pal_crusaders_might);
-    RegisterSpellScript(spell_pal_glimmer_of_light_heal);
-    RegisterSpellScript(spell_pal_glimmer_of_light_damage);
+    RegisterSpellScript(spell_pal_glimmer_of_light);
     RegisterSpellScript(spell_pal_glimmer_of_light_listener);
     RegisterSpellScript(spell_pal_shining_light);
     RegisterSpellScript(spell_pal_grand_crusader);

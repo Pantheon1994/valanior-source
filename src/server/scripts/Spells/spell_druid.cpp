@@ -1565,11 +1565,11 @@ class spell_dru_wrath : public SpellScript
 
         SpellInfo const* value = sSpellMgr->AssertSpellInfo(SPELL_DRUID_WRATH);
         uint32 astralPower = value->GetEffect(EFFECT_1).CalcValue(caster);
-        if (caster->HasAura(SPELL_DRUID_STELLAR_INNERVATION_R1) && caster->HasAura(SPELL_DRUID_ECLIPSE_SOLAR_BUFF))
+        if (caster->HasAura(SPELL_DRUID_STELLAR_INNERVATION_R1) && (caster->HasAura(SPELL_DRUID_ECLIPSE_SOLAR_BUFF) || caster->HasAura(SPELL_DRUID_CELESTIAL_ALIGNMENT)))
             astralPower += CalculatePct(astralPower, 33);
-        else if (caster->HasAura(SPELL_DRUID_STELLAR_INNERVATION_R2) && caster->HasAura(SPELL_DRUID_ECLIPSE_SOLAR_BUFF))
+        else if (caster->HasAura(SPELL_DRUID_STELLAR_INNERVATION_R2) && (caster->HasAura(SPELL_DRUID_ECLIPSE_SOLAR_BUFF) || caster->HasAura(SPELL_DRUID_CELESTIAL_ALIGNMENT)))
             astralPower += CalculatePct(astralPower, 66);
-        else if (caster->HasAura(SPELL_DRUID_STELLAR_INNERVATION_R3) && caster->HasAura(SPELL_DRUID_ECLIPSE_SOLAR_BUFF))
+        else if (caster->HasAura(SPELL_DRUID_STELLAR_INNERVATION_R3) && (caster->HasAura(SPELL_DRUID_ECLIPSE_SOLAR_BUFF) || caster->HasAura(SPELL_DRUID_CELESTIAL_ALIGNMENT)))
             astralPower += CalculatePct(astralPower, 99);
         caster->ModifyPower(POWER_RUNIC_POWER, astralPower);
     }
@@ -3177,11 +3177,8 @@ class spell_dru_raze : public AuraScript
     {
         Player* target = GetCaster()->ToPlayer();
 
-        if (target->HasSpell(SPELL_DRUID_RAZE))
-        {
-            target->removeSpell(SPELL_DRUID_RAZE, SPEC_MASK_ALL, false);
-            target->learnSpell(SPELL_DRUID_MAUL);
-        }        
+        target->removeSpell(SPELL_DRUID_RAZE, SPEC_MASK_ALL, false);
+        target->learnSpell(SPELL_DRUID_MAUL);
     }
 
     void Register() override

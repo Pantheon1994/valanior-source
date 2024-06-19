@@ -87,6 +87,7 @@ enum WarlockSpells
     SPELL_WARLOCK_IMMOLATE = 47811,
     SPELL_WARLOCK_SHADOW_BOLT = 47809,
     SPELL_WARLOCK_SHADOW_BOLT_ENERGY = 83080,
+    SPELL_WARLOCK_DRAIN_SOUL = 47855,
     SPELL_WARLOCK_DRAIN_SOUL_ENERGY = 83081,
     SPELL_WARLOCK_UNSTABLE_AFFLICTION = 47843,
     SPELL_WARLOCK_UNSTABLE_AFFLICTION_ENERGY = 83082,
@@ -1223,31 +1224,29 @@ class spell_warl_havoc : public AuraScript
         DamageInfo* damageInfo = eventInfo.GetDamageInfo();
         SpellInfo const* spellInfo = eventInfo.GetSpellInfo();
 
-        return (spellInfo && damageInfo && damageInfo->GetDamage() && spellInfo->Id != SPELL_WARLOCK_HAVOC_DAMAGE);
+        return (spellInfo && damageInfo && damageInfo->GetDamage());
     }
 
     Unit* FindTargetHavoc()
     {
         Unit* havocTarget = nullptr;
-        auto const& threatList = GetCaster()->GetThreatMgr().GetThreatList();
-        auto threatListCopy = threatList;
+        std::list<Unit*> targets;
+        Acore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(GetCaster(), GetCaster(), 40);
+        Acore::UnitListSearcher<Acore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> searcher(GetCaster(), targets, u_check);
+        Cell::VisitAllObjects(GetCaster(), searcher, 40);
 
-        if (threatListCopy.empty()) return nullptr;
+        auto threatListCopy = targets;
 
-        for (auto const& treathTarget : threatListCopy)
-        {
-            if (Unit* target = ObjectAccessor::GetUnit(*GetCaster(), treathTarget->getUnitGuid())) {
-                if (target->HasAura(SPELL_WARLOCK_HAVOC_AURA))
-                    havocTarget = target;
-            }
-        }
+        threatListCopy.remove_if(Acore::UnitAuraCheck(false, SPELL_WARLOCK_HAVOC_AURA));
 
-        return havocTarget;
+        if (threatListCopy.empty())
+            return nullptr;
+
+        return threatListCopy.front();
     }
 
     void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-
         Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
@@ -1258,11 +1257,8 @@ class spell_warl_havoc : public AuraScript
         if (!damageInfo)
             return;
 
-        int32 damagePourcentage = aurEff->GetAmount();
-
-        uint32 spellId = eventInfo.GetSpellInfo()->Id;
-
-        int32 totalDamage = CalculatePct(damageInfo->GetDamage(), damagePourcentage);
+        int32 damagePercentage = aurEff->GetAmount();
+        int32 totalDamage = CalculatePct(damageInfo->GetDamage(), damagePercentage);
         Unit* havocTarget = FindTargetHavoc();
 
         if (!havocTarget || havocTarget->isDead())
@@ -1712,11 +1708,9 @@ class spell_warl_shadow_ward : public AuraScript
         canBeRecalculated = false;
         if (Unit* caster = GetCaster())
         {
-            // +80.68% from sp bonus
-            float bonus = 0.8068f;
+            float bonus = 1.17f;
 
             bonus *= caster->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask());
-            bonus *= caster->CalculateLevelPenalty(GetSpellInfo());
 
             amount += int32(bonus);
         }
@@ -1757,8 +1751,17 @@ class spell_warl_drain_soul : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        if (GetCaster() && GetCaster()->IsAlive())
-            GetCaster()->CastSpell(GetCaster(), SPELL_WARLOCK_DRAIN_SOUL_ENERGY, TRIGGERED_FULL_MASK);
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        uint32 energyAmount = sSpellMgr->AssertSpellInfo(SPELL_WARLOCK_DRAIN_SOUL_ENERGY)->GetEffect(EFFECT_0).CalcValue(GetCaster());
+
+        caster->EnergizeBySpell(caster, SPELL_WARLOCK_DRAIN_SOUL, energyAmount, POWER_ENERGY);
+
+        if (AuraEffect* talent = caster->GetAuraEffectOfRankedSpell(SPELL_WARLOCK_IMPROVED_DRAIN_SOUL_R1, EFFECT_2))
+            caster->EnergizeBySpell(caster, SPELL_WARLOCK_DRAIN_SOUL, talent->GetAmount(), POWER_MANA);
     }
 
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -2725,21 +2728,6 @@ class spell_warlock_dark_pact : public SpellScript
     {
         BeforeCast += SpellCastFn(spell_warlock_dark_pact::HandleBeforeCast);
         AfterCast += SpellCastFn(spell_warlock_dark_pact::HandleAfterCast);
-    }
-};
-
-class spell_warl_demon_armor : public AuraScript
-{
-    PrepareAuraScript(spell_warl_demon_armor);
-
-    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
-    {
-        amount = GetUnitOwner()->CountPctFromMaxHealth(amount);
-    }
-
-    void Register() override
-    {
-        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_demon_armor::CalculateAmount, EFFECT_2, SPELL_AURA_MOD_INCREASE_HEALTH);
     }
 };
 
@@ -4677,7 +4665,7 @@ class spell_warl_demonbolt : public SpellScript
 
             if (Aura* aura = caster->GetAura(SPELL_WARLOCK_DEMONIC_CORE_BUFF))
             {
-                aura->ModCharges(-1);
+                aura->ModStackAmount(-1);
 
                 if (Aura* set_T1_2pc = caster->GetAura(T1_WARLOCK_DEMONO_2PC))
                 {
@@ -5594,7 +5582,6 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warlock_summon_demonic_tyrant);
     RegisterSpellScript(spell_warl_agony);
     RegisterSpellScript(spell_warlock_dark_pact);
-    RegisterSpellScript(spell_warl_demon_armor);
     RegisterSpellScript(spell_warl_fel_armor);
     RegisterSpellScript(spell_warl_health_funnel_new);
     RegisterSpellScript(spell_warl_haunt);

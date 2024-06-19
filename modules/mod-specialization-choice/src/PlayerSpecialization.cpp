@@ -124,6 +124,9 @@ void PlayerSpecialization::ActivateSpecialization(Player* player, uint32 newSpec
     }
 
     player->CastCustomSpell(79852, SPELLVALUE_BASE_POINT0, newSpecId, player, TRIGGERED_NONE);
+
+    if (Pet* pet = player->GetPet())
+        player->RemovePet(pet, PET_SAVE_NOT_IN_SLOT);
 }
 
 

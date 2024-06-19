@@ -417,11 +417,6 @@ class rune_pri_psychic_link : public AuraScript
         if (!target || target->isDead())
             return;
 
-        int32 spellID = eventInfo.GetSpellInfo()->Id;
-
-        if (spellID == TALENT_PRIEST_SHADOWY_APPARITIONS_DAMAGE || spellID == SPELL_PRIEST_SHADOW_WORD_PAIN || spellID == SPELL_PRIEST_VAMPIRIC_TOUCH || spellID == RUNE_PRIEST_PSYCHIC_LINK_DAMAGE)
-            return;
-
         auto const& threatList = caster->getAttackers();
         auto threatListCopy = threatList;
 
@@ -2310,7 +2305,7 @@ class rune_pri_whispering_shadows : public AuraScript
         if (!target || target->isDead())
             return;
 
-        caster->CastSpell(target, SPELL_PRIEST_VAMPIRIC_TOUCH, TRIGGERED_FULL_MASK);
+        caster->AddAura(SPELL_PRIEST_VAMPIRIC_TOUCH, target);
     }
 
     void Register()

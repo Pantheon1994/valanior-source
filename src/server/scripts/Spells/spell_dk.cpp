@@ -494,6 +494,9 @@ class spell_dk_pillar_of_frost : public AuraScript
 
         int32 newAmount = baseStrength + (bonusStrength * runeSpent);
 
+        if (newAmount > 40)
+            newAmount = 40;
+
         GetAura()->GetEffect(EFFECT_1)->ChangeAmount(newAmount, true, true);
     }
 

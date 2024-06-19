@@ -849,8 +849,19 @@ class spell_sha_earth_shield : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo&  /*eventInfo*/)
     {
         PreventDefaultAction();
-        GetTarget()->CastSpell(GetTarget(), SPELL_SHAMAN_EARTH_SHIELD_HEAL, TRIGGERED_FULL_MASK);
-        GetTarget()->AddSpellCooldown(SPELL_SHAMAN_EARTH_SHIELD_HEAL, 0, 3000);
+
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        Unit* target = GetTarget();
+
+        if (!target || target->isDead())
+            return;
+
+        caster->CastSpell(target, SPELL_SHAMAN_EARTH_SHIELD_HEAL, TRIGGERED_FULL_MASK);
+        caster->AddSpellCooldown(SPELL_SHAMAN_EARTH_SHIELD_HEAL, 0, 3000);
     }
 
     void HandlePeriodic(AuraEffect const* aurEff)
@@ -2550,8 +2561,8 @@ class spell_sha_spirit_link : public AuraScript
 {
     PrepareAuraScript(spell_sha_spirit_link);
 
-    uint8 GetMemberGroupCountAliveAndAtDistance(Group* group) {
-
+    uint8 GetMemberGroupCountAliveAndAtDistance(Group* group)
+    {
         Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
@@ -2571,8 +2582,10 @@ class spell_sha_spirit_link : public AuraScript
 
         for (auto const& target : allyList)
         {
-            if (Player* member = ObjectAccessor::FindPlayer(target.guid)) {
-                if (member->IsAlive()) {
+            if (Player* member = ObjectAccessor::FindPlayer(target.guid))
+            {
+                if (member->IsAlive())
+                {
                     float distance = member->GetDistance(caster->GetPosition());
                     if (distance <= 10.0f)
                         count += 1;
@@ -2584,7 +2597,6 @@ class spell_sha_spirit_link : public AuraScript
 
     void OnPeriodic(AuraEffect const* aurEff)
     {
-
         Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
@@ -2618,7 +2630,8 @@ class spell_sha_spirit_link : public AuraScript
         uint32 pctAmount = totalHealth / groupCount;
 
         for (auto const& target : allyList)
-            if (Player* member = ObjectAccessor::FindPlayer(target.guid)) {
+            if (Player* member = ObjectAccessor::FindPlayer(target.guid))
+            {
                 if (member->IsAlive())
                 {
                     float distance = member->GetDistance(position);
@@ -4026,9 +4039,6 @@ class spell_sha_stormbrand_totem : public AuraScript
 
     bool CheckProc(ProcEventInfo& eventInfo)
     {
-        if (eventInfo.GetSpellInfo() && (eventInfo.GetSpellInfo()->Id == SPELL_SHAMAN_STORMBRAND_TOTEM_PROC))
-            return false;
-
         return eventInfo.GetDamageInfo() && eventInfo.GetDamageInfo()->GetDamage() > 0;
     }
 
@@ -4062,7 +4072,8 @@ class spell_sha_stormbrand_totem : public AuraScript
 
         Creature* summon = caster->FindNearestCreature(400407, 100.f);
 
-        if (summon && caster) {
+        if (summon && caster)
+        {
             summon->CastCustomSpell(SPELL_SHAMAN_STORMBRAND_TOTEM_PROC, SPELLVALUE_BASE_POINT0, damageAmount, caster, true, nullptr, nullptr, caster->GetGUID());
         }
     }
