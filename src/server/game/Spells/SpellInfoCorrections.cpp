@@ -259,6 +259,12 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->SpellPriority = 50;
     });
 
+    // Meteor
+    ApplySpellFix({ 81542 }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+        });
+
     // Tidal Wave
     ApplySpellFix({ 53390 }, [](SpellInfo* spellInfo)
     {

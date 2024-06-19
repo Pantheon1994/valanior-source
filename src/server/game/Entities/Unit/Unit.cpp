@@ -9353,13 +9353,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
                     return false;
                 break;
             }
-        // Decimation
-        case 63156:
-        case 63158:
-            // Can proc only if target has hp below 35%
-            if (!victim || !victim->HasAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, procSpell, this))
-                return false;
-            break;
         // Ulduar, Hodir, Toasty Fire
         case 62821:
             if (this->GetTypeId() != TYPEID_PLAYER) // spell has Attribute, but persistent area auras ignore it
@@ -12001,7 +11994,9 @@ float Unit::SpellTakenCritChance(Unit const* caster, SpellInfo const* spellProto
 
     // Xinef: check if spell is capable of critting, auras requires special aura to crit so they can be skipped
     if (!skipEffectCheck && !spellProto->IsCritCapable())
+    {
         return 0.0f;
+    }
 
     float crit_chance = doneChance;
     switch (spellProto->DmgClass)

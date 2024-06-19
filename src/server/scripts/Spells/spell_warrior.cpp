@@ -485,15 +485,10 @@ class spell_warr_damage_shield : public AuraScript
     }
 };
 
-// -5308 - Execute
+// 47471 - Execute
 class spell_warr_execute : public SpellScript
 {
     PrepareSpellScript(spell_warr_execute);
-
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo({ SPELL_WARRIOR_EXECUTE_DAMAGE, SPELL_WARRIOR_GLYPH_OF_EXECUTION });
-    }
 
     Aura* GetImprovedExecuteAura(Unit* caster)
     {
@@ -504,20 +499,6 @@ class spell_warr_execute : public SpellScript
         }
 
         return nullptr;
-    }
-
-    void SendMiss(SpellMissInfo missInfo)
-    {
-        if (missInfo != SPELL_MISS_NONE)
-        {
-            if (Unit* caster = GetCaster())
-            {
-                if (Unit* target = GetHitUnit())
-                {
-                    caster->SendSpellMiss(target, SPELL_WARRIOR_EXECUTE_DAMAGE, missInfo);
-                }
-            }
-        }
     }
 
     void HandleEffect(SpellEffIndex effIndex)
@@ -532,15 +513,14 @@ class spell_warr_execute : public SpellScript
         if (!target || target->isDead())
             return;
 
+        int32 damage = GetHitDamage();
         SpellInfo const* spellInfo = GetSpellInfo();
-        int32 spellCost = spellInfo->CalcPowerCost(caster, SpellSchoolMask(spellInfo->SchoolMask));
-        int32 maxRage = spellInfo->GetEffect(EFFECT_1).CalcValue(caster) - spellCost;
-        int32 rageAmount = caster->GetPower(POWER_RAGE) - spellCost;
-        rage = spellCost;
+        int32 maxRage = spellInfo->GetEffect(EFFECT_1).CalcValue(caster);
+        int32 rageAmount = caster->GetPower(POWER_RAGE);
+        rage = 0;
 
         rage += std::min<int32>(maxRage, rageAmount);
 
-        float amount = CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), GetEffectValue());
         int32 minimumRageKept = 0;
 
         // Sudden Death rage save
@@ -550,13 +530,9 @@ class spell_warr_execute : public SpellScript
         int32 newRage = std::max<int32>(minimumRageKept, caster->GetPower(POWER_RAGE) - rage);
         caster->SetPower(POWER_RAGE, newRage);
 
-        // Glyph of Execution bonus
-        /*if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_WARRIOR_GLYPH_OF_EXECUTION, EFFECT_0))
-            rage += aurEff->GetAmount() * 10;*/
+        AddPct(damage, rage / 2);
 
-        amount *= rage / 10;
-
-        caster->CastCustomSpell(SPELL_WARRIOR_EXECUTE_DAMAGE, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
+        SetHitDamage(damage);
 
         if (caster->HasAura(T1_WARRIOR_ARMS_BONUS4))
         {
@@ -571,16 +547,14 @@ class spell_warr_execute : public SpellScript
         if (Aura* runeAura = GetImprovedExecuteAura(caster))
             if (GetExplTargetUnit()->IsAlive())
             {
-                int32 rageKept = CalculatePct(rage, runeAura->GetEffect(EFFECT_0)->GetAmount());
-                int32 newRage = std::max<int32>(rageKept, caster->GetPower(POWER_RAGE) - rage);
-                caster->SetPower(POWER_RAGE, newRage);
+                int32 rageKept = CalculatePct(rage + 200, runeAura->GetEffect(EFFECT_0)->GetAmount());
+                caster->EnergizeBySpell(caster,GetSpellInfo()->Id,rageKept, POWER_RAGE);
             }
     }
 
     void Register() override
     {
-        BeforeHit += BeforeSpellHitFn(spell_warr_execute::SendMiss);
-        OnEffectHitTarget += SpellEffectFn(spell_warr_execute::HandleEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnEffectHitTarget += SpellEffectFn(spell_warr_execute::HandleEffect, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
         AfterHit += SpellHitFn(spell_warr_execute::HandleAfterHit);
     }
 
@@ -2141,9 +2115,21 @@ class spell_warr_colossal_thrust : public SpellScript
     void HandleDamage(SpellEffIndex effIndex)
     {
         Unit* caster = GetCaster();
-        Unit* target = GetExplTargetUnit();
-        int32 damage = CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), GetEffectValue());
 
+        if (!caster || caster->isDead())
+            return;
+
+        Unit* target = GetExplTargetUnit();
+
+        if (!target || target->isDead())
+            return;
+
+        Creature* targetCreature = GetHitCreature();
+
+        if (!targetCreature || targetCreature->isDead())
+            return;
+
+        int32 damage = CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), GetEffectValue());
         SpellInfo const* value = sSpellMgr->AssertSpellInfo(SPELL_WARRIOR_COLOSSAL_THRUST);
         uint32 slowBonus = value->GetEffect(EFFECT_1).CalcValue(caster);
         uint32 bonusAmount = value->GetEffect(EFFECT_2).CalcValue(caster);
@@ -2154,7 +2140,7 @@ class spell_warr_colossal_thrust : public SpellScript
             damage = hitUnit->SpellDamageBonusTaken(caster, GetSpellInfo(), uint32(damage), SPELL_DIRECT_DAMAGE);
         }
 
-        if (target->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED))
+        if (target->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED) || (targetCreature->isWorldBoss() || targetCreature->IsDungeonBoss()))
             damage += CalculatePct(damage, slowBonus);
 
         if (Aura* stabilizing = target->GetAura(SPELL_WARRIOR_DESTABILIZING_SLAM_PROC))

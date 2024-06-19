@@ -1062,9 +1062,9 @@ struct npc_pet_warlock_felguard_grimoire : public ScriptedAI
 
         owner->AddAura(SPELL_GRIMOIRE_FELGUARD_INCREASE_DAMAGE, me);
 
-        if (owner->HasAura(T1_WARLOCK_DEMONO_4PC)) 
+        if (owner->HasAura(T1_WARLOCK_DEMONO_4PC))
             owner->AddAura(T1_WARLOCK_DEMONO_4PC_GRIMOIRE_BUFF, me);
-           
+
         // Add a Stack of Demonic Servitude from Reign of Tyranny
         if (Aura* runeAura = GetReignofTyrannyAura(owner))
         {
@@ -1180,7 +1180,7 @@ private:
 
 struct npc_pet_warlock_demonic_tyrant : public ScriptedAI
 {
-    npc_pet_warlock_demonic_tyrant(Creature* creature) : ScriptedAI(creature) { }
+    npc_pet_warlock_demonic_tyrant(Creature* creature) : ScriptedAI(creature), _initAttack(true) { }
 
     Aura* GetReignofTyrannyAura(Unit* caster)
     {
@@ -1196,7 +1196,8 @@ struct npc_pet_warlock_demonic_tyrant : public ScriptedAI
     void InitializeAI() override
     {
         _events.Reset();
-        _events.ScheduleEvent(1, 200);
+        _events.ScheduleEvent(EVENT_TRY_ATTACK_NEW_TARGET, 1500);
+        _events.ScheduleEvent(EVENT_WARLOCK_CAST_SPELL, 2000);
     }
 
     void Reset() override
@@ -1215,13 +1216,46 @@ struct npc_pet_warlock_demonic_tyrant : public ScriptedAI
 
     void UpdateAI(uint32 diff) override
     {
+        if (_initAttack)
+        {
+            if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
+            {
+                if (Unit* target = owner->GetSelectedUnit())
+                {
+                    if (me->CanCreatureAttack(target) && owner->IsInCombat())
+                    {
+                        me->CombatStop();
+                        me->SetTarget();
+                        AttackStart(target);
+                        _initAttack = false;
+                    }
+                }
+            }
+        }
+
         _events.Update(diff);
 
         while (uint32 eventId = _events.ExecuteEvent())
         {
             switch (eventId)
             {
-            case 1:
+            case EVENT_TRY_ATTACK_NEW_TARGET:
+                if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
+                {
+                    if (Unit* newTarget = owner->GetSelectedUnit())
+                    {
+                        if (Unit* victim = me->GetVictim()) {
+                            if (victim->GetGUID() != newTarget->GetGUID() && owner->IsInCombatWith(victim))
+                            {
+                                if (me->CanCreatureAttack(newTarget))
+                                    AttackStart(newTarget);
+                            }
+                        }
+                    }
+                }
+                _events.ScheduleEvent(EVENT_TRY_ATTACK_NEW_TARGET, 1500);
+                break;
+            case EVENT_WARLOCK_CAST_SPELL:
                 if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
                 {
                     if (Unit* newTarget = owner->GetSelectedUnit())
@@ -1243,6 +1277,7 @@ private:
     EventMap _events;
     bool alreadyFollowing;
     int32 shadow;
+    bool _initAttack;
 };
 
 struct npc_pet_warlock_dreadstalker : public ScriptedAI
@@ -1353,9 +1388,9 @@ struct npc_pet_warlock_dreadstalker : public ScriptedAI
                 _events.ScheduleEvent(EVENT_TRY_ATTACK_NEW_TARGET, 1500);
                 break;
             }
-               
+
             case EVENT_WARLOCK_CAST_SPELL: {
-                 if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
+                if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
                 {
                     if (Unit* target = owner->GetSelectedUnit())
                     {
@@ -1365,10 +1400,10 @@ struct npc_pet_warlock_dreadstalker : public ScriptedAI
                         }
                     }
                 }
-                _events.ScheduleEvent(1, 4000);
+                _events.ScheduleEvent(1, 4250);
                 break;
             }
-               
+
             }
         }
         DoMeleeAttackIfReady();
@@ -1378,10 +1413,7 @@ struct npc_pet_warlock_dreadstalker : public ScriptedAI
     {
         if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
         {
-            if (Aura* aura = owner->GetAura(SPELL_WARLOCK_DEMONIC_CORE_BUFF))
-                aura->SetCharges(aura->GetCharges() + 1);
-            else
-                owner->CastCustomSpell(SPELL_WARLOCK_DEMONIC_CORE_BUFF, SPELLVALUE_AURA_CHARGE, 1, owner, true);
+            owner->CastSpell(owner, SPELL_WARLOCK_DEMONIC_CORE_BUFF, TRIGGERED_FULL_MASK);
 
             // Remove a Stack of Demonic Servitude from Reign of Tyranny
             if (Aura* runeAura = GetReignofTyrannyAura(owner))
