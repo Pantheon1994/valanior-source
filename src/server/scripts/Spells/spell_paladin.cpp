@@ -75,6 +75,8 @@ enum PaladinSpells
     SPELL_GENERIC_ARENA_DAMPENING = 74410,
     SPELL_GENERIC_BATTLEGROUND_DAMPENING = 74411,
     SPELL_PALADIN_CONSECRATION = 48819,
+    SPELL_PALADIN_CONSECRATION_INQUISITION = 2200041,
+
     SPELL_PALADIN_EXORCISM = 48801,
     SPELL_PALADIN_RETRIBUTION_AURA = 54043,
     SPELL_PALADIN_SHIELD_OF_RIGHTEOUS = 61411,
@@ -1115,34 +1117,16 @@ class spell_pal_exorcism : public SpellScript
 {
     PrepareSpellScript(spell_pal_exorcism);
 
-    std::list <Unit*> FindCreatures(Creature* creature)
-    {
-        auto const& threatList = GetCaster()->getAttackers();
-
-        if (threatList.empty()) return {};
-
-
-        Position creaturepos = creature->GetPosition();
-        std::list <Unit*> targetAvailable;
-
-        for (auto const& target : threatList)
-        {
-            Position targetpos = target->GetPosition();
-            float distance = creature->GetDistance(targetpos);
-
-            if (distance <= 8)
-            {
-                targetAvailable.push_back(target);
-            }
-        } return targetAvailable;
-    }
-
     void HandleScriptEffect()
     {
-        Creature* creature = GetCaster()->FindNearestCreature(500502, 30);
+        Creature* creature = GetCaster()->FindNearestCreature(500502, 100);
+
         if (!creature || creature->GetCharmerOrOwnerGUID() != GetCaster()->GetGUID())
             return;
-        for (auto const& targetburn : FindCreatures(creature))
+
+        std::list<Unit*> creatures = creature->SelectNearbyTargetsNoTotemTarget(8.f);
+
+        for (auto const& targetburn : creatures)
         {
             GetCaster()->AddAura(48801, targetburn);
         }
@@ -1191,7 +1175,17 @@ class spell_pal_consecration_inquisition : public SpellScript
         if (!target || target->isDead())
             return;
 
-        target->CastSpell(target, SPELL_PALADIN_CONSECRATION, true, nullptr, nullptr, caster->GetGUID());
+        Position pos = target->GetPosition();
+
+        caster->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_PALADIN_CONSECRATION_INQUISITION, true);
+
+        GetCaster()->CastSpell(GetCaster(), 80121, true); //dummy consec for duration info
+
+        Aura* auraEff = GetCaster()->GetAura(80121);
+        int32 duration = auraEff->GetDuration();
+
+        Creature* consecDummy = caster->SummonCreature(500502, pos, TEMPSUMMON_TIMED_DESPAWN, duration);
+        consecDummy->SetOwnerGUID(GetCaster()->GetGUID());
     }
 
     void Register() override
@@ -1199,7 +1193,6 @@ class spell_pal_consecration_inquisition : public SpellScript
         OnEffectHitTarget += SpellEffectFn(spell_pal_consecration_inquisition::HandleDamage, EFFECT_0, SPELL_EFFECT_DUMMY);
     }
 };
-
 
 
 class spell_pal_seraphim : public AuraScript

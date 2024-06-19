@@ -17145,6 +17145,20 @@ Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
     return Acore::Containers::SelectRandomContainerElement(targets);
 }
 
+std::list<Unit*> Unit::SelectNearbyTargetsNoTotemTarget(float dist) const
+{
+    std::list<Unit*> targets;
+    Acore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(this, this, dist);
+    Acore::UnitListSearcher<Acore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> searcher(this, targets, u_check);
+    Cell::VisitAllObjects(this, searcher, dist);
+
+    // remove current target
+    if (GetVictim())
+        targets.remove(GetVictim());
+
+    return targets;
+}
+
 Unit* Unit::SelectNearbyNoTotemTarget(Unit* exclude, float dist) const
 {
     std::list<Unit*> targets;
