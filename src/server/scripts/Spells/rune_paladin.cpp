@@ -957,8 +957,10 @@ class rune_pal_ashes_to_ashes : public AuraScript
         }
         else
         {
-            GetCaster()->AddAura(SPELL_PALADIN_SERAPHIM, GetCaster());
-            GetCaster()->GetAura(SPELL_PALADIN_SERAPHIM)->SetDuration(GetRuneAura()->GetEffect(EFFECT_0)->GetAmount());
+            if (Aura* seraphine = GetCaster()->AddAura(SPELL_PALADIN_SERAPHIM, GetCaster()))
+            {
+                seraphine->SetDuration(GetRuneAura()->GetEffect(EFFECT_0)->GetAmount());
+            }
         }
     }
 
