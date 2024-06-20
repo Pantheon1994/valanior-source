@@ -33,6 +33,7 @@ enum SpellsWarrior
     SPELL_WARR_EXECUTE = 47471,
     SPELL_WARR_CLEAVE = 47520,
     SPELL_WARR_MORTAL_STRIKE = 47486,
+    SPELL_WARR_OVERPOWER = 7384,
     SPELL_WARR_RECKLESSNESS = 1719,
     SPELL_WARR_RAVAGER = 84540,
     SPELL_WARR_ANNIHILATOR = 84543,
@@ -233,17 +234,27 @@ class spell_tactician : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        int32 spellRage = eventInfo.GetSpellInfo()->CalcPowerCost(GetCaster(), SpellSchoolMask(eventInfo.GetSpellInfo()->SchoolMask));
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        const SpellInfo* procSpell = eventInfo.GetSpellInfo();
+
+        if (!procSpell)
+            return;
+
+        int32 spellRage = procSpell->CalcPowerCost(caster, SpellSchoolMask(procSpell->SchoolMask)) / 10;
         float procPctPerRagePoint = aurEff->GetSpellInfo()->Effects[EFFECT_0].DamageMultiplier;
 
         if (spellRage <= 0)
             return;
-
+        LOG_ERROR("error", "spellRage = {}, procPctPerRagePoint = {}", spellRage, procPctPerRagePoint);
         float procChance = spellRage * procPctPerRagePoint;
-        uint32 random = urand(1, 100);
 
-        if (random <= procChance)
-            GetCaster()->ToPlayer()->ModifySpellCooldown(7384, -aurEff->GetAmount());
+        if (Player* player = caster->ToPlayer())
+            if (roll_chance_i(procChance))
+                player->RemoveSpellCooldown(SPELL_WARR_OVERPOWER, true);
     }
 
     void Register() override
@@ -2501,7 +2512,7 @@ class rune_test_of_might_expire : public AuraScript
             {
                 int32 threadshold = runeAura->GetEffect(EFFECT_0)->GetAmount();
                 int32 rageAccumulated = mightCounter->GetEffect(EFFECT_0)->GetAmount();
-                int32 calculatedStack = std::min(10, (rageAccumulated / threadshold));
+                int32 calculatedStack = std::min(20, (rageAccumulated / threadshold));
                 GetCaster()->CastCustomSpell(RUNE_WARR_TEST_OF_MIGHT_BUFF, SPELLVALUE_BASE_POINT0, calculatedStack, GetCaster(), TRIGGERED_FULL_MASK);
                 mightCounter->Remove();
             }
@@ -3125,7 +3136,7 @@ class rune_flurry_of_strikes : public AuraScript
     }
 };
 
-class rune_unhinged: public AuraScript
+class rune_unhinged : public AuraScript
 {
     PrepareAuraScript(rune_unhinged);
 

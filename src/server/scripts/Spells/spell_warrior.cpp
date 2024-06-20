@@ -1776,38 +1776,24 @@ class spell_warr_skullsplitter : public SpellScript
     void HandleApplyAura(SpellEffIndex /*effIndex*/)
     {
         Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         Unit* target = GetHitUnit();
-        int32 amount = 0;
 
-        if (!caster || !target)
+        if (!target || target->isDead())
             return;
 
-        if (Aura* rend = target->GetAura(SPELL_WARRIOR_REND))
-        {
-            if (rend->GetCaster() == caster)
-            {
-                int32 remainingTicks = rend->GetEffect(EFFECT_0)->GetRemaningTicks();
-                int32 effectAmount = rend->GetEffect(EFFECT_0)->GetAmount();
-                amount += remainingTicks * effectAmount;
-                rend->Remove();
-            }
-        }
+        int32 damage = GetHitDamage();
+        int32 bonusPct = GetSpellInfo()->GetEffect(EFFECT_2).CalcValue(caster);
 
-        if (Aura* deepWounds = target->GetAura(MASTERY_WARRIOR_DEEP_WOUNDS_DOT))
-        {
-            if (deepWounds->GetCaster() == caster)
-            {
-                int32 remainingTicks = deepWounds->GetEffect(0)->GetRemaningTicks();
-                int32 effectAmount = deepWounds->GetEffect(0)->GetAmount();
-                amount += remainingTicks * effectAmount;
-                deepWounds->Remove();
-            }
-        }
+        if (uint8 count = target->GetDoTsByCaster(caster->GetGUID()))
+            AddPct(damage, bonusPct * count);
 
-        if (amount == 0)
-            return;
+        SetHitDamage(damage);
 
-        caster->CastCustomSpell(SPELL_WARRIOR_SKULLSPLITTER_EXTRA_DAMAGE, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
+        caster->EnergizeBySpell(caster, GetSpellInfo()->Id, GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(caster), POWER_RAGE);
     }
 
     void Register() override

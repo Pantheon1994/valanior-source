@@ -3359,6 +3359,7 @@ class spell_mage_unstable_anomaly : public AuraScript
             victim->CastCustomSpell(SPELL_MAGE_UNSTABLE_ANOMALY_SHIELD, SPELLVALUE_BASE_POINT0, shieldAmount, victim, true, nullptr, aurEff);
             victim->CastSpell(victim, SPELL_MAGE_UNSTABLE_ANOMALY_KNOCKBACK, TRIGGERED_FULL_MASK);
             victim->CastSpell(victim, SPELL_MAGE_UNSTABLE_ANOMALY_COOLDOWN, TRIGGERED_FULL_MASK);
+            victim->ModifyHealth(victim->CountPctFromMaxHealth(30));
         }
         else
             absorbAmount = 0;

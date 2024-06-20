@@ -137,7 +137,11 @@ enum WarlockSpells
     TALENT_WARLOCK_MOLTEN_HAND_BUFF_R1 = 47383,
     TALENT_WARLOCK_MOLTEN_HAND_BUFF_R2 = 71162,
     TALENT_WARLOCK_MOLTEN_HAND_BUFF_R3 = 71165,
+    TALENT_WARLOCK_NIGHTFALL_BUFF_R1 = 83069,
+    TALENT_WARLOCK_NIGHTFALL_BUFF_R2 = 83070,
     TALENT_WARLOCK_NIGHTFALL_BUFF = 83223,
+    TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R1 = 83231,
+    TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R2 = 83232,
     TALENT_WARLOCK_DEMON_SPIKES_DAMAGE = 83197,
     TALENT_WARLOCK_FORCED_ASCENSION_COOLDOWN = 83199,
     TALENT_WARLOCK_FORCED_ASCENSION_DAMAGE_REDUCTION = 83230,
@@ -206,6 +210,7 @@ enum WarlockPets
     PET_WARLOCK_IMP = 416,
     PET_WARLOCK_SUCCUBUS = 1863,
     PET_WARLOCK_VOIDWALKER = 1860,
+    
 
     // Guardians
     GUARDIAN_WARLOCK_BILESCOURGE = 600607,
@@ -218,6 +223,7 @@ enum WarlockPets
     GUARDIAN_WARLOCK_PORTAL_SUMMON = 600606,
     GUARDIAN_WARLOCK_VILEFIEND = 600602,
     GUARDIAN_WARLOCK_WILD_IMP = 600601,
+    
 
     // Runes
     RUNE_GUARDIAN_WARLOCK_INQUISITORS_EYE = 800000,
@@ -254,6 +260,7 @@ enum WarlockScalingSpells
     INFERNAL_SCALING_STAMINA_AP_SP = 83530,
     VILEFIEND_SCALING_STAMINA_AP_SP = 83533,
     WILD_IMP_SCALING_STAMINA_AP_SP = 83536,
+    FELGUARD_GRIMOIRE_SCALING_STAMINA_AP_SP = 83588,
 
     DARKGLARE_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT = 83516,
     DEMONIC_TYRANT_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT = 83519,
@@ -263,6 +270,7 @@ enum WarlockScalingSpells
     INFERNAL_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT = 83531,
     VILEFIEND_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT = 83534,
     WILD_IMP_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT = 83537,
+    FELGUARD_GRIMOIRE_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT = 83589,
 
     DARKGLARE_SCALING_HASTE = 83517,
     DEMONIC_TYRANT_SCALING_HASTE = 83520,
@@ -272,6 +280,7 @@ enum WarlockScalingSpells
     INFERNAL_SCALING_HASTE = 83532,
     VILEFIEND_SCALING_HASTE = 83535,
     WILD_IMP_SCALING_HASTE = 83538,
+    FELGUARD_GRIMOIRE_SCALING_HASTE = 83590,
 
     // Runes
     PIT_LORD_SCALING_STAMINA_AP_SP = 83582,
@@ -681,7 +690,8 @@ class spell_warl_generic_scaling : public AuraScript
             || m_scriptSpellId == BILESCOURGE_SCALING_STAMINA_AP_SP
             || m_scriptSpellId == INFERNAL_SCALING_STAMINA_AP_SP
             || m_scriptSpellId == VILEFIEND_SCALING_STAMINA_AP_SP
-            || m_scriptSpellId == WILD_IMP_SCALING_STAMINA_AP_SP)
+            || m_scriptSpellId == WILD_IMP_SCALING_STAMINA_AP_SP
+            || m_scriptSpellId == FELGUARD_GRIMOIRE_SCALING_STAMINA_AP_SP)
         {
             DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_generic_scaling::CalculateStatAmount, EFFECT_0, SPELL_AURA_MOD_STAT);
             DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_generic_scaling::CalculateAPAmount, EFFECT_1, SPELL_AURA_MOD_ATTACK_POWER);
@@ -701,7 +711,8 @@ class spell_warl_generic_scaling : public AuraScript
             || m_scriptSpellId == BILESCOURGE_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT
             || m_scriptSpellId == INFERNAL_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT
             || m_scriptSpellId == VILEFIEND_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT
-            || m_scriptSpellId == WILD_IMP_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT)
+            || m_scriptSpellId == WILD_IMP_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT
+            || m_scriptSpellId == FELGUARD_GRIMOIRE_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT)
         {
             DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_generic_scaling::CalculateResistanceAmount, EFFECT_0, SPELL_AURA_MOD_RESISTANCE);
             DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_generic_scaling::CalculateMeleeCriticalChance, EFFECT_1, SPELL_AURA_MOD_WEAPON_CRIT_PERCENT);
@@ -721,7 +732,8 @@ class spell_warl_generic_scaling : public AuraScript
             || m_scriptSpellId == BILESCOURGE_SCALING_HASTE
             || m_scriptSpellId == INFERNAL_SCALING_HASTE
             || m_scriptSpellId == VILEFIEND_SCALING_HASTE
-            || m_scriptSpellId == WILD_IMP_SCALING_HASTE)
+            || m_scriptSpellId == WILD_IMP_SCALING_HASTE
+            || m_scriptSpellId == FELGUARD_GRIMOIRE_SCALING_HASTE)
         {
             DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_generic_scaling::CalculateHasteAmount, EFFECT_0, SPELL_AURA_MOD_MELEE_RANGED_HASTE);
         }
@@ -743,17 +755,18 @@ private:
         spellsStaminaApSp[SUCCUBUS_SCALING_STAMINA_AP_SP] = { 75, 35, 75 };
         spellsStaminaApSp[VOIDWAKLER_SCALING_STAMINA_AP_SP] = { 150, 35, 55 };
         spellsStaminaApSp[DARKGLARE_SCALING_STAMINA_AP_SP] = { 60, 35, 65 };
-        spellsStaminaApSp[DEMONIC_TYRANT_SCALING_STAMINA_AP_SP] = { 60, 35, 75 };
+        spellsStaminaApSp[DEMONIC_TYRANT_SCALING_STAMINA_AP_SP] = { 85, 45, 100 };
         spellsStaminaApSp[DOOMGUARD_SCALING_STAMINA_AP_SP] = { 85, 45, 87 };
         spellsStaminaApSp[DREADSTALKER_SCALING_STAMINA_AP_SP] = { 50, 45, 25 };
         spellsStaminaApSp[BILESCOURGE_SCALING_STAMINA_AP_SP] = { 60, 35, 95 };
         spellsStaminaApSp[INFERNAL_SCALING_STAMINA_AP_SP] = { 85, 35, 65 };
         spellsStaminaApSp[VILEFIEND_SCALING_STAMINA_AP_SP] = { 60, 95, 35 };
         spellsStaminaApSp[WILD_IMP_SCALING_STAMINA_AP_SP] = { 40, 20, 60 };
+        spellsStaminaApSp[FELGUARD_GRIMOIRE_SCALING_STAMINA_AP_SP] = { 100, 70, 36 };
 
         return spellsStaminaApSp[spellId];
     }
-
+    
     float GetArmorScaling(uint32 spellId) {
 
         spellsArmor[FELGUARD_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 180.f;
@@ -762,13 +775,14 @@ private:
         spellsArmor[SUCCUBUS_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 75.f;
         spellsArmor[VOIDWAKLER_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 220.f;
         spellsArmor[DARKGLARE_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 60.f;
-        spellsArmor[DEMONIC_TYRANT_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 60.f;
+        spellsArmor[DEMONIC_TYRANT_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 125.f;
         spellsArmor[DOOMGUARD_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 80.f;
         spellsArmor[DREADSTALKER_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 60.f;
         spellsArmor[BILESCOURGE_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 60.f;
         spellsArmor[INFERNAL_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 75.f;
         spellsArmor[VILEFIEND_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 60.f;
         spellsArmor[WILD_IMP_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 60.f;
+        spellsArmor[FELGUARD_GRIMOIRE_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 144.f;
 
         return spellsArmor[spellId];
     }
@@ -1227,31 +1241,29 @@ class spell_warl_havoc : public AuraScript
         DamageInfo* damageInfo = eventInfo.GetDamageInfo();
         SpellInfo const* spellInfo = eventInfo.GetSpellInfo();
 
-        return (spellInfo && damageInfo && damageInfo->GetDamage() && spellInfo->Id != SPELL_WARLOCK_HAVOC_DAMAGE);
+        return (spellInfo && damageInfo && damageInfo->GetDamage());
     }
 
     Unit* FindTargetHavoc()
     {
         Unit* havocTarget = nullptr;
-        auto const& threatList = GetCaster()->GetThreatMgr().GetThreatList();
-        auto threatListCopy = threatList;
+        std::list<Unit*> targets;
+        Acore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(GetCaster(), GetCaster(), 40);
+        Acore::UnitListSearcher<Acore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> searcher(GetCaster(), targets, u_check);
+        Cell::VisitAllObjects(GetCaster(), searcher, 40);
 
-        if (threatListCopy.empty()) return nullptr;
+        auto threatListCopy = targets;
 
-        for (auto const& treathTarget : threatListCopy)
-        {
-            if (Unit* target = ObjectAccessor::GetUnit(*GetCaster(), treathTarget->getUnitGuid())) {
-                if (target->HasAura(SPELL_WARLOCK_HAVOC_AURA))
-                    havocTarget = target;
-            }
-        }
+        threatListCopy.remove_if(Acore::UnitAuraCheck(false, SPELL_WARLOCK_HAVOC_AURA));
 
-        return havocTarget;
+        if (threatListCopy.empty())
+            return nullptr;
+
+        return threatListCopy.front();
     }
 
     void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-
         Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
@@ -1262,11 +1274,8 @@ class spell_warl_havoc : public AuraScript
         if (!damageInfo)
             return;
 
-        int32 damagePourcentage = aurEff->GetAmount();
-
-        uint32 spellId = eventInfo.GetSpellInfo()->Id;
-
-        int32 totalDamage = CalculatePct(damageInfo->GetDamage(), damagePourcentage);
+        int32 damagePercentage = aurEff->GetAmount();
+        int32 totalDamage = CalculatePct(damageInfo->GetDamage(), damagePercentage);
         Unit* havocTarget = FindTargetHavoc();
 
         if (!havocTarget || havocTarget->isDead())
@@ -1765,6 +1774,16 @@ class spell_warl_drain_soul : public AuraScript
             GetCaster()->CastSpell(GetCaster(), SPELL_WARLOCK_DRAIN_SOUL_ENERGY, TRIGGERED_FULL_MASK);
     }
 
+    void HandlePeriodic(AuraEffect const* aurEff)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        caster->EnergizeBySpell(caster, GetSpellInfo()->Id, 1, POWER_ENERGY);
+    }
+
     void HandleRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* caster = GetCaster();
@@ -1786,6 +1805,7 @@ class spell_warl_drain_soul : public AuraScript
     void Register() override
     {
         OnEffectProc += AuraEffectProcFn(spell_warl_drain_soul::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_drain_soul::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
         OnEffectRemove += AuraEffectRemoveFn(spell_warl_drain_soul::HandleRemove, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
     }
 };
@@ -1979,12 +1999,12 @@ class spell_warlock_soul_strike : public SpellScript
 
     void HandleHit(SpellEffIndex /*effIndex*/)
     {
-        Player* player = GetCaster()->ToPlayer();
+        Unit* caster = GetCaster();
 
-        if (!player || player->isDead())
+        if (!caster || caster->isDead())
             return;
 
-        Unit* target = player->GetSelectedUnit();
+        Unit* target = GetExplTargetUnit();
 
         if (!target || target->isDead())
             return;
@@ -1996,8 +2016,17 @@ class spell_warlock_soul_strike : public SpellScript
 
         pet->ToCreature()->AI()->AttackStart(target);
         pet->GetMotionMaster()->MoveCharge(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
-        pet->CastSpell(target, SPELL_WARLOCK_SOUL_STRIKE, TRIGGERED_IGNORE_GCD, nullptr, nullptr, player->GetGUID());
-        player->CastSpell(player, SPELL_WARLOCK_SOUL_STRIKE_ENERGY, TRIGGERED_FULL_MASK);
+        pet->CastSpell(target, SPELL_WARLOCK_SOUL_STRIKE, TRIGGERED_IGNORE_GCD, nullptr, nullptr, caster->GetGUID());
+        caster->EnergizeBySpell(caster, GetSpellInfo()->Id, GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(caster), POWER_ENERGY);
+
+        if (Aura* moltenHandBuff = caster->GetAura(TALENT_WARLOCK_MOLTEN_HAND_BUFF_R1))
+            moltenHandBuff->ModCharges(-1);
+
+        if (Aura* moltenHandBuff = caster->GetAura(TALENT_WARLOCK_MOLTEN_HAND_BUFF_R2))
+            moltenHandBuff->ModCharges(-1);
+
+        if (Aura* moltenHandBuff = caster->GetAura(TALENT_WARLOCK_MOLTEN_HAND_BUFF_R3))
+            moltenHandBuff->ModCharges(-1);
     }
 
     void Register() override
@@ -2860,8 +2889,27 @@ class spell_warl_seed_of_corruption_handler : public AuraScript
 
     void HandleAfterEffect(AuraEffect const* aurEff, AuraEffectHandleModes mode)
     {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
         int32 amount = CalculatePct(GetCaster()->SpellBaseDamageBonusDone(GetSpellInfo()->GetSchoolMask()), aurEff->GetAmount());
         aurEff->GetBase()->GetEffect(EFFECT_0)->SetAmount(amount);
+
+        if (Aura* nightfallR1 = caster->GetAura(TALENT_WARLOCK_NIGHTFALL_BUFF_R1))
+        {
+            nightfallR1->Remove();
+            caster->AddAura(TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R1, caster);
+            caster->RemoveAura(TALENT_WARLOCK_NIGHTFALL_BUFF);
+        }
+            
+        if (Aura* nightfallR2 = caster->GetAura(TALENT_WARLOCK_NIGHTFALL_BUFF_R2))
+        {
+            nightfallR2->Remove();
+            caster->AddAura(TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R2, caster);
+            caster->RemoveAura(TALENT_WARLOCK_NIGHTFALL_BUFF);
+        }
     }
 
     bool CheckProc(ProcEventInfo& eventInfo)
@@ -2882,7 +2930,7 @@ class spell_warl_seed_of_corruption_handler : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* target = GetAura()->GetOwner()->ToUnit();
+        Unit* target = GetUnitOwner();
 
         if (!target || target->isDead())
             return;
@@ -2919,7 +2967,7 @@ class spell_warl_seed_of_corruption_handler : public AuraScript
     }
 
     void Register() override
-    {
+    {       
         AfterEffectApply += AuraEffectApplyFn(spell_warl_seed_of_corruption_handler::HandleAfterEffect, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
         DoCheckProc += AuraCheckProcFn(spell_warl_seed_of_corruption_handler::CheckProc);
         OnEffectProc += AuraEffectProcFn(spell_warl_seed_of_corruption_handler::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
@@ -2944,9 +2992,24 @@ class spell_warl_seed_of_corruption_explosion : public SpellScript
             crashingChaosListener->ModStackAmount(-1);
     }
 
+    void HandleAfterHit()
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+        
+        if (caster->HasAura(TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R1))
+            caster->RemoveAura(TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R1);
+
+        if (caster->HasAura(TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R2))
+            caster->RemoveAura(TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R2);
+    }
+
     void Register() override
     {
         AfterCast += SpellCastFn(spell_warl_seed_of_corruption_explosion::HandleAfterCast);
+        AfterHit += SpellHitFn(spell_warl_seed_of_corruption_explosion::HandleAfterHit);
     }
 };
 
@@ -3958,8 +4021,8 @@ class spell_warl_shadow_bolt : public SpellScript
         SetHitDamage(damage);
 
         // Energize if in Demonology spec
-        if (caster->HasAura(MASTERY_WARLOCK_MASTER_DEMONOLOGIST))
-            caster->CastSpell(caster, SPELL_WARLOCK_SHADOW_BOLT_ENERGY, TRIGGERED_FULL_MASK);
+        //if (caster->HasAura(MASTERY_WARLOCK_MASTER_DEMONOLOGIST))
+        caster->CastSpell(caster, SPELL_WARLOCK_SHADOW_BOLT_ENERGY, TRIGGERED_FULL_MASK);
     }
 
     void HandleAfterHit()
@@ -4082,7 +4145,10 @@ class spell_warl_searing_pain_energy : public SpellScript
 
             if (roll_chance_i(GetSpellInfo()->GetEffect(EFFECT_1).CalcValue()))
                 caster->CastSpell(caster, SPELL_WARLOCK_SOUL_COLLECTOR_FRAGMENT, TRIGGERED_FULL_MASK);
-        }
+
+            if (caster->HasAura(SPELL_WARLOCK_DEMONIC_ASCENSION))
+                caster->CastSpell(caster, SPELL_WARLOCK_SOUL_COLLECTOR_FRAGMENT, TRIGGERED_FULL_MASK);
+        }   
     }
 
     void Register() override
@@ -4326,6 +4392,9 @@ class spell_warl_fracture_fragment : public SpellScript
         int32 procChance = GetSpellInfo()->GetEffect(EFFECT_1).CalcValue();
 
         if (roll_chance_i(procChance))
+            caster->CastSpell(caster, SPELL_WARLOCK_SOUL_COLLECTOR_FRAGMENT, TRIGGERED_FULL_MASK);
+
+        if (caster->HasAura(SPELL_WARLOCK_DEMONIC_ASCENSION))
             caster->CastSpell(caster, SPELL_WARLOCK_SOUL_COLLECTOR_FRAGMENT, TRIGGERED_FULL_MASK);
     }
 

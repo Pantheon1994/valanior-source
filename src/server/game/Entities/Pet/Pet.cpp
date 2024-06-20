@@ -1379,6 +1379,20 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_DEMONIC_TYRANT_PET_FLAME_NOURISH, this);
             break;
         }
+        case NPC_FELGUARD_GRIMOIRE:
+        {
+            AddAura(SPELL_PET_AVOIDANCE, this);
+            AddAura(SPELL_WARLOCK_GENERAL_PET_PASSIVE_01, this);
+            AddAura(SPELL_WARLOCK_GENERAL_PET_PASSIVE_02, this);
+            AddAura(SPELL_WARLOCK_GENERAL_PET_PASSIVE_03, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_SCALING_01, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_SCALING_02, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_SCALING_03, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_PASSIVE_01, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_PASSIVE_02, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_PASSIVE_03, this);
+            break;
+        }
         case NPC_DREADSTALKER:
         {
             AddAura(SPELL_PET_AVOIDANCE, this);
