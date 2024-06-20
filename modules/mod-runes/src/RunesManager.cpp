@@ -1358,12 +1358,6 @@ void RunesManager::RefundRune(Player* player, uint32 runeSpellId)
         return;
     }
 
-    if (RuneAlreadyActivated(player, runeSpellId))
-    {
-        SendPlayerMessage(player, "You cannot refund Rhis rune, you have one or more of these Runes activated.");
-        return;
-    }
-
     int multiplier = pow(3, rune.quality - 1);
     uint8 runicDust = 50 * multiplier;
 
@@ -1389,6 +1383,63 @@ void RunesManager::RefundRune(Player* player, uint32 runeSpellId)
 
 
     CharacterDatabase.Execute("DELETE FROM account_know_runes WHERE accountId = {} AND spellId = {} LIMIT 1", accountId, rune.spellId);
+
+    player->AddItem(70008, runicDust);
+
+    if (RuneAlreadyActivated(player, rune.spellId))
+    {
+        RemoveRuneFromSlots(player, rune);
+        sEluna->RefreshSlotsRune(player);
+        return;
+    }
+}
+
+void RunesManager::RefundAllRune(Player* player, uint32 runeSpellId)
+{
+    if (!player)
+        return;
+
+    if (player->isDead())
+        return;
+
+    bool knownRune = KnowRuneId(player, runeSpellId);
+
+    if (!knownRune) {
+        SendPlayerMessage(player, "You do not know this Rune.");
+        return;
+    }
+
+    Rune rune = GetRuneBySpellId(runeSpellId);
+
+    if (!rune) {
+        SendPlayerMessage(player, "This Rune does not exist.");
+        return;
+    }
+
+    uint32 accountId = player->GetSession()->GetAccountId();
+
+    auto it = m_KnownRunes.find(accountId);
+
+    if (it == m_KnownRunes.end())
+        return;
+
+    auto ij = std::find_if(it->second.begin(), it->second.end(),
+        [&](const KnownRune& accountRune) {
+        return accountRune.rune.quality == rune.quality && accountRune.rune.spellId == rune.spellId;
+    });
+
+    if (ij == it->second.end())
+        return;
+
+    int multiplier = pow(3, rune.quality - 1);
+    uint8 runicDust = (50 * multiplier) * ij->count;
+
+    if (ij->count > 1)
+        ij->count = 0;
+    else
+        it->second.erase(ij);
+
+    CharacterDatabase.Execute("DELETE FROM account_know_runes WHERE accountId = {} AND spellId = {}", accountId, rune.spellId);
 
     player->AddItem(70008, runicDust);
 

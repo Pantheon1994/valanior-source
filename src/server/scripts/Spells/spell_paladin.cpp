@@ -91,7 +91,7 @@ enum PaladinSpells
     SPELL_PALADIN_SANCTIFIED_FLAME = 86516,
     SPELL_PALADIN_RIGHTEOUS_BARRAGE_WAVE = 86519,
     SPELL_PALADIN_REPRIMAND = 86514,
-    SPELL_PALADIN_INQUISITION_ENERGY_GENERATION = 2200039,
+    SPELL_PALADIN_INQUISITION_ENERGY_GENERATION = 86616,
 
 
     // Talents
@@ -1177,8 +1177,6 @@ class spell_pal_consecration_inquisition : public SpellScript
 
         Position pos = target->GetPosition();
 
-        caster->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_PALADIN_CONSECRATION_INQUISITION, true);
-
         GetCaster()->CastSpell(GetCaster(), 80121, true); //dummy consec for duration info
 
         Aura* auraEff = GetCaster()->GetAura(80121);
@@ -1478,7 +1476,7 @@ class spell_pal_beacon : public AuraScript
 
             int32 healpct = CalculatePct(heal, aurEff->GetAmount());
             if (GetCaster()->HasSpell(80049))
-                healpct = CalculatePct(healpct, 70);
+                healpct = CalculatePct(healpct, 80);
 
             for (auto const& targetheal : FindTargets(53563))
             {
@@ -2199,8 +2197,6 @@ class spell_pal_inquisition_critical_energy_generation : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        LOG_ERROR("PROC", "PROC");
-
         Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
@@ -2232,6 +2228,8 @@ class spell_pal_way_of_the_inquisitor : public AuraScript
         target->learnSpell(SPELL_PALADIN_SEAL_OF_DISCIPLINE);
         target->learnSpell(SPELL_PALADIN_SANCTIFIED_FLAME);
         target->learnSpell(SPELL_PALADIN_INQUISITION_ENERGY_GENERATION);
+        target->removeSpell(SPELL_PALADIN_CONSECRATION, SPEC_MASK_ALL, false);
+        target->learnSpell(SPELL_PALADIN_CONSECRATION_INQUISITION);
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
@@ -2241,7 +2239,8 @@ class spell_pal_way_of_the_inquisitor : public AuraScript
         target->removeSpell(SPELL_PALADIN_SEAL_OF_DISCIPLINE, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_PALADIN_SANCTIFIED_FLAME, SPEC_MASK_ALL, false);
         target->removeSpell(SPELL_PALADIN_INQUISITION_ENERGY_GENERATION, SPEC_MASK_ALL, false);
-
+        target->removeSpell(SPELL_PALADIN_CONSECRATION_INQUISITION, SPEC_MASK_ALL, false);
+        target->learnSpell(SPELL_PALADIN_CONSECRATION);
     }
 
     void Register() override

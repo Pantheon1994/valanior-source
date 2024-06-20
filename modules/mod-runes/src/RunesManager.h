@@ -175,6 +175,7 @@ public:
     static uint32 GetCountActivatedRune(Player* player);
     static void ActivateRune(Player* player, uint32 index, uint64 runeId);
     static void ResetAllSlots(Player* player);
+    static void ResetTalents(Player* player);
     static void ActivateLoadout(Player* player, uint64 loadoutId);
     static void CastActivateLoadout(Player* player, uint64 loadoutId);
     static void RemoveSlotsOnCharacterDel(ObjectGuid guid);
@@ -183,6 +184,7 @@ public:
     static void DisableRune(Player* player, uint64 runeId);
     static std::vector<std::string> GetRunesByPlayerName(std::string name);
     static void RefundRune(Player* player, uint32 runeSpellId);
+    static void RefundAllRune(Player* player, uint32 runeSpellId);
     static void ApplyLuckyRune(Player* player, uint32 runeSpellId, bool enabled);
     static void ApplyAutorefund(Player* player, uint32 runeSpellId);
     static void UpgradeRune(Player* player, uint32 runeSpellId);

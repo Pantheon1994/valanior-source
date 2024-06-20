@@ -97,6 +97,28 @@ public:
         SpecialMount::RewardPlayer(player);
     }
 
+    void InitializePlayerMaxLevelCount(Player* player)
+    {
+        QueryResult resultIt = CharacterDatabase.Query("SELECT count(*) FROM characters WHERE account = {} AND `level` = 60", player->GetSession()->GetAccountId());
+
+        if (resultIt)
+        {
+            do
+            {
+                Field* fields = resultIt->Fetch();
+                uint8 count = fields[0].Get<uint8>();
+                LOG_ERROR("count", "count {}", count);
+                player->SetMaxLevelCount(count);
+            } while (resultIt->NextRow());
+        }
+    }
+
+    void OnLogin(Player* player)
+    {
+        InitializePlayerMaxLevelCount(player);
+    }
+
+
     void OnFirstLogin(Player* player)
     {
         AchievementEntry const* entry = sAchievementMgr->GetAchievement(6496);

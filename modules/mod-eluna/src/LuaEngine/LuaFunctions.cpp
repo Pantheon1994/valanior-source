@@ -462,6 +462,8 @@ ElunaRegister<Player> PlayerMethods[] =
     { "ResetAllSlots", &LuaPlayer::ResetAllSlots },
     { "DisableRune", &LuaPlayer::DisableRune },
     { "RefundRune", &LuaPlayer::RefundRune },
+    { "RefundAllRune", &LuaPlayer::RefundAllRune },
+
     { "UpgradeRune", &LuaPlayer::UpgradeRune },
     { "GetSpecializations", &LuaPlayer::GetSpecializations },
     { "ActivateSpec", &LuaPlayer::ActivateSpec },
