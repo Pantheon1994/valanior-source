@@ -109,6 +109,7 @@ enum WarlockSpells
     SPELL_WARLOCK_SEARING_PAIN_ENERGY = 83100,
     SPELL_WARLOCK_FEL_ARMOR_HEAL = 47894,
     SPELL_WARLOCK_FRAILTY_HEAL = 83104,
+    SPELL_WARLOCK_VOIDWALKER_SACRIFICE_SHIELD = 47985,
     SPELL_WARLOCK_SOUL_BOMB = 83102,
     SPELL_WARLOCK_SOUL_BOMB_DAMAGE = 83105,
     SPELL_WARLOCK_SUMMON_FELGUARD = 30146,
@@ -5364,29 +5365,35 @@ class spell_warlock_shadow_cleave : public SpellScript
     }
 };
 
-class spell_warlock_voidwalker_sacrifice_shield : public AuraScript
+class spell_warlock_voidwalker_sacrifice_shield : public SpellScript
 {
-    PrepareAuraScript(spell_warlock_voidwalker_sacrifice_shield);
+    PrepareSpellScript(spell_warlock_voidwalker_sacrifice_shield);
 
-    void CalculateAmount(AuraEffect const* aurEff, int32& amount, bool& canBeRecalculated)
+    void HandleCast()
     {
         Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
             return;
 
-        canBeRecalculated = false;
+        Unit* target = caster->GetOwner();
+
+        if (!target || target->isDead())
+            return;
+
         SpellSchoolMask schoolMask = GetSpellInfo()->GetSchoolMask();
-        float newAmount = CalculatePct(caster->SpellBaseDamageBonusDone(schoolMask), aurEff->GetAmount());
+        float amount = CalculatePct(target->SpellBaseDamageBonusDone(schoolMask), GetSpellInfo()->GetEffect(EFFECT_0).CalcValue(target));
+        const SpellInfo* shieldInfo = sSpellMgr->GetSpellInfo(SPELL_WARLOCK_VOIDWALKER_SACRIFICE_SHIELD);
 
-        newAmount *= caster->SpellBaseHealingBonusDone(schoolMask);
+        amount = target->SpellHealingBonusDone(target, shieldInfo, amount, HEAL, EFFECT_0);
+        amount = target->SpellHealingBonusTaken(target, shieldInfo, amount, HEAL);
 
-        amount = newAmount;
+        target->CastCustomSpell(SPELL_WARLOCK_VOIDWALKER_SACRIFICE_SHIELD, SPELLVALUE_BASE_POINT0, amount, target, TRIGGERED_FULL_MASK);
     }
 
     void Register() override
     {
-        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warlock_voidwalker_sacrifice_shield::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+        AfterCast += SpellCastFn(spell_warlock_voidwalker_sacrifice_shield::HandleCast);
     }
 };
 
