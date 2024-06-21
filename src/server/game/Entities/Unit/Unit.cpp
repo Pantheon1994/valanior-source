@@ -3220,7 +3220,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
         // Reduce dodge chance by attacker expertise rating
 
         // xinef: cant dodge while casting or while stunned
-        if ((dodgeChance < 0 || victim->IsNonMeleeSpellCast(false, false, true) || victim->HasUnitState(UNIT_STATE_CONTROLLED)) && spellInfo->Id != 80370)
+        // DK Blooddrinker and Shaman Focus Foe exception
+        if ((dodgeChance < 0 || victim->IsNonMeleeSpellCast(false, false, true) || victim->HasUnitState(UNIT_STATE_CONTROLLED)) && (spellInfo->Id != 80370 || spellInfo->Id != 84116))
             dodgeChance = 0;
 
         tmp += dodgeChance;
@@ -3233,7 +3234,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
         // Roll parry
         int32 parryChance = int32(victim->GetUnitParryChance() * 100.0f);
         // xinef: cant parry while casting or while stunned
-        if ((parryChance < 0 || victim->IsNonMeleeSpellCast(false, false, true) || victim->HasUnitState(UNIT_STATE_CONTROLLED)) && spellInfo->Id != 80370)
+        // DK Blooddrinker and Shaman Focus Foe exception
+        if ((parryChance < 0 || victim->IsNonMeleeSpellCast(false, false, true) || victim->HasUnitState(UNIT_STATE_CONTROLLED)) && (spellInfo->Id != 80370 || spellInfo->Id != 84116))
             parryChance = 0;
 
         tmp += parryChance;
@@ -3246,7 +3248,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit* victim, SpellInfo const* spellInfo
         int32 blockChance = int32(victim->GetUnitBlockChance() * 100.0f);
 
         // xinef: cant block while casting or while stunned
-        if (blockChance < 0 || victim->IsNonMeleeSpellCast(false, false, true) || victim->HasUnitState(UNIT_STATE_CONTROLLED))
+        // Shaman Focus Foe exception
+        if (blockChance < 0 || victim->IsNonMeleeSpellCast(false, false, true) || victim->HasUnitState(UNIT_STATE_CONTROLLED) && spellInfo->Id != 84116)
             blockChance = 0;
 
         tmp += blockChance;
@@ -7588,7 +7591,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                             target = this;
                             break;
                         }
-                    case 3560: // Rapid Recuperation
+                    /*case 3560: // Rapid Recuperation
                         {
                             // This effect only from Rapid Killing (mana regen)
                             if (!(procSpell->SpellFamilyFlags[1] & 0x01000000))
@@ -7606,7 +7609,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                                     break;
                             }
                             break;
-                        }
+                        }*/
                 }
 
                 switch (dummySpell->Id)
@@ -9345,7 +9348,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* trigg
                 break;
             }
         // Rapid Recuperation
-        case 53228:
+        /*case 53228:
         case 53232:
             {
                 // This effect only from Rapid Fire (ability cast)
