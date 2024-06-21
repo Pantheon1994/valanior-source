@@ -152,6 +152,8 @@ enum WarlockSpells
     TALENT_WARLOCK_MOLTEN_HAND = 47245,
     TALENT_WARLOCK_IMPROVED_FELHUNTER_R1 = 54037,
     TALENT_WARLOCK_IMPROVED_FELHUNTER_R2 = 54038,
+    TALENT_WARLOCK_SOUL_FLAME_R1 = 30054,
+    TALENT_WARLOCK_SOUL_FLAME_R2 = 30057,
 
     // Masteries  
     MASTERY_WARLOCK_FEL_BLOOD = 1100024,
@@ -211,7 +213,7 @@ enum WarlockPets
     PET_WARLOCK_IMP = 416,
     PET_WARLOCK_SUCCUBUS = 1863,
     PET_WARLOCK_VOIDWALKER = 1860,
-    
+
 
     // Guardians
     GUARDIAN_WARLOCK_BILESCOURGE = 600607,
@@ -224,7 +226,7 @@ enum WarlockPets
     GUARDIAN_WARLOCK_PORTAL_SUMMON = 600606,
     GUARDIAN_WARLOCK_VILEFIEND = 600602,
     GUARDIAN_WARLOCK_WILD_IMP = 600601,
-    
+
 
     // Runes
     RUNE_GUARDIAN_WARLOCK_INQUISITORS_EYE = 800000,
@@ -767,7 +769,7 @@ private:
 
         return spellsStaminaApSp[spellId];
     }
-    
+
     float GetArmorScaling(uint32 spellId) {
 
         spellsArmor[FELGUARD_SCALING_ARMOR_MEELE_CRIT_SPELL_CRIT] = 180.f;
@@ -2904,7 +2906,7 @@ class spell_warl_seed_of_corruption_handler : public AuraScript
             caster->AddAura(TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R1, caster);
             caster->RemoveAura(TALENT_WARLOCK_NIGHTFALL_BUFF);
         }
-            
+
         if (Aura* nightfallR2 = caster->GetAura(TALENT_WARLOCK_NIGHTFALL_BUFF_R2))
         {
             nightfallR2->Remove();
@@ -2968,7 +2970,7 @@ class spell_warl_seed_of_corruption_handler : public AuraScript
     }
 
     void Register() override
-    {       
+    {
         AfterEffectApply += AuraEffectApplyFn(spell_warl_seed_of_corruption_handler::HandleAfterEffect, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
         DoCheckProc += AuraCheckProcFn(spell_warl_seed_of_corruption_handler::CheckProc);
         OnEffectProc += AuraEffectProcFn(spell_warl_seed_of_corruption_handler::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
@@ -2999,7 +3001,7 @@ class spell_warl_seed_of_corruption_explosion : public SpellScript
 
         if (!caster || caster->isDead())
             return;
-        
+
         if (caster->HasAura(TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R1))
             caster->RemoveAura(TALENT_WARLOCK_NIGHTFALL_SEED_BUFF_R1);
 
@@ -4149,7 +4151,7 @@ class spell_warl_searing_pain_energy : public SpellScript
 
             if (caster->HasAura(SPELL_WARLOCK_DEMONIC_ASCENSION))
                 caster->CastSpell(caster, SPELL_WARLOCK_SOUL_COLLECTOR_FRAGMENT, TRIGGERED_FULL_MASK);
-        }   
+        }
     }
 
     void Register() override
@@ -5748,6 +5750,49 @@ class spell_warl_decimation : public AuraScript
     }
 };
 
+// 83023 - Phantom Singularity
+class spell_warl_phantom_singularity : public AuraScript
+{
+    PrepareAuraScript(spell_warl_phantom_singularity);
+
+    Aura* GetSoulFlameTalent(Unit* caster)
+    {
+        if (Aura* soulPowerR1 = caster->GetAura(TALENT_WARLOCK_SOUL_FLAME_R1))
+            return soulPowerR1;
+
+        if (Aura* soulPowerR2 = caster->GetAura(TALENT_WARLOCK_SOUL_FLAME_R2))
+            return soulPowerR2;
+
+        return nullptr;
+    }
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        Unit* target = GetUnitOwner();
+
+        if (!target || target->isDead())
+            return;
+        
+        // Soul Flame talent proc check
+        if (Aura* soulPower = GetSoulFlameTalent(caster))
+            if (roll_chance_i(soulPower->GetEffect(EFFECT_0)->GetAmount()))
+            {
+                int32 procSpell = soulPower->GetSpellInfo()->GetEffect(EFFECT_0).TriggerSpell;
+                caster->CastSpell(target, procSpell, TRIGGERED_FULL_MASK);
+            }      
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_phantom_singularity::HandlePeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+    }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     RegisterSpellScript(spell_warl_eye_of_kilrogg);
@@ -5867,4 +5912,7 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warl_ruin_pet);
     RegisterSpellScript(spell_warlock_vile_taint);
     RegisterSpellScript(spell_warl_decimation);
+    RegisterSpellScript(spell_warl_phantom_singularity);
+
+    
 }
