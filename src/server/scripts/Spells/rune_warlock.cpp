@@ -14,6 +14,7 @@ enum WarlockSpells
 {
     // Spells
     SPELL_WARLOCK_AGONY = 83010,
+    SPELL_WARLOCK_CALL_DREADSTALKERS = 83000,
     SPELL_WARLOCK_CHAOS_BOLT = 59172,
     SPELL_WARLOCK_CONFLAGRATE = 17962,
     SPELL_WARLOCK_CORRUPTION = 47813,
@@ -27,6 +28,7 @@ enum WarlockSpells
     SPELL_WARLOCK_DRAIN_LIFE = 47857,
     SPELL_WARLOCK_DRAIN_SOUL = 47855,
     SPELL_WARLOCK_FIERY_SYMBOL = 83108,
+    SPELL_WARLOCK_FIERY_SYMBOL_BUFF = 83229,
     SPELL_WARLOCK_FRAILTY = 83103,
     SPELL_WARLOCK_HAVOC_AURA = 83062,
     SPELL_WARLOCK_IMMOLATE = 47811,
@@ -2581,6 +2583,13 @@ class rune_warl_charred_flesh : public AuraScript
             duration = std::min<int32>(duration, fierySymbol->GetMaxDuration());
             fierySymbol->SetDuration(duration);
         }
+
+        if (Aura* fierySymbol = caster->GetAura(SPELL_WARLOCK_FIERY_SYMBOL_BUFF))
+        {
+            int32 duration = fierySymbol->GetDuration() + aurEff->GetAmount();
+            duration = std::min<int32>(duration, fierySymbol->GetMaxDuration());
+            fierySymbol->SetDuration(duration);
+        }
     }
 
     void Register() override
@@ -2777,6 +2786,27 @@ class rune_warl_soulmonger : public AuraScript
     }
 };
 
+class rune_warl_demonic_calling : public AuraScript
+{
+    PrepareAuraScript(rune_warl_demonic_calling);
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
+    {
+        Unit* caster = eventInfo.GetActor();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (Player* player = caster->ToPlayer())
+            player->RemoveSpellCooldown(SPELL_WARLOCK_CALL_DREADSTALKERS, true);
+    }
+
+    void Register() override
+    {
+        OnEffectProc += AuraEffectProcFn(rune_warl_demonic_calling::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+    }
+};
+
 
 
 void AddSC_warlock_perks_scripts()
@@ -2847,8 +2877,9 @@ void AddSC_warlock_perks_scripts()
     RegisterSpellScript(rune_warl_volatile_flameblood);
     RegisterSpellScript(rune_warl_soul_furnace);
     RegisterSpellScript(rune_warl_soulmonger);
+    RegisterSpellScript(rune_warl_demonic_calling);
 
 
-
+    
 
 }
