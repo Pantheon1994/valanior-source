@@ -249,7 +249,6 @@ class spell_tactician : public AuraScript
 
         if (spellRage <= 0)
             return;
-        LOG_ERROR("error", "spellRage = {}, procPctPerRagePoint = {}", spellRage, procPctPerRagePoint);
         float procChance = spellRage * procPctPerRagePoint;
 
         if (Player* player = caster->ToPlayer())

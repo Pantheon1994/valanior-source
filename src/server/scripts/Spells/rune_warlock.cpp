@@ -1698,14 +1698,12 @@ class rune_warl_reign_of_tyranny : public AuraScript
                 {
                     stackAmount += stackPerDemon * 3;
                 }
-                LOG_ERROR("error", "stackAmount = {}", stackAmount);
             }
 
             Pet* pet = player->GetPet();
 
             if (pet)
                 stackAmount += stackPerDemon * 3;
-            LOG_ERROR("error", "stackAmount = {}", stackAmount);
             if (stackAmount == 0)
                 return;
 
