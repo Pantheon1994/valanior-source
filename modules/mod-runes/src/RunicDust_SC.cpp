@@ -43,7 +43,11 @@ public:
 
     void AddRunicEssenceToLoot(uint32 minValue, Loot* loot)
     {
-        LootStoreItem runicEssence(ITEM_RUNIC_ESSENCE, 0, 100, 0, LOOT_MODE_DEFAULT, 0, minValue, minValue);
+        float multiplier = sWorld->GetValue("CONFIG_DROP_ESSENCE_MULTIPLIER");
+        int augmentation = minValue * multiplier / 100;
+        uint32 value = minValue + augmentation;
+
+        LootStoreItem runicEssence(ITEM_RUNIC_ESSENCE, 0, 100, 0, LOOT_MODE_DEFAULT, 0, value, value);
         loot->AddItem(runicEssence);
     }
 

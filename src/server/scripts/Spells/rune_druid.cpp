@@ -5169,8 +5169,10 @@ class rune_druid_after_the_wildfire : public AuraScript
             return;
 
         int32 rageAccumulated = GetAura()->GetEffect(EFFECT_2)->GetAmount() + spellRage;
-        int32 attackPowerPct = GetAura()->GetEffect(EFFECT_1)->GetAmount();
-        int32 attackPower = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+
+        GetAura()->GetEffect(EFFECT_2)->ChangeAmount(rageAccumulated);
+
+        int32 amount = CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), GetAura()->GetEffect(EFFECT_1)->GetAmount());
         int32 rageThreshold = aurEff->GetAmount();
 
         if (rageAccumulated > rageThreshold)
