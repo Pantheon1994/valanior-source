@@ -4888,10 +4888,11 @@ class rune_druid_ursocs_fury : public AuraScript
         if (Aura* ursocShield = caster->GetAura(RUNE_DRUID_URSOCS_FURY_SHIELD))
         {
             amount += ursocShield->GetEffect(EFFECT_0)->GetAmount();
-            ursocShield->Remove();
+            if (amount > damage)
+                amount = damage;
         }
-
-        caster->CastCustomSpell(RUNE_DRUID_URSOCS_FURY_SHIELD, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
+        else
+            caster->CastCustomSpell(RUNE_DRUID_URSOCS_FURY_SHIELD, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
     }
 
     void Register() override
@@ -5001,7 +5002,11 @@ class rune_druid_brambles : public AuraScript
 
         absorbAmount = CalculatePct(attackPower, absorbPct);
 
-        caster->CastCustomSpell(RUNE_DRUID_BRAMBLES_DAMAGE, SPELLVALUE_BASE_POINT0, absorbAmount, target, TRIGGERED_FULL_MASK);
+        if (!caster->ToPlayer()->HasSpellCooldown(RUNE_DRUID_BRAMBLES_DAMAGE))
+        {
+            caster->CastCustomSpell(RUNE_DRUID_BRAMBLES_DAMAGE, SPELLVALUE_BASE_POINT0, absorbAmount, target, TRIGGERED_FULL_MASK);
+            caster->ToPlayer()->AddSpellCooldown(RUNE_DRUID_BRAMBLES_DAMAGE, 0, 100);
+        }
     }
 
     void Register() override
@@ -5158,7 +5163,7 @@ class rune_druid_after_the_wildfire : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Player* caster = eventInfo.GetActor()->ToPlayer();
+        Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
             return;
@@ -5169,19 +5174,17 @@ class rune_druid_after_the_wildfire : public AuraScript
             return;
 
         int32 rageAccumulated = GetAura()->GetEffect(EFFECT_2)->GetAmount() + spellRage;
-        int32 attackPowerPct = GetAura()->GetEffect(EFFECT_1)->GetAmount();
-        int32 attackPower = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+        GetAura()->GetEffect(EFFECT_2)->ChangeAmount(rageAccumulated);
+        int32 amount = CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), GetAura()->GetEffect(EFFECT_1)->GetAmount());
         int32 rageThreshold = aurEff->GetAmount();
 
-        if (rageAccumulated > rageThreshold)
+        if (rageAccumulated >= rageThreshold)
         {
             rageAccumulated -= rageThreshold;
-            int32 amount = CalculatePct(attackPower, attackPowerPct);
-
+            GetAura()->GetEffect(EFFECT_2)->ChangeAmount(rageAccumulated);
+            
             caster->CastCustomSpell(RUNE_DRUID_AFTER_THE_WILDFIRE_AOE_HEAL, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
         }
-
-        GetAura()->GetEffect(EFFECT_2)->SetAmount(rageAccumulated);
     }
 
     void Register() override

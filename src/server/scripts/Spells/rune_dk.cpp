@@ -1955,7 +1955,8 @@ class rune_dk_deaths_ally : public AuraScript
         {
             if (caster->IsInCombat() && caster->IsAlive())
             {
-                caster->CastSpell(caster, SPELL_DK_ARMY_OF_THE_DEAD, TRIGGERED_FULL_MASK);
+                if (caster->HasSpell(SPELL_DK_ARMY_OF_THE_DEAD_BASE))
+                    caster->CastSpell(caster, SPELL_DK_ARMY_OF_THE_DEAD, TRIGGERED_FULL_MASK);
             }
         }
     }

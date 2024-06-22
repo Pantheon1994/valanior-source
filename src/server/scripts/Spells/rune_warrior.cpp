@@ -33,6 +33,7 @@ enum SpellsWarrior
     SPELL_WARR_EXECUTE = 47471,
     SPELL_WARR_CLEAVE = 47520,
     SPELL_WARR_MORTAL_STRIKE = 47486,
+    SPELL_WARR_OVERPOWER = 7384,
     SPELL_WARR_RECKLESSNESS = 1719,
     SPELL_WARR_RAVAGER = 84540,
     SPELL_WARR_ANNIHILATOR = 84543,
@@ -40,6 +41,7 @@ enum SpellsWarrior
     SPELL_WARR_REVENGE_BUFF = 57830,
     SPELL_WARR_SPEAR_SWIPE = 84561,
 
+    RUNE_WARR_BEST_SERVED_COLD_SHIELD = 200496,
     RUNE_WARR_DEVASTATOR_PROC = 200868,
     RUNE_WARR_FATALITY_MARK = 201207,
     RUNE_WARR_FATALITY_DAMAGE = 201208,
@@ -232,17 +234,26 @@ class spell_tactician : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        int32 spellRage = eventInfo.GetSpellInfo()->CalcPowerCost(GetCaster(), SpellSchoolMask(eventInfo.GetSpellInfo()->SchoolMask));
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        const SpellInfo* procSpell = eventInfo.GetSpellInfo();
+
+        if (!procSpell)
+            return;
+
+        int32 spellRage = procSpell->CalcPowerCost(caster, SpellSchoolMask(procSpell->SchoolMask)) / 10;
         float procPctPerRagePoint = aurEff->GetSpellInfo()->Effects[EFFECT_0].DamageMultiplier;
 
         if (spellRage <= 0)
             return;
-
         float procChance = spellRage * procPctPerRagePoint;
-        uint32 random = urand(1, 100);
 
-        if (random <= procChance)
-            GetCaster()->ToPlayer()->ModifySpellCooldown(7384, -aurEff->GetAmount());
+        if (Player* player = caster->ToPlayer())
+            if (roll_chance_i(procChance))
+                player->RemoveSpellCooldown(SPELL_WARR_OVERPOWER, true);
     }
 
     void Register() override
@@ -916,22 +927,13 @@ class spell_best_served_cold : public AuraScript
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
         Unit* caster = GetCaster();
-        Unit* target = GetTarget();
 
         if (!caster || caster->isDead())
             return;
 
-        if (!target || GetCaster()->isDead())
-            return;
+        uint32 amount = int32(CalculatePct(caster->GetMaxHealth(), aurEff->GetAmount()));
 
-        uint32 amount = int32(CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), aurEff->GetAmount()));
-
-        Aura* shield = caster->GetAura(200496);
-
-        if (shield)
-            amount += shield->GetEffect(EFFECT_0)->GetAmount();
-
-        caster->CastCustomSpell(200496, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
+        caster->CastCustomSpell(RUNE_WARR_BEST_SERVED_COLD_SHIELD, SPELLVALUE_BASE_POINT0, amount, caster, TRIGGERED_FULL_MASK);
     }
 
     void Register() override
@@ -2384,7 +2386,10 @@ class rune_brutal_vitality : public AuraScript
         {
             int32 amount = CalculatePct(eventInfo.GetDamageInfo()->GetDamage(), aurEff->GetAmount());
             int32 currentAbsorb = aura->GetEffect(EFFECT_0)->GetAmount();
-            aura->GetEffect(EFFECT_0)->ChangeAmount(amount + currentAbsorb);
+            int32 maxShieldAmount = CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), aura->GetEffect(EFFECT_1)->GetAmount());
+            amount = std::min<int32>(maxShieldAmount, amount + currentAbsorb);
+
+            aura->GetEffect(EFFECT_0)->ChangeAmount(amount);
         }
     }
 
@@ -2506,7 +2511,7 @@ class rune_test_of_might_expire : public AuraScript
             {
                 int32 threadshold = runeAura->GetEffect(EFFECT_0)->GetAmount();
                 int32 rageAccumulated = mightCounter->GetEffect(EFFECT_0)->GetAmount();
-                int32 calculatedStack = std::min(10, (rageAccumulated / threadshold));
+                int32 calculatedStack = std::min(20, (rageAccumulated / threadshold));
                 GetCaster()->CastCustomSpell(RUNE_WARR_TEST_OF_MIGHT_BUFF, SPELLVALUE_BASE_POINT0, calculatedStack, GetCaster(), TRIGGERED_FULL_MASK);
                 mightCounter->Remove();
             }
@@ -3130,7 +3135,7 @@ class rune_flurry_of_strikes : public AuraScript
     }
 };
 
-class rune_unhinged: public AuraScript
+class rune_unhinged : public AuraScript
 {
     PrepareAuraScript(rune_unhinged);
 

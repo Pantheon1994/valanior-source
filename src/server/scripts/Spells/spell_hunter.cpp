@@ -124,6 +124,8 @@ enum HunterSpells
     SPELL_HUNTER_TWILIGHT_PIERCER = 85006,
     SPELL_HUNTER_ASPECT_OF_THE_BEAST_BUFF = 80247,
     SPELL_HUNTER_BARBED_SHOT = 80172,
+    SPELL_HUNTER_RAPID_FIRE = 80146,
+    SPELL_HUNTER_RAPID_FIRE_DAMAGE = 80147,
 
     // Talents
     TALENT_HUNTER_SHADOW_CLOAK = 85034,
@@ -1987,16 +1989,39 @@ class spell_hun_death_chakram : public SpellScript
 
     void HandleHit(SpellEffIndex effIndex)
     {
-        if (!GetCaster() || GetCaster()->isDead())
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
             return;
 
         int32 energizeAmount = sSpellMgr->AssertSpellInfo(SPELL_HUNTER_DEATH_CHAKRAM)->GetEffect(EFFECT_2).CalcValue();
-        GetCaster()->EnergizeBySpell(GetCaster(), SPELL_HUNTER_DEATH_CHAKRAM, energizeAmount, POWER_FOCUS);
+        caster->EnergizeBySpell(caster, SPELL_HUNTER_DEATH_CHAKRAM, energizeAmount, POWER_FOCUS);
     }
 
     void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_hun_death_chakram::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+    }
+};
+
+class spell_hun_rapid_fire_energy : public SpellScript
+{
+    PrepareSpellScript(spell_hun_rapid_fire_energy);
+
+    void HandleHit(SpellEffIndex effIndex)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        int32 energizeAmount = sSpellMgr->AssertSpellInfo(SPELL_HUNTER_RAPID_FIRE_DAMAGE)->GetEffect(EFFECT_1).CalcValue();
+        caster->EnergizeBySpell(caster, SPELL_HUNTER_RAPID_FIRE, energizeAmount, POWER_FOCUS);
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_hun_rapid_fire_energy::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 
@@ -2215,8 +2240,8 @@ class spell_hun_dire_beast : public SpellScript
 
         Creature* summon = caster->SummonCreature(summonId, pos, TEMPSUMMON_TIMED_DESPAWN, duration, 0, properties);
 
-        summon->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(summon->getLevel() - (summon->getLevel() / 8) + caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.05f));
-        summon->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(summon->getLevel() + (summon->getLevel() / 8) + caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.05f));
+        summon->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(summon->getLevel() - (summon->getLevel() / 8) + caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1f));
+        summon->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(summon->getLevel() + (summon->getLevel() / 8) + caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1f));
         caster->AddAura(34902, summon);
         caster->AddAura(34903, summon);
         caster->AddAura(34904, summon);
@@ -2327,8 +2352,8 @@ class spell_hun_call_of_wild_periodic : public SpellScript
                 }
             }
 
-            pet->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(pet->getLevel() - (pet->getLevel() / 8)));
-            pet->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(pet->getLevel() + (pet->getLevel() / 8)));
+            pet->SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(pet->getLevel() - (pet->getLevel() / 8) + GetCaster()->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1f));
+            pet->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(pet->getLevel() + (pet->getLevel() / 8) + GetCaster()->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1f));
             pet->AddAura(34902, GetCaster());
             pet->AddAura(34903, GetCaster());
             pet->AddAura(34904, GetCaster());
@@ -4327,6 +4352,7 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_expert_of_the_wilds);
     RegisterSpellScript(spell_hun_withering_fire_energy);
     RegisterSpellScript(spell_hun_beast_applier);
+    RegisterSpellScript(spell_hun_rapid_fire_energy);
 
     //new Hunter_AllMapScript();
     new npc_hunter_spell_stampeded();

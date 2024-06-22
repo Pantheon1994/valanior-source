@@ -280,6 +280,10 @@ void RunesManager::LoadAllProgression()
 
 void RunesManager::CreateDefaultCharacter(Player* player)
 {
+
+
+
+
     CharacterDatabasePreparedStatement* stmt = nullptr;
     uint64 startIdSlot = 1;
     bool active = true;
@@ -297,6 +301,11 @@ void RunesManager::CreateDefaultCharacter(Player* player)
     }
 
     uint64 guid = player->GetGUID().GetCounter();
+
+
+    LuckyRunes luckyRune = { 0, 0, 0 };
+    m_CharacterLuckyRunes[guid] = luckyRune;
+
     uint32 accountId = player->GetSession()->GetAccountId();
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_FIRST_LOADOUT);
     stmt->SetData(0, guid);
@@ -322,6 +331,8 @@ void RunesManager::CreateDefaultCharacter(Player* player)
         AccountProgression progression = { 0, 0, config.defaultSlot };
         m_Progression[accountId] = { progression };
     }
+
+
 
 }
 
@@ -432,7 +443,6 @@ void RunesManager::ApplyLuckyRune(Player* player, uint32 runeSpellId, bool enabl
 {
     uint32 guid = player->GetGUID().GetCounter();
     auto match = m_CharacterLuckyRunes.find(guid);
-
     Rune rune = GetRuneBySpellId(runeSpellId);
 
     if (rune.quality > 1)
@@ -445,49 +455,35 @@ void RunesManager::ApplyLuckyRune(Player* player, uint32 runeSpellId, bool enabl
     {
         LuckyRunes luckyRune = { runeSpellId, 0, 0 };
         m_CharacterLuckyRunes[guid] = luckyRune;
-        CharacterDatabase.Query("INSERT INTO character_lucky_runes (guid, lucky1, lucky2, lucky3) VALUES ({}, {}, 0, 0) ", guid, runeSpellId);
-        SendChat(player, "|cff11ff00 You have activate 1 lucky rune, you need 2 more lucky runes to fully benefit from the lucky runes.");
+        CharacterDatabase.Query("INSERT INTO character_lucky_runes (guid, lucky1, lucky2, lucky3) VALUES ({}, {}, 0, 0)", guid, runeSpellId);
+        SendChat(player, "|cff11ff00 You have activated 1 lucky rune, you need 2 more lucky runes to fully benefit from the lucky runes.");
     }
-    else {
-        uint32 count = 0;
+    else
+    {
+        LuckyRunes& luckyRunes = match->second;
+        uint32 count = (luckyRunes.runeSpellId1 > 0) + (luckyRunes.runeSpellId2 > 0) + (luckyRunes.runeSpellId3 > 0);
 
-
-        uint32* runeSpellIds[] = {
-            &match->second.runeSpellId1,
-            &match->second.runeSpellId2,
-            &match->second.runeSpellId3
-        };
-
-        for (int i = 0; i < 3; ++i) {
-            if (*runeSpellIds[i] > 0 && *runeSpellIds[i] != runeSpellId) {
-                count++;
-            }
-        }
-
-        if (count == 3) {
+        if (count == 3 && (luckyRunes.runeSpellId1 != runeSpellId && luckyRunes.runeSpellId2 != runeSpellId && luckyRunes.runeSpellId3 != runeSpellId))
+        {
             SendChat(player, "|cff11ff00 You already have 3 lucky Runes activated, please remove one before adding a new one.");
             return;
         }
 
-        for (int i = 0; i < 3; ++i) {
-            if (*runeSpellIds[i] == 0) {
-                *runeSpellIds[i] = runeSpellId;
-                break;
-            } else if (*runeSpellIds[i] == runeSpellId) {
-                *runeSpellIds[i] = 0;
-                break;
-            }
-        }
+        if (luckyRunes.runeSpellId1 == runeSpellId)
+            luckyRunes.runeSpellId1 = 0;
+        else if (luckyRunes.runeSpellId2 == runeSpellId)
+            luckyRunes.runeSpellId2 = 0;
+        else if (luckyRunes.runeSpellId3 == runeSpellId)
+            luckyRunes.runeSpellId3 = 0;
+        else if (luckyRunes.runeSpellId1 == 0)
+            luckyRunes.runeSpellId1 = runeSpellId;
+        else if (luckyRunes.runeSpellId2 == 0)
+            luckyRunes.runeSpellId2 = runeSpellId;
+        else if (luckyRunes.runeSpellId3 == 0)
+            luckyRunes.runeSpellId3 = runeSpellId;
 
-        CharacterDatabase.Query("UPDATE character_lucky_runes SET lucky1 = {}, lucky2 = {}, lucky3 = {} WHERE guid = {}", *runeSpellIds[0], *runeSpellIds[1], *runeSpellIds[2], guid);
 
-        count = 0;
-
-        for (int i = 0; i < 3; ++i) {
-            if (*runeSpellIds[i] > 0) {
-                count++;
-            }
-        }
+        count = (luckyRunes.runeSpellId1 > 0) + (luckyRunes.runeSpellId2 > 0) + (luckyRunes.runeSpellId3 > 0);
 
         if (count < 3) {
             SendChat(player, "|cff11ff00 You have activated " + std::to_string(count) + " Lucky Rune(s), you need " + std::to_string(3 - count) + " more Lucky Runes to be able to benefit from the system.");
@@ -495,10 +491,14 @@ void RunesManager::ApplyLuckyRune(Player* player, uint32 runeSpellId, bool enabl
         else {
             SendChat(player, "|cff11ff00 You have 3 Lucky Runes activated. Open Sealed Rune Cards to get them!");
         }
+
+
+        CharacterDatabase.Query("UPDATE character_lucky_runes SET lucky1 = {}, lucky2 = {}, lucky3 = {} WHERE guid = {}",
+            luckyRunes.runeSpellId1, luckyRunes.runeSpellId2, luckyRunes.runeSpellId3, guid);
     }
 
-
-    if (enabled) {
+    if (enabled)
+    {
         sEluna->EnableLuckyRune(player, runeSpellId);
         OnboardingManager::ApplyLuckyRune(player);
     }
@@ -630,7 +630,13 @@ Rune RunesManager::GetRandomRune(Player* player, uint8 quality)
         }
     }
     uint32 currentSpec = PlayerSpecialization::GetCurrentSpecId(player);
+    uint32 preferredRuneSpec = PlayerSpecialization::GetPreferredSpecId(player);
+
     SpecValue specValue = PlayerSpecialization::GetSpecValue(currentSpec);
+
+    if (preferredRuneSpec) {
+        specValue.specMask = preferredRuneSpec;
+    }
 
     for (const auto& pair : m_Runes) {
         bool isClassAllowed = pair.second.allowableClass & player->getClassMask();
@@ -1352,12 +1358,6 @@ void RunesManager::RefundRune(Player* player, uint32 runeSpellId)
         return;
     }
 
-    if (RuneAlreadyActivated(player, runeSpellId))
-    {
-        SendPlayerMessage(player, "You cannot refund Rhis rune, you have one or more of these Runes activated.");
-        return;
-    }
-
     int multiplier = pow(3, rune.quality - 1);
     uint8 runicDust = 50 * multiplier;
 
@@ -1383,6 +1383,63 @@ void RunesManager::RefundRune(Player* player, uint32 runeSpellId)
 
 
     CharacterDatabase.Execute("DELETE FROM account_know_runes WHERE accountId = {} AND spellId = {} LIMIT 1", accountId, rune.spellId);
+
+    player->AddItem(70008, runicDust);
+
+    if (RuneAlreadyActivated(player, rune.spellId))
+    {
+        RemoveRuneFromSlots(player, rune);
+        sEluna->RefreshSlotsRune(player);
+        return;
+    }
+}
+
+void RunesManager::RefundAllRune(Player* player, uint32 runeSpellId)
+{
+    if (!player)
+        return;
+
+    if (player->isDead())
+        return;
+
+    bool knownRune = KnowRuneId(player, runeSpellId);
+
+    if (!knownRune) {
+        SendPlayerMessage(player, "You do not know this Rune.");
+        return;
+    }
+
+    Rune rune = GetRuneBySpellId(runeSpellId);
+
+    if (!rune) {
+        SendPlayerMessage(player, "This Rune does not exist.");
+        return;
+    }
+
+    uint32 accountId = player->GetSession()->GetAccountId();
+
+    auto it = m_KnownRunes.find(accountId);
+
+    if (it == m_KnownRunes.end())
+        return;
+
+    auto ij = std::find_if(it->second.begin(), it->second.end(),
+        [&](const KnownRune& accountRune) {
+        return accountRune.rune.quality == rune.quality && accountRune.rune.spellId == rune.spellId;
+    });
+
+    if (ij == it->second.end())
+        return;
+
+    int multiplier = pow(3, rune.quality - 1);
+    uint8 runicDust = (50 * multiplier) * ij->count;
+
+    if (ij->count > 1)
+        ij->count = 0;
+    else
+        it->second.erase(ij);
+
+    CharacterDatabase.Execute("DELETE FROM account_know_runes WHERE accountId = {} AND spellId = {}", accountId, rune.spellId);
 
     player->AddItem(70008, runicDust);
 

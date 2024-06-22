@@ -211,6 +211,13 @@ namespace LuaPlayer
         return 0;
     }
 
+    int ResetTalents(lua_State* L, Player* player)
+    {
+        player->resetTalents(true);
+        player->SendTalentsInfoData(false);
+        return 0;
+    }
+
     int ActivateSpec(lua_State* L, Player* player)
     {
         uint32 specId = Eluna::CHECKVAL<uint32>(L, 2);
@@ -229,6 +236,13 @@ namespace LuaPlayer
     {
         uint64 runeId = Eluna::CHECKVAL<uint64>(L, 2);
         RunesManager::RefundRune(player, runeId);
+        return 0;
+    }
+
+    int RefundAllRune(lua_State* L, Player* player)
+    {
+        uint64 runeId = Eluna::CHECKVAL<uint64>(L, 2);
+        RunesManager::RefundAllRune(player, runeId);
         return 0;
     }
 
@@ -2931,24 +2945,6 @@ namespace LuaPlayer
      *
      * @param bool noCost = true
      */
-    int ResetTalents(lua_State* L, Player* player)
-    {
-        bool no_cost = Eluna::CHECKVAL<bool>(L, 2, true);
-
-#ifdef CATA
-        player->ResetTalents(no_cost);
-#else
-#ifdef TRINITY
-        player->ResetTalents(no_cost);
-#else
-        player->resetTalents(no_cost);
-#endif
-#endif
-#if (!defined(TBC) && !defined(CLASSIC))
-        player->SendTalentsInfoData(false);
-#endif
-        return 0;
-    }
 
     /**
      * Removes the [Spell] from the [Player]

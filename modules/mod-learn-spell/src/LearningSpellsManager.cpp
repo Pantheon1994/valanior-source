@@ -51,6 +51,12 @@ enum SpecMageSpells
     SPELL_TELEPORT_IRONFORGE = 3562,
 };
 
+enum SpecPaladinSpells
+{
+    SPELL_PALADIN_CONSECRATION = 48819,
+    SPELL_PALADIN_CONSECRATION_INQUISITION = 86615,
+};
+
 void LearningSpellsManager::PreloadAllSpells()
 {
     m_Spells = {};
@@ -75,6 +81,10 @@ bool LearningSpellsManager::Exception(Player* player, uint32 spellId)
 {
     // Warrior
     if (spellId == SPELL_WARRIOR_VICTORY_RUSH && player->HasSpell(SPELL_WARRIOR_IMPEDING_VICTORY))
+        return false;
+
+    // Paladin
+    if (spellId == SPELL_PALADIN_CONSECRATION && player->HasSpell(SPELL_PALADIN_CONSECRATION_INQUISITION))
         return false;
 
     // Hunter

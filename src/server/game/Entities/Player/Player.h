@@ -1535,6 +1535,9 @@ public:
 
     uint32 GetInGameTime() { return m_ingametime; }
 
+    uint8 GetMaxLevelCount() { return m_maxTotalLevel;  }
+    void SetMaxLevelCount(uint8 count) { m_maxTotalLevel = count; }
+
     void SetInGameTime(uint32 time) { m_ingametime = time; }
 
     void AddTimedQuest(uint32 quest_id) { m_timedquests.insert(quest_id); }
@@ -2677,6 +2680,7 @@ public:
 
     ObjectGuid m_divider;
     uint32 m_ingametime;
+    uint8 m_maxTotalLevel;
 
     /*********************************************************/
     /***                   LOAD SYSTEM                     ***/

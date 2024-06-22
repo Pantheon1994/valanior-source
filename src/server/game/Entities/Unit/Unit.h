@@ -1388,6 +1388,8 @@ public:
     void StopAttackingInvalidTarget();
     Unit* SelectNearbyTarget(Unit* exclude = nullptr, float dist = NOMINAL_MELEE_RANGE) const;
     Unit* SelectNearbyNoTotemTarget(Unit* exclude = nullptr, float dist = NOMINAL_MELEE_RANGE) const;
+    std::list<Unit*> SelectNearbyTargetsNoTotemTarget(float dist) const;
+
     void SendMeleeAttackStop(Unit* victim = nullptr);
     void SendMeleeAttackStart(Unit* victim, Player* sendTo = nullptr);
 

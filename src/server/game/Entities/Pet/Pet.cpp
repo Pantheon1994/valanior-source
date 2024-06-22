@@ -1166,6 +1166,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_FELGUARD_PET_PASSIVE_01, this);
             AddAura(SPELL_WARLOCK_FELGUARD_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_FELGUARD_PET_PASSIVE_03, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
 
             // Immutable Hatred Rune
@@ -1191,6 +1192,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_FELHUNTER_PET_PASSIVE_01, this);
             AddAura(SPELL_WARLOCK_FELHUNTER_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_FELHUNTER_PET_PASSIVE_03, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
 
             // Improved Felhunter
@@ -1209,6 +1211,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_IMP_PET_PASSIVE_01, this);
             AddAura(SPELL_WARLOCK_IMP_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_IMP_PET_PASSIVE_03, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
             break;
         }
@@ -1224,6 +1227,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_SUCCUBUS_PET_PASSIVE_01, this);
             AddAura(SPELL_WARLOCK_SUCCUBUS_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_SUCCUBUS_PET_PASSIVE_03, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
             break;
         }
@@ -1240,6 +1244,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_VOIDWALKER_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_VOIDWALKER_PET_PASSIVE_03, this);
             AddAura(SPELL_WARLOCK_VOIDWALKER_SHADOW_SHIELD, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
             break;
         }
@@ -1329,6 +1334,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_INFERNAL_PET_PASSIVE_03, this);
             AddAura(SPELL_WARLOCK_INFERNAL_PET_FEL_FIRE, this);
             AddAura(SPELL_WARLOCK_INFERNAL_PET_FEL_ATTACKS, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             break;
         }
         case NPC_DOOMGUARD:
@@ -1348,6 +1354,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_DOOMGUARD_PET_PASSIVE_01, this);
             AddAura(SPELL_WARLOCK_DOOMGUARD_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_DOOMGUARD_PET_PASSIVE_03, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             break;
         }
         case NPC_DARKGLARE:
@@ -1362,6 +1369,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_DARKGLARE_PET_PASSIVE_01, this);
             AddAura(SPELL_WARLOCK_DARKGLARE_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_DARKGLARE_PET_PASSIVE_03, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             break;
         }
         case NPC_DEMONIC_TYRANT:
@@ -1377,6 +1385,21 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_DEMONIC_TYRANT_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_DEMONIC_TYRANT_PET_PASSIVE_03, this);
             AddAura(SPELL_WARLOCK_DEMONIC_TYRANT_PET_FLAME_NOURISH, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
+            break;
+        }
+        case NPC_FELGUARD_GRIMOIRE:
+        {
+            AddAura(SPELL_PET_AVOIDANCE, this);
+            AddAura(SPELL_WARLOCK_GENERAL_PET_PASSIVE_01, this);
+            AddAura(SPELL_WARLOCK_GENERAL_PET_PASSIVE_02, this);
+            AddAura(SPELL_WARLOCK_GENERAL_PET_PASSIVE_03, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_SCALING_01, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_SCALING_02, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_SCALING_03, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_PASSIVE_01, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_PASSIVE_02, this);
+            AddAura(SPELL_WARLOCK_FELGUARD_GRIMOIRE_PET_PASSIVE_03, this);
             break;
         }
         case NPC_DREADSTALKER:
@@ -1391,6 +1414,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_DREADSTALKER_PET_PASSIVE_01, this);
             AddAura(SPELL_WARLOCK_DREADSTALKER_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_DREADSTALKER_PET_PASSIVE_03, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             break;
         }
         case NPC_BILESCOURGE:
@@ -1405,6 +1429,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_BILESCOURGE_PET_PASSIVE_01, this);
             AddAura(SPELL_WARLOCK_BILESCOURGE_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_BILESCOURGE_PET_PASSIVE_03, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             break;
         }
         case NPC_VILEFIEND:
@@ -1419,6 +1444,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_VILEFIEND_PET_PASSIVE_01, this);
             AddAura(SPELL_WARLOCK_VILEFIEND_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_VILEFIEND_PET_PASSIVE_03, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             break;
         }
         case NPC_WILD_IMP:
@@ -1433,6 +1459,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             AddAura(SPELL_WARLOCK_WILD_IMP_PET_PASSIVE_01, this);
             AddAura(SPELL_WARLOCK_WILD_IMP_PET_PASSIVE_02, this);
             AddAura(SPELL_WARLOCK_WILD_IMP_PET_PASSIVE_03, this);
+            AddAura(TALENT_WARLOCK_DEMONIC_PACT_AURA, this);
             break;
         }
         case NPC_INQUISITORS_GAZE:

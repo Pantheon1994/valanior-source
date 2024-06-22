@@ -705,8 +705,6 @@ class rune_sha_forceful_winds : public AuraScript
 
         if (!caster->HasAura(RUNE_SHAMAN_FORCEFUL_WINDS_BUFF))
             caster->CastSpell(caster, RUNE_SHAMAN_FORCEFUL_WINDS_BUFF, TRIGGERED_FULL_MASK);
-
-        
         
         caster->CastSpell(caster, aurEff->GetAmount(), TRIGGERED_FULL_MASK);
     }
