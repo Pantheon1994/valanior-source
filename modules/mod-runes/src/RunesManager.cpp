@@ -1432,7 +1432,7 @@ void RunesManager::RefundAllRune(Player* player, uint32 runeSpellId)
         return;
 
     int multiplier = pow(3, rune.quality - 1);
-    uint8 runicDust = (50 * multiplier) * ij->count;
+    uint32 runicDust = (50 * multiplier) * ij->count;
 
     if (ij->count > 1)
         ij->count = 0;

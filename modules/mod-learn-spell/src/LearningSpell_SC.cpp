@@ -107,7 +107,6 @@ public:
             {
                 Field* fields = resultIt->Fetch();
                 uint8 count = fields[0].Get<uint8>();
-                LOG_ERROR("count", "count {}", count);
                 player->SetMaxLevelCount(count);
             } while (resultIt->NextRow());
         }
@@ -116,6 +115,7 @@ public:
     void OnLogin(Player* player)
     {
         InitializePlayerMaxLevelCount(player);
+        LearningSpellsManager::GiveSpellsForLevelup(player);
     }
 
 
