@@ -5665,7 +5665,9 @@ class spell_warl_ruin_pet : public AuraScript
         if (!caster || caster->isDead())
             return;
 
-        caster->learnSpell(GetAura()->GetEffect(EFFECT_1)->GetAmount());
+        if (AuraEffect* effect = GetEffect(EFFECT_1)) {
+            caster->learnSpell(effect->GetAmount());
+        }
     }
 
     void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
@@ -5681,7 +5683,7 @@ class spell_warl_ruin_pet : public AuraScript
 
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(spell_warl_ruin_pet::HandleApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+        AfterEffectApply += AuraEffectApplyFn(spell_warl_ruin_pet::HandleApply, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
         OnEffectRemove += AuraEffectRemoveFn(spell_warl_ruin_pet::HandleRemove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
     }
 };
