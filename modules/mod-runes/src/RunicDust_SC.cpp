@@ -27,6 +27,9 @@ enum Items {
     ITEM_SEALED_RUNE = 70002,
 };
 
+
+const std::vector<uint32> exceptionCreatureIds = { 8901, 9956, 108901, 109956, 208901, 209956, 6978, 106978, 206978, 7276, 7286, 107276, 107286, 207276, 207286, 7603, 6981, 107603, 106981, 207603, 206981 };
+
 class RunicDust_MiscScript : public MiscScript
 {
 public:
@@ -54,6 +57,12 @@ public:
 
 
     void AddBonusRunicDustAndRunicEssence(Creature* creature, Player* player, Loot* loot) {
+
+        if (std::find(exceptionCreatureIds.begin(), exceptionCreatureIds.end(), creature->GetEntry()) != exceptionCreatureIds.end())
+            return;
+
+        if (creature->IsSummon())
+            return;
 
         uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
