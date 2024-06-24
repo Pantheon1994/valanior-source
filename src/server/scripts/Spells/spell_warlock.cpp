@@ -5858,7 +5858,7 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warlock_flame_nourish_target);
     RegisterSpellScript(spell_warlock_nightfall_duration);
     RegisterSpellScript(spell_warlock_foul_flame_target);
-    RegisterSpellScript(spell_warl_ruin_pet);
+    // RegisterSpellScript(spell_warl_ruin_pet);
     RegisterSpellScript(spell_warlock_vile_taint);
     RegisterSpellScript(spell_warl_decimation);
 }
