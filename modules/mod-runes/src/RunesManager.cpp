@@ -1359,7 +1359,7 @@ void RunesManager::RefundRune(Player* player, uint32 runeSpellId)
     }
 
     int multiplier = pow(3, rune.quality - 1);
-    uint8 runicDust = 50 * multiplier;
+    uint32 runicDust = 50 * multiplier;
 
     uint32 accountId = player->GetSession()->GetAccountId();
 
