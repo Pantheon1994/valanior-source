@@ -212,7 +212,7 @@ void ItemUpgradeManager::RemoveRequieredItem(Player* player, ItemUpgradeRequirem
         player->DestroyItemCount(upgrade->requiredItemId1, upgrade->requiredItemCount1, true);
 
     if(upgrade->requiredItemId2 > 0)
-        player->DestroyItemCount(upgrade->requiredItemId2, upgrade->requiredItemId2, true);
+        player->DestroyItemCount(upgrade->requiredItemId2, upgrade->requiredItemCount2, true);
 
     player->DestroyItemCount(70009, upgrade->cosmicEssenceCost, true);
 }
