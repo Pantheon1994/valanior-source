@@ -3165,12 +3165,8 @@ class spell_dru_raze : public AuraScript
     {
         Player* target = GetCaster()->ToPlayer();
 
-        if (target->HasSpell(SPELL_DRUID_MAUL))
-        {
-            target->removeSpell(SPELL_DRUID_MAUL, SPEC_MASK_ALL, false);
-            target->learnSpell(SPELL_DRUID_RAZE);
-        }
-        
+        target->removeSpell(SPELL_DRUID_MAUL, SPEC_MASK_ALL, false);
+        target->learnSpell(SPELL_DRUID_RAZE);
     }
 
     void HandleUnlearn(AuraEffect const* aurEff, AuraEffectHandleModes mode)
@@ -3185,6 +3181,24 @@ class spell_dru_raze : public AuraScript
     {
         OnEffectApply += AuraEffectApplyFn(spell_dru_raze::HandleLearn, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
         OnEffectRemove += AuraEffectRemoveFn(spell_dru_raze::HandleUnlearn, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+class spell_druid_maul_check : public SpellScript
+{
+    PrepareSpellScript(spell_druid_maul_check);
+
+    SpellCastResult CheckCast()
+    {
+        if (GetCaster()->HasSpell(SPELL_DRUID_RAZE))
+            return SPELL_FAILED_SPELL_UNAVAILABLE;
+        else
+            return SPELL_CAST_OK;
+    }
+
+    void Register() override
+    {
+        OnCheckCast += SpellCheckCastFn(spell_druid_maul_check::CheckCast);
     }
 };
 
@@ -3423,6 +3437,7 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_replacer_ursoc);
     RegisterSpellScript(spell_dru_replacer_ashamane);
     RegisterSpellScript(spell_dru_raze);
+    RegisterSpellScript(spell_druid_maul_check);
     RegisterSpellScript(spell_dru_starfire_aoe);
     RegisterSpellScript(spell_dru_incapacitating_roar);
     RegisterSpellScript(spell_dru_natural_lifeform);

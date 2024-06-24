@@ -206,13 +206,16 @@ public:
 
         void UpdateAI(uint32 diff) override
         {
-            if (update >= 785) {
-                if (Unit* owner = me->ToTempSummon()->GetSummonerUnit()) {
+            if (update >= 785)
+            {
+                if (Unit* owner = me->ToTempSummon()->GetSummonerUnit())
+                {
                     me->CastSpell(me, SPELL_MAGE_ARCANE_ORB_DAMAGE, true, nullptr, nullptr, owner->GetGUID());
-                }
+                    if (owner->IsAlive())
+                        owner->CastSpell(owner, SPELL_MAGE_ARCANE_CHARGE_VISUAL);
+                } 
                 update = 0;
             }
-
             update += diff;
         }
 

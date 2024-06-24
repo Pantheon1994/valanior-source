@@ -292,16 +292,10 @@ class spell_set_regalia_of_undead_cleansing : public AuraScript
     }
 };
 
-// 41736 - Staff Intellect
+// 41734 - Staff Intellect
 class spell_set_staff_intellect : public AuraScript
 {
     PrepareAuraScript(spell_set_staff_intellect);
-
-    void CalcPeriodic(AuraEffect const* /*aurEff*/, bool& isPeriodic, int32& amplitude)
-    {
-        isPeriodic = true;
-        amplitude = 2 * IN_MILLISECONDS;
-    }
 
     void HandlePeriodic(AuraEffect const* aurEff)
     {
@@ -336,8 +330,7 @@ class spell_set_staff_intellect : public AuraScript
 
     void Register() override
     {
-        DoEffectCalcPeriodic += AuraEffectCalcPeriodicFn(spell_set_staff_intellect::CalcPeriodic, EFFECT_2, SPELL_AURA_ANY);
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_set_staff_intellect::HandlePeriodic, EFFECT_2, SPELL_AURA_ANY);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_set_staff_intellect::HandlePeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
 
@@ -345,12 +338,6 @@ class spell_set_staff_intellect : public AuraScript
 class spell_set_shield_intellect : public AuraScript
 {
     PrepareAuraScript(spell_set_shield_intellect);
-
-    void CalcPeriodic(AuraEffect const* /*aurEff*/, bool& isPeriodic, int32& amplitude)
-    {
-        isPeriodic = true;
-        amplitude = 2 * IN_MILLISECONDS;
-    }
 
     void HandlePeriodic(AuraEffect const* aurEff)
     {
@@ -385,8 +372,7 @@ class spell_set_shield_intellect : public AuraScript
 
     void Register() override
     {
-        DoEffectCalcPeriodic += AuraEffectCalcPeriodicFn(spell_set_shield_intellect::CalcPeriodic, EFFECT_2, SPELL_AURA_ANY);
-        OnEffectPeriodic += AuraEffectPeriodicFn(spell_set_shield_intellect::HandlePeriodic, EFFECT_2, SPELL_AURA_ANY);
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_set_shield_intellect::HandlePeriodic, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
     }
 };
 

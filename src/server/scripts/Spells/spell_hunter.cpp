@@ -1550,8 +1550,9 @@ class spell_hun_steady_shot_concussive : public SpellScript
 
         if (Aura* aura = target->GetAura(5116))
         {
-            if (aura->GetCasterGUID() == GetCaster()->GetGUID()) {
-                // aura->SetDuration(aura->GetDuration() + aura->GetEffect(EFFECT_1)->GetAmount());
+            if (aura->GetCasterGUID() == GetCaster()->GetGUID())
+            {
+                aura->SetDuration(std::max(6000 ,aura->GetDuration() + aura->GetEffect(EFFECT_1)->GetAmount()));
             }
         }
     }

@@ -1128,7 +1128,8 @@ class spell_pal_exorcism : public SpellScript
 
         for (auto const& targetburn : creatures)
         {
-            GetCaster()->AddAura(48801, targetburn);
+            if (GetCaster()->_IsValidAttackTarget(targetburn, GetSpellInfo()) || !targetburn->IsInPartyWith(GetCaster()))
+                GetCaster()->AddAura(48801, targetburn);
         }
     }
 
@@ -2136,8 +2137,6 @@ class spell_pal_gods_judgement : public AuraScript
     }
 };
 
-
-
 class spell_pal_inquisition : public SpellScript
 {
     PrepareSpellScript(spell_pal_inquisition);
@@ -2164,6 +2163,9 @@ class spell_pal_inquisition : public SpellScript
 
         if (!target || target->isDead())
             return;
+
+        if ((caster->GetPower(POWER_ENERGY) + 1) < 5)
+            caster->SetPower(POWER_ENERGY, caster->GetPower(POWER_ENERGY) + 1);
 
         int32 damage = GetHitDamage();
 
@@ -2202,13 +2204,8 @@ class spell_pal_inquisition_critical_energy_generation : public AuraScript
         if (!caster || caster->isDead())
             return;
 
-        uint32 count = 1;
-
-        if (eventInfo.GetHitMask() == PROC_EX_CRITICAL_HIT)
-            count += 1;
-
-        if ((caster->GetPower(POWER_ENERGY) + count) < 5)
-            caster->SetPower(POWER_ENERGY, caster->GetPower(POWER_ENERGY) + count);
+        if ((caster->GetPower(POWER_ENERGY) + 1) < 5)
+            caster->SetPower(POWER_ENERGY, caster->GetPower(POWER_ENERGY) + 1);
     }
 
     void Register() override

@@ -3398,6 +3398,8 @@ class spell_warl_soul_fire_energy : public SpellScript
 
         uint32 increase = sSpellMgr->AssertSpellInfo(SPELL_WARLOCK_SOUL_FIRE)->GetEffect(EFFECT_1).CalcValue(GetCaster());
         caster->EnergizeBySpell(caster, SPELL_WARLOCK_SOUL_FIRE, increase, POWER_ENERGY);
+
+        caster->AddAura(SPELL_WARLOCK_IMMOLATE, target);
     }
 
     void Register() override
