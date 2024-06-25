@@ -297,18 +297,33 @@ public:
         ClearGossipMenuFor(player);
         MythicKey* mythicKey = sMythicMgr->GetCurrentPlayerMythicKey(player);
 
-        if (mythicKey)
-            return false;
+        if (mythicKey) {
+            if (uint32 itemId = sMythicMgr->GetItemIdWithDungeonId(mythicKey->dungeonId)) {
+                player->DestroyItemCount(itemId, 1, true);
 
-        sMythicMgr->GenerateFirstRandomMythicKey(player);
-        return true;
+                if (mythicKey->level > 2)
+                    mythicKey->level -= 1;
+
+                uint32 dungeonId = sMythicMgr->GetRandomMythicDungeonForPlayer();
+
+
+                sMythicMgr->GenerateMythicKeyByLevelAndDungeonId(player, mythicKey->level, dungeonId);
+                CloseGossipMenuFor(player);
+                return true;
+            }
+        }
+        else {
+            ChatHandler(player->GetSession()).SendSysMessage("You don't have any Mythic+ key.");
+        }
+
+        CloseGossipMenuFor(player);
+        return false;
     }
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Give me a random Mythic+ key.", GOSSIP_SENDER_MAIN, 16);
-        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Bye.", GOSSIP_SENDER_MAIN, 17);
-        SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Give me a new Mythic+ Key.", GOSSIP_SENDER_MAIN, 16);
+        SendGossipMenuFor(player, 400400, creature->GetGUID());
         return true;
     }
 };

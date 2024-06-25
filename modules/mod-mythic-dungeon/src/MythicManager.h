@@ -83,6 +83,8 @@ struct MythicRewardToken {
     uint32 runicDust;
     uint32 tokenId;
     uint32 tokenCount;
+    uint32 tokenId2;
+    uint32 tokenCount2;
 };
 
 class MythicManager
@@ -120,7 +122,7 @@ public:
     void UpdatePlayerKey(ObjectGuid guid, int8 upgrade);
     bool ForceCompleteMythic(Player* player);
 
-    uint32 GetRandomMythicDungeonForPlayer(Player* player);
+    uint32 GetRandomMythicDungeonForPlayer(uint32 dungeonId = 0);
     uint32 GetItemIdWithDungeonId(uint32 dungeonId);
     uint32 GetEnchantByMythicLevel(uint32 level);
 

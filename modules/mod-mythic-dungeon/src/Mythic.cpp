@@ -266,10 +266,15 @@ void Mythic::GiveRewards()
             uint32 runicDust = reward.runicDust * bonus;
             uint32 runicEssence = reward.runicEssence * bonus;
             uint32 tokenCount = reward.tokenCount * bonus;
+            uint32 tokenCount2 = reward.tokenCount2 * bonus;
 
             player->AddItem(70008, runicDust);
             player->AddItem(70009, runicEssence);
             player->AddItem(reward.tokenId, tokenCount);
+
+            if (tokenCount2 > 0) {
+                player->AddItem(reward.tokenId2, tokenCount2);
+            }
 
             int guaranteedRewards = BonusMultiplier / 100;
             float extraChance = BonusMultiplier % 100;

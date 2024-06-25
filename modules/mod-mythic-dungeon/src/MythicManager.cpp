@@ -103,7 +103,11 @@ void MythicManager::InitializeRewardsToken()
         uint32 tokenId = fields[3].Get<uint32>();
         uint32 tokenCount = fields[4].Get<uint32>();
 
-        MythicDungeonRewardTokenStore[level] = { level, runicEssence, runicDust, tokenId, tokenCount };
+        uint32 tokenId2 = fields[5].Get<uint32>();
+        uint32 tokenCount2 = fields[6].Get<uint32>();
+
+
+        MythicDungeonRewardTokenStore[level] = { level, runicEssence, runicDust, tokenId, tokenCount, tokenId2, tokenCount2 };
     } while (result->NextRow());
 }
 
@@ -237,12 +241,17 @@ bool MythicManager::IsPlayerMeetingConditionsToStartMythic(Player* player)
     return false;
 }
 
-uint32 MythicManager::GetRandomMythicDungeonForPlayer(Player* player)
+uint32 MythicManager::GetRandomMythicDungeonForPlayer(uint32 dungeonId)
 {
     if (MythicDungeonStore.empty())
         return 0;
 
-    return MythicDungeonStore[urand(0, MythicDungeonStore.size() - 1)].id;
+    uint32 id = MythicDungeonStore[urand(0, MythicDungeonStore.size() - 1)].id;
+
+    if (id == dungeonId)
+        return GetRandomMythicDungeonForPlayer(dungeonId);
+
+    return id;
 }
 
 
@@ -450,7 +459,7 @@ void MythicManager::UpdatePlayerKey(ObjectGuid guid, int8 upgrade)
     uint32 currentItemId = GetItemIdWithDungeonId(key->dungeonId);
     player->DestroyItemCount(currentItemId, 1, true);
 
-    uint32 dungeonId = GetRandomMythicDungeonForPlayer(player);
+    uint32 dungeonId = GetRandomMythicDungeonForPlayer();
     
     key->dungeonId = dungeonId;
 
@@ -571,7 +580,7 @@ void MythicManager::GetMythicDungeonByDungeonId(uint32 dungeonId, MythicDungeon&
 
 void MythicManager::GenerateFirstRandomMythicKey(Player* player)
 {
-    uint32 dungeonId = sMythicMgr->GetRandomMythicDungeonForPlayer(player);
+    uint32 dungeonId = sMythicMgr->GetRandomMythicDungeonForPlayer();
 
     MythicKey key = { dungeonId, 2 };
 
