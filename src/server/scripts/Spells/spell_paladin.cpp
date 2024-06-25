@@ -92,6 +92,7 @@ enum PaladinSpells
     SPELL_PALADIN_RIGHTEOUS_BARRAGE_WAVE = 86519,
     SPELL_PALADIN_REPRIMAND = 86514,
     SPELL_PALADIN_INQUISITION_ENERGY_GENERATION = 86616,
+    SPELL_PALADIN_WAY_OF_THE_INQUISITOR = 86517,
 
 
     // Talents
@@ -1133,9 +1134,24 @@ class spell_pal_exorcism : public SpellScript
         }
     }
 
+    void HandleDamage(SpellEffIndex effIndex)
+    {
+        int32 damage = GetHitDamage();
+
+        if (Aura* inquisitor = GetCaster()->GetAura(SPELL_PALADIN_WAY_OF_THE_INQUISITOR))
+        {
+            int32 holysp = CalculatePct(int32(GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY)), inquisitor->GetEffect(EFFECT_1)->GetAmount());
+
+            damage += holysp;
+        }
+
+        SetHitDamage(damage);
+    }
+
     void Register() override
     {
         OnCast += SpellCastFn(spell_pal_exorcism::HandleScriptEffect);
+        OnEffectHitTarget += SpellEffectFn(spell_pal_exorcism::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
     }
 };
 
