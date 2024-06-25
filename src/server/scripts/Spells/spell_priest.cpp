@@ -2001,14 +2001,16 @@ class spell_pri_power_word_radiance : public SpellScript
 
         caster->AddAura(SPELL_PRIEST_AUTONEMENT_AURA, target);
 
-        Aura* atonement = target->GetAura(SPELL_PRIEST_AUTONEMENT_AURA);
-        int32 duration = CalculatePct(atonement->GetMaxDuration(), durationPct);
+        if (Aura* atonement = target->GetAura(SPELL_PRIEST_AUTONEMENT_AURA))
+        {
+            int32 duration = CalculatePct(atonement->GetMaxDuration(), durationPct);
 
-        // Add T1 4pc duration increase.
-        if (Aura* set_T1_4pc = caster->GetAura(T1_PRIEST_DISCI_4PC))
-            duration += set_T1_4pc->GetEffect(EFFECT_1)->GetAmount();
+            // Add T1 4pc duration increase.
+            if (Aura* set_T1_4pc = caster->GetAura(T1_PRIEST_DISCI_4PC))
+                duration += set_T1_4pc->GetEffect(EFFECT_1)->GetAmount();
 
-        atonement->SetDuration(duration);
+            atonement->SetDuration(duration);
+        }
     }
 
     void Register() override
