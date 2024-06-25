@@ -2811,7 +2811,7 @@ class rune_pal_wrathblow : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        Unit* caster = GetCaster();
+        Player* caster = GetCaster()->ToPlayer();
 
         if (!caster || caster->isDead())
             return;
@@ -2825,13 +2825,10 @@ class rune_pal_wrathblow : public AuraScript
         if (procID == SPELL_PALADIN_RIGHTEOUS_BARRAGE_DAMAGE)
             procChance = GetEffect(EFFECT_1)->GetAmount();
 
-        if (procChance == 0)
-            return;
-
-        if (Player* player = caster->ToPlayer())
+        if (roll_chance_f(procChance))
         {
-            player->RemoveSpellCooldown(SPELL_PALADIN_HAMMER_OF_WRATH, true);
-            player->AddAura(SPELL_PALADIN_HAMMER_OF_WRATH_USEABLE, caster);
+            caster->RemoveSpellCooldown(SPELL_PALADIN_HAMMER_OF_WRATH, true);
+            caster->AddAura(SPELL_PALADIN_HAMMER_OF_WRATH_USEABLE, caster);
         }
     }
 

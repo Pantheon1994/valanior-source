@@ -1984,7 +1984,14 @@ class spell_pri_power_word_radiance : public SpellScript
     void HandleHit(SpellEffIndex effIndex)
     {
         Unit* target = GetHitUnit();
+
+        if (!target || target->isDead())
+            return;
+
         Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
 
         int32 durationPct = GetSpellInfo()->GetEffect(EFFECT_1).CalcValue(caster);
 
@@ -1999,9 +2006,7 @@ class spell_pri_power_word_radiance : public SpellScript
             return;
         }
 
-        caster->AddAura(SPELL_PRIEST_AUTONEMENT_AURA, target);
-
-        if (Aura* atonement = target->GetAura(SPELL_PRIEST_AUTONEMENT_AURA))
+        if (Aura* atonement = target->AddAura(SPELL_PRIEST_AUTONEMENT_AURA, target))
         {
             int32 duration = CalculatePct(atonement->GetMaxDuration(), durationPct);
 
