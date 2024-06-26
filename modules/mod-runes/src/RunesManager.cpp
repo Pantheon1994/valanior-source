@@ -1247,7 +1247,7 @@ void RunesManager::ResetAllSlots(Player* player)
 
     if (player->IsInCombat())
     {
-        SendPlayerMessage(player, "You cannot activate more of this Rune.");
+        SendPlayerMessage(player, "You cannot do that while in combat.");
         return;
     }
 
@@ -1265,7 +1265,6 @@ void RunesManager::ResetAllSlots(Player* player)
         }
         match->second.clear();
     }
-
 
 
     sEluna->RefreshSlotsRune(player);

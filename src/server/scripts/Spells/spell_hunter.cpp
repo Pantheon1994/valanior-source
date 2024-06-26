@@ -4187,6 +4187,9 @@ class spell_hun_animal_companion_check : public AuraScript
             Creature* summon = player->SummonCreature(600612, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 60 * IN_MILLISECONDS, 0, properties);
             summon->SetDisplayId(displayId);
             ApplySecondaryPet(summon, firstPet, player);
+            CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(firstPet->CreatureId);
+            CreatureSpellDataEntry const* spellDataId = sCreatureSpellDataStore.LookupEntry(cInfo->PetSpellDataId);
+            ((Guardian*)summon)->SetSpellIdMinion(spellDataId->spellId);
         }
     }
 

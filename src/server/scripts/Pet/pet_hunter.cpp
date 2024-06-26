@@ -209,8 +209,148 @@ private:
     int32 shadow;
 };
 
+
+struct pet_companion : public ScriptedAI
+{
+    pet_companion(Creature* creature) : ScriptedAI(creature) { }
+
+
+    struct SpellGuardian {
+        uint32 spellId;
+        uint32 recoveryTime;
+    };
+
+    void InitializeAI() override
+    {
+        _events.Reset();
+        _events.ScheduleEvent(0, 1500);
+        _events.ScheduleEvent(1, 1500);
+        _events.ScheduleEvent(2, 1500);
+        _events.ScheduleEvent(3, 1500);
+        _events.ScheduleEvent(4, 1000);
+    }
+
+    void EnterCombat(Unit* victim)
+    {
+
+        _events.Reset();
+        std::vector<SpellInfo const*> mSpells = {};
+        std::array<uint32_t, MAX_CREATURE_SPELL_DATA_SLOT> petSpells;
+
+        if (Guardian* gardian = ((Guardian*)me)) {
+            petSpells = gardian->GetSpellIds();
+            for (uint8 j = 0; j < MAX_CREATURE_SPELL_DATA_SLOT; ++j)
+            {
+                if (uint32 spellId = petSpells[j]) {
+                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+
+                    if (!spellInfo)
+                        continue;
+
+                    mSpells.push_back(spellInfo);
+                }
+            }
+        }
+
+        for (SpellInfo const*& spell : mSpells) {
+            if (spell->GetDuration() == 0) {
+                mSpellGuardian.push_back({ spell->Id, spell->RecoveryTime == 0 ? urand(1500, 2000) : spell->RecoveryTime });
+            }
+        }
+
+        for (SpellGuardian spell : mSpellGuardian) {
+            _events.ScheduleEvent(index, spell.recoveryTime);
+            index += 1;
+        }
+
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (!UpdateVictim())
+            return;
+
+        _events.Update(diff);
+
+        while (uint32 eventId = _events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+            case 0: {
+                SpellGuardian* spell = &mSpellGuardian[0];
+
+                if (!spell)
+                    return;
+
+                 me->CastSpell(me->GetVictim(), spell->spellId);
+                _events.ScheduleEvent(0, spell->recoveryTime);
+                break;
+            }
+
+            case 1: {
+                SpellGuardian* spell = &mSpellGuardian[1];
+
+                if (!spell)
+                    return;
+
+                me->CastSpell(me->GetVictim(), spell->spellId);
+                _events.ScheduleEvent(1, spell->recoveryTime);
+                break;
+            }
+               
+
+            case 2: {
+                SpellGuardian* spell = &mSpellGuardian[2];
+
+                if (!spell)
+                    return;
+
+                 me->CastSpell(me->GetVictim(), spell->spellId);
+                _events.ScheduleEvent(2, spell->recoveryTime);
+                break;
+            }
+                
+            case 3:
+            {
+                SpellGuardian* spell = &mSpellGuardian[3];
+
+                if (!spell)
+                    return;
+                 me->CastSpell(me->GetVictim(), spell->spellId);
+                _events.ScheduleEvent(3, spell->recoveryTime);
+                break;
+            }
+
+            case 4:
+            {
+                uint32 curValue = me->GetPower(POWER_FOCUS);
+                uint32 maxValue = me->GetMaxPower(POWER_FOCUS);
+
+                if (curValue >= maxValue)
+                    return;
+
+                uint32 addvalue = 24 * sWorld->getRate(RATE_POWER_FOCUS);
+                me->ModifyPower(POWER_FOCUS, int32(addvalue));
+                break;
+            }
+               
+            default:
+                break;
+            }
+        }
+
+        DoMeleeAttackIfReady();
+    }
+
+private:
+    EventMap _events;
+    uint32 index = 0;
+    std::vector<SpellGuardian> mSpellGuardian;
+    bool _initAttack = false;
+};
 void AddSC_hunter_pet_scripts()
 {
     RegisterCreatureAI(npc_pet_hunter_snake_trap);
     RegisterCreatureAI(npc_hunter_wild_pet);
+    RegisterCreatureAI(pet_companion);
 }

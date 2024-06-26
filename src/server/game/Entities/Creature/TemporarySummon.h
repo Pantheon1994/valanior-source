@@ -87,11 +87,17 @@ public:
     [[nodiscard]] bool IsPetGhoul() const {return GetEntry() == 26125 /*normal ghoul*/ || GetEntry() == 30230 /*Raise Ally ghoul*/;} // Ghoul may be guardian or pet
     [[nodiscard]] bool IsGuardianPet() const;
     void setDeathState(DeathState s, bool despawn = false) override;                   // override virtual Unit::setDeathState
-
+    void SetSpellIdMinion(const uint32_t spellid[MAX_CREATURE_SPELL_DATA_SLOT]) {
+        std::copy(spellid, spellid + MAX_CREATURE_SPELL_DATA_SLOT, SpellIds.begin());
+    };
+    std::array<uint32_t, MAX_CREATURE_SPELL_DATA_SLOT> GetSpellIds() const {
+        return SpellIds;
+    };
     std::string GetDebugInfo() const override;
 protected:
     const ObjectGuid m_owner;
     float m_followAngle;
+    std::array<uint32, MAX_CREATURE_SPELL_DATA_SLOT> SpellIds;
 };
 
 class Guardian : public Minion
