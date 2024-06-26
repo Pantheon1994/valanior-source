@@ -524,8 +524,8 @@ class spell_warr_execute : public SpellScript
         int32 minimumRageKept = 0;
 
         // Sudden Death rage save
-        if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_AURA_PROC_TRIGGER_SPELL, SPELLFAMILY_GENERIC, WARRIOR_ICON_ID_SUDDEN_DEATH, EFFECT_0))
-            minimumRageKept = aurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue(caster);
+        if (AuraEffect* aurEff = caster->GetAuraEffectOfRankedSpell(29723, EFFECT_1))
+            minimumRageKept = aurEff->GetAmount();
 
         int32 newRage = std::max<int32>(minimumRageKept, caster->GetPower(POWER_RAGE) - rage);
         caster->SetPower(POWER_RAGE, newRage);

@@ -886,7 +886,7 @@ void Player::UpdateDodgePercentage()
         70.129021f,     // DK
         70.129021f,    // Shaman
         150.375940f,    // Mage
-        85.129021f,    // Warlock
+        150.375940f,    // Warlock
         0.0f,           // ??
         85.129021f     // Druid
     };

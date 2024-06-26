@@ -1129,7 +1129,7 @@ class spell_pal_exorcism : public SpellScript
 
         for (auto const& targetburn : creatures)
         {
-            if (GetCaster()->_IsValidAttackTarget(targetburn, GetSpellInfo()) || !targetburn->IsInPartyWith(GetCaster()))
+            if (!targetburn->IsInPartyWith(GetCaster()))
                 GetCaster()->AddAura(48801, targetburn);
         }
     }
@@ -2180,7 +2180,7 @@ class spell_pal_inquisition : public SpellScript
         if (!target || target->isDead())
             return;
 
-        if ((caster->GetPower(POWER_ENERGY) + 1) < 5)
+        if (caster->GetPower(POWER_ENERGY) < 5)
             caster->SetPower(POWER_ENERGY, caster->GetPower(POWER_ENERGY) + 1);
 
         int32 damage = GetHitDamage();
@@ -2220,7 +2220,7 @@ class spell_pal_inquisition_critical_energy_generation : public AuraScript
         if (!caster || caster->isDead())
             return;
 
-        if ((caster->GetPower(POWER_ENERGY) + 1) < 5)
+        if (caster->GetPower(POWER_ENERGY) < 5)
             caster->SetPower(POWER_ENERGY, caster->GetPower(POWER_ENERGY) + 1);
     }
 
@@ -2314,9 +2314,17 @@ class spell_pal_book_mastery : public AuraScript
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
     {
-        uint32 procSpell = eventInfo.GetProcSpell()->GetSpellInfo()->Id;
+        Player* player = GetCaster()->ToPlayer();
 
-        GetCaster()->CastSpell(eventInfo.GetActionTarget(), procSpell, TRIGGERED_FULL_MASK);
+        if (!player || player->isDead())
+            return;
+
+        uint32 procSpell = eventInfo.GetProcSpell()->GetSpellInfo()->Id;  
+
+        Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+        if (item)
+            if (item->IsFitToSpellRequirements(GetSpellInfo()))
+                player->CastSpell(eventInfo.GetActionTarget(), procSpell, TRIGGERED_FULL_MASK);
     }
 
     void Register() override

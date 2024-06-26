@@ -829,18 +829,30 @@ class rune_hunter_killer_instinct : public SpellScript
         if (Aura* rune = GetRuneAura())
         {
             Unit* victim = GetHitUnit();
-            int32 pct = rune->GetEffect(EFFECT_0)->GetAmount();
-            int32 healthThreshold = rune->GetEffect(EFFECT_1)->GetAmount();
-
-            // GetCaster()->CastCustomSpell(victim, triggered_spell_id, &basepoints0, &basepoints1 / 2, nullptr, TRIGGERED_FULL_MASK);
 
             if (!victim || victim->isDead())
                 return;
 
-            if (victim->GetHealthPct() <= healthThreshold) {
+            Unit* caster = GetCaster();
+
+            if (!victim || victim->isDead())
+                return;
+
+            int32 pct = rune->GetEffect(EFFECT_0)->GetAmount();
+            int32 healthThreshold = rune->GetEffect(EFFECT_1)->GetAmount();
+
+            if (victim->GetHealthPct() <= healthThreshold)
+            {
                 int32 damage = GetEffectValue();
                 int32 finalDamage = CalculatePct(damage, pct);
-                GetCaster()->CastCustomSpell(RUNE_HUNTER_KILLER_INSTINCT_DAMAGE, SPELLVALUE_BASE_POINT0, finalDamage, victim, TRIGGERED_IGNORE_AURA_SCALING);
+                caster->CastCustomSpell(RUNE_HUNTER_KILLER_INSTINCT_DAMAGE, SPELLVALUE_BASE_POINT0, finalDamage, victim, TRIGGERED_IGNORE_AURA_SCALING);
+
+                auto summonedUnits = caster->m_Controlled;
+
+                for (auto const& unit : summonedUnits)
+                    if (unit->GetCharmInfo() && unit->GetEntry() == 600612)
+                        caster->CastCustomSpell(RUNE_HUNTER_KILLER_INSTINCT_DAMAGE, SPELLVALUE_BASE_POINT0, finalDamage, victim, TRIGGERED_IGNORE_AURA_SCALING);
+
             }
         }  
     }
@@ -1201,7 +1213,13 @@ class rune_hunter_good_health : public AuraScript
         float health = pet->GetMaxHealth();
         int32 amount = CalculatePct(health, procPct);
 
-        GetCaster()->CastCustomSpell(procSpell, SPELLVALUE_BASE_POINT0, amount, pet, TRIGGERED_FULL_MASK);
+        player->CastCustomSpell(procSpell, SPELLVALUE_BASE_POINT0, amount, pet, TRIGGERED_FULL_MASK);
+
+        auto summonedUnits = player->m_Controlled;
+
+        for (auto const& unit : summonedUnits)
+            if (unit->GetCharmInfo() && unit->GetEntry() == 600612)
+                player->CastCustomSpell(procSpell, SPELLVALUE_BASE_POINT0, amount, unit, TRIGGERED_FULL_MASK);
     }
 
     void Register()

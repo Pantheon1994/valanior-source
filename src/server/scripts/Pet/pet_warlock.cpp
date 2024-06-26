@@ -1082,8 +1082,10 @@ struct npc_pet_warlock_felguard_grimoire : public ScriptedAI
         if (!_didCharge)
         {
             me->CastSpell(target, 25821);
+            me->AddAura(83056, me);
             _didCharge = true;
         }
+
         AttackStart(target);
     }
 

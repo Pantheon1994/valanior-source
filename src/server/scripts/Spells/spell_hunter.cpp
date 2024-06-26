@@ -2719,6 +2719,56 @@ class spell_hun_wild_call : public AuraScript
     }
 };
 
+class spell_hun_kindred_spirits : public AuraScript
+{
+    PrepareAuraScript(spell_hun_kindred_spirits);
+
+    void HandleProc(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Unit* unitOwner = GetUnitOwner();
+
+        if (!unitOwner || unitOwner->isDead())
+            return;
+
+        Unit* caster = unitOwner->GetOwner();
+
+        if (!caster || !caster->IsAlive())
+            return;
+
+        auto summonedUnits = caster->m_Controlled;
+
+        for (auto const& unit : summonedUnits)
+            if (unit->GetCharmInfo() && unit->GetEntry() == 600612)
+                caster->AddAura(GetAura()->GetId(), unit);
+    }
+
+    void HandleRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+    {
+        Unit* unitOwner = GetUnitOwner();
+
+        if (!unitOwner || unitOwner->isDead())
+            return;
+
+        Unit* caster = unitOwner->GetOwner();
+
+        if (!caster || !caster->IsAlive())
+            return;
+
+        auto summonedUnits = caster->m_Controlled;
+
+        for (auto const& unit : summonedUnits)
+            if (unit->GetCharmInfo() && unit->GetEntry() == 600612)
+                if (Aura* buff = unit->GetAura(GetAura()->GetId()))
+                    buff->Remove();
+    }
+
+    void Register() override
+    {
+        OnEffectApply += AuraEffectApplyFn(spell_hun_kindred_spirits::HandleProc, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_hun_kindred_spirits::HandleRemove, EFFECT_0, SPELL_AURA_ANY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
 class spell_hun_beast_within : public AuraScript
 {
     PrepareAuraScript(spell_hun_beast_within);
@@ -4277,6 +4327,7 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_volley_trigger);
     RegisterSpellScript(spell_hun_lock_and_load);
     RegisterSpellScript(spell_hun_intimidation);
+    RegisterSpellScript(spell_hun_kindred_spirits);
     RegisterSpellScript(spell_hun_bestial_wrath);
     RegisterSpellScript(spell_hun_predators_thirst);
     RegisterSpellScript(spell_hun_aspect_cheetah);

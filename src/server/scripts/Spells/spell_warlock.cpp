@@ -3551,15 +3551,21 @@ class spell_warl_malefic_rapture : public SpellScript
         if (!caster || caster->isDead())
             return;
 
-        auto const& threatList = caster->getAttackers();
-        auto threatListCopy = threatList;
+        Unit* havocTarget = nullptr;
+        std::list<Unit*> targets;
+        Acore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck u_check(GetCaster(), GetCaster(), 40);
+        Acore::UnitListSearcher<Acore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> searcher(GetCaster(), targets, u_check);
+        Cell::VisitAllObjects(GetCaster(), searcher, 40);
 
-        if (threatListCopy.empty()) return;
+        auto threatListCopy = targets;
+
+        if (threatListCopy.empty())
+            return;
 
         for (auto const& target : threatListCopy)
             if (target)
+                if (target->IsAlive() && target->IsInCombatWith(caster))
                 target->CastSpell(target, SPELL_WARLOCK_MALEFIC_RAPTURE_DAMAGE, TRIGGERED_FULL_MASK, nullptr, nullptr, caster->GetGUID());
-
     }
 
     void Register() override
@@ -3826,7 +3832,8 @@ class spell_warl_agonizing_corruption : public SpellScript
                 if (Aura* agony = target->ToUnit()->GetAura(SPELL_WARLOCK_AGONY))
                 {
                     uint32 increase = sSpellMgr->AssertSpellInfo(SPELL_WARLOCK_SEED_OF_CORRUPTION_DETONATION)->GetEffect(EFFECT_1).CalcValue(GetCaster());
-                    agony->ModStackAmount(increase);
+                    uint32 currentStack = agony->GetStackAmount();
+                    agony->SetStackAmount(currentStack + increase);
                 }
         }
     }
@@ -5053,31 +5060,6 @@ class spell_warl_demonic_devastation : public AuraScript
     }
 };
 
-// 83113 - Demonic Devastation Damage
-class spell_warl_demonic_devastation_damage : public SpellScript
-{
-    PrepareSpellScript(spell_warl_demonic_devastation_damage);
-
-    void HandleHit(SpellEffIndex effIndex)
-    {
-        Unit* caster = GetCaster();
-
-        if (!caster || caster->isDead())
-            return;
-
-        caster->CastSpell(caster, SPELL_WARLOCK_DEMONIC_DEVASTATION_HEAL, TRIGGERED_FULL_MASK);
-
-        int32 damage = GetHitDamage();
-
-        SetHitDamage(damage);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_warl_demonic_devastation_damage::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-    }
-};
-
 // 83110 - Demonic Ascension
 class spell_warl_demonic_ascension : public AuraScript
 {
@@ -5847,7 +5829,6 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warl_rain_of_fire_damage);
     RegisterSpellScript(spell_warl_demonic_strength);
     RegisterSpellScript(spell_warl_demonic_devastation);
-    RegisterSpellScript(spell_warl_demonic_devastation_damage);
     RegisterSpellScript(spell_warl_demonic_ascension);
     RegisterSpellScript(spell_warl_fiery_symbol);
     RegisterSpellScript(spell_warl_immolation_aura);
