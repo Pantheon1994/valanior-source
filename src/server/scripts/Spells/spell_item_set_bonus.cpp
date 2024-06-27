@@ -13,7 +13,7 @@
 enum SetSpells
 {
     // Spells
-    
+
     // Warrior
     SPELL_WARRIOR_ODYNS_FURY = 84507,
     SPELL_WARRIOR_LAST_STAND = 12975,
@@ -32,6 +32,7 @@ enum SetSpells
     // Paladin
     SPELL_PALADIN_AVENGERS_SHIELD = 48827,
     SPELL_PALADIN_DIVINE_ZEAL = 86508,
+    SPELL_PALADIN_HAMMER_OF_WRATH = 48806,
     SPELL_PALADIN_JUDGEMENT_DAMAGE = 54158,
     SPELL_PALADIN_INSPIRING_VANGUARD = 80105,
     SPELL_PALADIN_INSPIRING_VANGUARD_BUFF = 80104,
@@ -65,7 +66,8 @@ enum SetSpells
     SPELL_PRIEST_HOLY_WORD_SERENITY = 81025,
     SPELL_PRIEST_PRESCIENCE = 86217,
     SPELL_PRIEST_RENEW = 48068,
-    SPELL_PALADIN_HAMMER_OF_WRATH = 48806,
+    SPELL_PRIEST_SHADOW_WORD_DEATH_SELFDAMAGE = 32409,
+    TALENT_PRIEST_PAIN_AND_SUFFERING = 47580,
 
     // Shaman
     SPELL_SHAMAN_EARTH_SHOCK = 49231,
@@ -128,6 +130,7 @@ enum SetSpells
 
     // Priest
     SPELL_SET_T1_PRIEST_SHADOW_2PC_SHADOW_WORD_DEATH = 98701,
+    SPELL_SET_T1_PRIEST_SHADOW_4PC_BUFF = 98706,
     SPELL_SET_T1_PRIEST_ABSOLUTION_4PC_HOLY_ERUPTION = 98803,
 
     // Shaman
@@ -1904,6 +1907,80 @@ class spell_set_priest_holy_T1_2pc : public AuraScript
     }
 };
 
+// 98701 - Vestments of Death Shadow - Shadow Word: Death
+class spell_set_priest_shadow_T1_2pc_Shadow_Word_Death : public SpellScript
+{
+    PrepareSpellScript(spell_set_priest_shadow_T1_2pc_Shadow_Word_Death);
+
+    Aura* GetDeathspeakerBuff(Unit* caster)
+    {
+        for (size_t i = 900668; i < 900674; i++)
+        {
+            if (caster->HasAura(i))
+                return caster->GetAura(i);
+        }
+
+        return nullptr;
+    }
+
+    void HandleDamage(SpellEffIndex effIndex)
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        target = GetHitUnit();
+
+        if (!target || target->isDead())
+            return;
+
+        damage = GetHitDamage();
+
+        if (damage <= 0)
+            return;
+
+        if (target->HealthBelowPct(20) || GetDeathspeakerBuff(caster))
+            damage *= GetSpellInfo()->GetEffect(EFFECT_1).BonusMultiplier;
+        else if (target->HealthBelowPct(50))
+            damage *= GetSpellInfo()->GetEffect(EFFECT_1).DamageMultiplier;
+
+        SetHitDamage(damage);
+    }
+
+    void HandleAfterHit()
+    {
+        Unit* caster = GetCaster();
+
+        if (!caster || caster->isDead())
+            return;
+
+        if (!target || target->isDead())
+            return;
+
+        if (Aura* buff = GetDeathspeakerBuff(caster))
+            buff->Remove();
+        else
+        {
+            if (Aura* painAndSuffering = caster->GetAuraOfRankedSpell(TALENT_PRIEST_PAIN_AND_SUFFERING))
+                damage -= CalculatePct(damage, painAndSuffering->GetEffect(EFFECT_1)->GetAmount());
+
+            caster->CastCustomSpell(SPELL_PRIEST_SHADOW_WORD_DEATH_SELFDAMAGE, SPELLVALUE_BASE_POINT0, damage, caster, TRIGGERED_FULL_MASK);
+            caster->CastSpell(caster, SPELL_SET_T1_PRIEST_SHADOW_4PC_BUFF, TRIGGERED_FULL_MASK);
+        }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_set_priest_shadow_T1_2pc_Shadow_Word_Death::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        AfterHit += SpellHitFn(spell_set_priest_shadow_T1_2pc_Shadow_Word_Death::HandleAfterHit);
+    }
+
+private:
+    int32 damage = 0;
+    Unit* target;
+};
+
 // 98801 - Vestments of Prophecy Absolution T1 4pc
 class spell_set_priest_absolution_T1_4pc : public AuraScript
 {
@@ -2200,7 +2277,7 @@ void AddSC_item_set_bonus_scripts()
     RegisterSpellScript(spell_set_staff_intellect);
     RegisterSpellScript(spell_set_shield_intellect);
     RegisterSpellScript(spell_set_shard_of_the_god);
-    
+
     RegisterSpellScript(spell_set_warrior_fury_T1_B2);
     RegisterSpellScript(spell_set_warrior_fury_T1_B2_visual);
     RegisterSpellScript(spell_set_warrior_fury_T1_B4);
@@ -2248,8 +2325,9 @@ void AddSC_item_set_bonus_scripts()
 
     RegisterSpellScript(spell_set_priest_discipline_T1_4pc);
     RegisterSpellScript(spell_set_priest_holy_T1_2pc);
-    RegisterSpellScript(spell_set_priest_absolution_T1_4pc);
-    
+    RegisterSpellScript(spell_set_priest_shadow_T1_2pc_Shadow_Word_Death);
+    RegisterSpellScript(spell_set_priest_absolution_T1_4pc); 
+
     RegisterSpellScript(spell_set_shaman_elemental_T1_4pc);
     RegisterSpellScript(spell_set_shaman_restoration_T1_2pc);
     RegisterSpellScript(spell_set_shaman_restoration_T1_4pc);
@@ -2261,6 +2339,6 @@ void AddSC_item_set_bonus_scripts()
 
 
 
-    
+
 
 }
