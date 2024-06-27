@@ -1180,35 +1180,27 @@ class spell_pal_consecration_inquisition : public SpellScript
 {
     PrepareSpellScript(spell_pal_consecration_inquisition);
 
-    void HandleDamage(SpellEffIndex effIndex)
+    void HandleCast()
     {
         Unit* caster = GetCaster();
 
         if (!caster || caster->isDead())
             return;
 
-        Unit* target = GetHitUnit();
+        if (Aura* dummy = caster->AddAura(80121, caster)) //dummy consec for duration info
+        {
+            int32 duration = dummy->GetDuration();
 
-        if (!target || target->isDead())
-            return;
-
-        Position pos = target->GetPosition();
-
-        GetCaster()->CastSpell(GetCaster(), 80121, true); //dummy consec for duration info
-
-        Aura* auraEff = GetCaster()->GetAura(80121);
-        int32 duration = auraEff->GetDuration();
-
-        Creature* consecDummy = caster->SummonCreature(500502, pos, TEMPSUMMON_TIMED_DESPAWN, duration);
-        consecDummy->SetOwnerGUID(GetCaster()->GetGUID());
+            Creature* consecDummy = caster->SummonCreature(500502, GetExplTargetDest()->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, duration);
+            consecDummy->SetOwnerGUID(caster->GetGUID());
+        }
     }
 
-    void Register() override
+    void Register()
     {
-        OnEffectHitTarget += SpellEffectFn(spell_pal_consecration_inquisition::HandleDamage, EFFECT_0, SPELL_EFFECT_DUMMY);
+        OnCast += SpellCastFn(spell_pal_consecration_inquisition::HandleCast);
     }
 };
-
 
 class spell_pal_seraphim : public AuraScript
 {
@@ -2299,17 +2291,11 @@ class spell_pal_book_mastery : public AuraScript
     bool CheckProc(ProcEventInfo& eventInfo)
     {
         Unit* target = eventInfo.GetActionTarget();
-        if (!target)
+
+        if (!target || target->isDead())
             return false;
 
-        DamageInfo* damageInfo = eventInfo.GetDamageInfo();
-
-        if (!damageInfo || !damageInfo->GetDamage())
-        {
-            return false;
-        }
-
-        return target->IsAlive();
+        return true;
     }
 
     void HandleProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
