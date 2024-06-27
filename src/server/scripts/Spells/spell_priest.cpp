@@ -1367,6 +1367,9 @@ class spell_pri_shadow_word_death : public SpellScript
             if (GetDeathspeakerBuff(caster) || target->HealthBelowPct(20))
                 caster->CastSpell(target, T1_PRIEST_SHADOW_2PC_SHADOW_WORD_DEATH, TRIGGERED_FULL_MASK);
         }
+
+        if (caster->HasAura(T1_PRIEST_SHADOW_4PC))
+            caster->CastSpell(caster, T1_PRIEST_SHADOW_4PC_BUFF, TRIGGERED_FULL_MASK);
     }
 
     void HandleAfterHit()
@@ -1387,9 +1390,6 @@ class spell_pri_shadow_word_death : public SpellScript
                 damage -= CalculatePct(damage, painAndSuffering->GetEffect(EFFECT_1)->GetAmount());
 
             caster->CastCustomSpell(SPELL_PRIEST_SHADOW_WORD_DEATH_SELFDAMAGE, SPELLVALUE_BASE_POINT0, damage, caster, TRIGGERED_FULL_MASK);
-
-            if (caster->HasAura(T1_PRIEST_SHADOW_4PC))
-                caster->CastSpell(caster, T1_PRIEST_SHADOW_4PC_BUFF, TRIGGERED_FULL_MASK);
         }
     }
 

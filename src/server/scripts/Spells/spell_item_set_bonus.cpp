@@ -1930,15 +1930,17 @@ class spell_set_priest_shadow_T1_2pc_Shadow_Word_Death : public SpellScript
         if (!caster || caster->isDead())
             return;
 
-        target = GetHitUnit();
+        Unit* target = GetHitUnit();
 
         if (!target || target->isDead())
             return;
 
-        damage = GetHitDamage();
+        int32 damage = GetHitDamage();
 
         if (damage <= 0)
             return;
+
+        caster->CastSpell(caster, SPELL_SET_T1_PRIEST_SHADOW_4PC_BUFF, TRIGGERED_FULL_MASK);
 
         if (target->HealthBelowPct(20) || GetDeathspeakerBuff(caster))
             damage *= GetSpellInfo()->GetEffect(EFFECT_1).BonusMultiplier;
@@ -1948,37 +1950,10 @@ class spell_set_priest_shadow_T1_2pc_Shadow_Word_Death : public SpellScript
         SetHitDamage(damage);
     }
 
-    void HandleAfterHit()
-    {
-        Unit* caster = GetCaster();
-
-        if (!caster || caster->isDead())
-            return;
-
-        if (!target || target->isDead())
-            return;
-
-        if (Aura* buff = GetDeathspeakerBuff(caster))
-            buff->Remove();
-        else
-        {
-            if (Aura* painAndSuffering = caster->GetAuraOfRankedSpell(TALENT_PRIEST_PAIN_AND_SUFFERING))
-                damage -= CalculatePct(damage, painAndSuffering->GetEffect(EFFECT_1)->GetAmount());
-
-            caster->CastCustomSpell(SPELL_PRIEST_SHADOW_WORD_DEATH_SELFDAMAGE, SPELLVALUE_BASE_POINT0, damage, caster, TRIGGERED_FULL_MASK);
-            caster->CastSpell(caster, SPELL_SET_T1_PRIEST_SHADOW_4PC_BUFF, TRIGGERED_FULL_MASK);
-        }
-    }
-
     void Register() override
     {
         OnEffectHitTarget += SpellEffectFn(spell_set_priest_shadow_T1_2pc_Shadow_Word_Death::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-        AfterHit += SpellHitFn(spell_set_priest_shadow_T1_2pc_Shadow_Word_Death::HandleAfterHit);
     }
-
-private:
-    int32 damage = 0;
-    Unit* target;
 };
 
 // 98801 - Vestments of Prophecy Absolution T1 4pc
