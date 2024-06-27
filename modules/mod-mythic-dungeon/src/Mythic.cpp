@@ -134,14 +134,15 @@ void Mythic::OnCompleteMythicDungeon(Player* player)
 
     Map::PlayerList const& playerList = Dungeon->GetPlayers();
     for (auto playerIteration = playerList.begin(); playerIteration != playerList.end(); ++playerIteration)
-        if (Player* currentPlayer = playerIteration->GetSource())
+        if (Player* currentPlayer = playerIteration->GetSource()) {
             sEluna->SendCompletedMythicDungeon(currentPlayer, TimeToComplete - ElapsedTime, upgrade);
+            currentPlayer->KilledMonsterCredit(3000);
+        }
 
     GiveRewards();
     SaveMythicDungeon();
     sMythicMgr->UpdatePlayerKey(KeyOwnerGuid, upgrade);
     sMythicMgr->RemoveMythic(player->GetInstanceId());
-
 }
 
 void Mythic::OnKillBoss(Player* player, Creature* killed)

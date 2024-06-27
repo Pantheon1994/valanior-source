@@ -243,15 +243,16 @@ float AutoBalanceManager::CalculateDamageDungeonScaling(Map* map)
                 {
                     hasTank = true;
                 }
-                else if (!hasHealer && isHealer)
+
+                if (!hasHealer && isHealer)
                 {
                     hasHealer = true;
                 }
-                else if (!hasDps && isDps)
+
+                if (!hasDps && isDps)
                 {
                     hasDps = true;
                 }
-
                 // Stop the loop if all roles are found
                 if (hasDps && hasHealer && hasTank)
                     break;

@@ -39,7 +39,6 @@ enum Spells
     SPELL_VOID_BOLT             = 39329,
     SPELL_MARK_OF_KAZZAK        = 32960,
     SPELL_MARK_OF_KAZZAK_DAMAGE = 32961,
-    SPELL_ENRAGE                = 32964,
     SPELL_CAPTURE_SOUL          = 32966,
     SPELL_TWISTED_REFLECTION    = 21063,
     SPELL_BERSERK               = 32965,
@@ -52,7 +51,6 @@ enum Events
     EVENT_THUNDERCLAP           = 3,
     EVENT_VOID_BOLT             = 4,
     EVENT_MARK_OF_KAZZAK        = 5,
-    EVENT_ENRAGE                = 6,
     EVENT_TWISTED_REFLECTION    = 7,
     EVENT_BERSERK               = 8
 };
@@ -76,7 +74,6 @@ public:
             _events.ScheduleEvent(EVENT_THUNDERCLAP, urand(14000, 18000));
             _events.ScheduleEvent(EVENT_VOID_BOLT, 30000);
             _events.ScheduleEvent(EVENT_MARK_OF_KAZZAK, 25000);
-            _events.ScheduleEvent(EVENT_ENRAGE, 60000);
             _events.ScheduleEvent(EVENT_TWISTED_REFLECTION, 33000);
             _events.ScheduleEvent(EVENT_BERSERK, 180000);
         }
@@ -142,11 +139,6 @@ public:
                         if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, PowerUsersSelector(me, POWER_MANA, 100.0f, true)))
                             DoCast(target, SPELL_MARK_OF_KAZZAK);
                         _events.ScheduleEvent(EVENT_MARK_OF_KAZZAK, 20000);
-                        break;
-                    case EVENT_ENRAGE:
-                        Talk(EMOTE_FRENZY);
-                        DoCast(me, SPELL_ENRAGE);
-                        _events.ScheduleEvent(EVENT_ENRAGE, 30000);
                         break;
                     case EVENT_TWISTED_REFLECTION:
                         if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 0.0f, true))

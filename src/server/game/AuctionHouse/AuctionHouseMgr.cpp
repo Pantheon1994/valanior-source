@@ -343,7 +343,7 @@ void AuctionHouseMgr::SendAuctionSalePendingMail(AuctionEntry* auction, Characte
     {
         sScriptMgr->OnBeforeAuctionHouseMgrSendAuctionSalePendingMail(this, auction, owner, owner_accId, sendMail);
 
-        uint32 deliveryDelay = sWorld->getIntConfig(CONFIG_MAIL_DELIVERY_DELAY);
+        uint32 deliveryDelay = 0;
 
         ByteBuffer timePacker;
         timePacker.AppendPackedTime(GameTime::GetGameTime().count() + time_t(deliveryDelay));
