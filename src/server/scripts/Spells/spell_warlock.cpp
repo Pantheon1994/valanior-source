@@ -4449,8 +4449,8 @@ class spell_warl_demonkin : public AuraScript
 
     void Register() override
     {
-        OnEffectApply += AuraEffectApplyFn(spell_warl_demonkin::HandleLearn, EFFECT_0, SPELL_AURA_MOD_ATTACK_POWER_OF_STAT_PERCENT, AURA_EFFECT_HANDLE_REAL);
-        OnEffectRemove += AuraEffectRemoveFn(spell_warl_demonkin::HandleUnlearn, EFFECT_0, SPELL_AURA_MOD_ATTACK_POWER_OF_STAT_PERCENT, AURA_EFFECT_HANDLE_REAL);
+        OnEffectApply += AuraEffectApplyFn(spell_warl_demonkin::HandleLearn, EFFECT_0, SPELL_AURA_MOD_ATTAC_POWER_FROM_SPELL_POWER_PERCENT, AURA_EFFECT_HANDLE_REAL);
+        OnEffectRemove += AuraEffectRemoveFn(spell_warl_demonkin::HandleUnlearn, EFFECT_0, SPELL_AURA_MOD_ATTAC_POWER_FROM_SPELL_POWER_PERCENT, AURA_EFFECT_HANDLE_REAL);
     }
 };
 
