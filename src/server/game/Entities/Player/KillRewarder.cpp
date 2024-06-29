@@ -156,7 +156,7 @@ void KillRewarder::_RewardXP(Player* player, float rate)
 
         AddPct(xp, (numberOfMaxLevel * 20));
 
-       /* bool disparatyInGroup = false;
+       bool disparatyInGroup = false;
 
         if (Group* group = player->GetGroup())
         {
@@ -166,6 +166,9 @@ void KillRewarder::_RewardXP(Player* player, float rate)
             {
                 Player* member = ObjectAccessor::FindPlayer(target.guid);
 
+                if (!member)
+                    continue;
+
                 if ((player->getLevel() - member->getLevel()) > 10)
                     disparatyInGroup = true;
             }
@@ -173,7 +176,7 @@ void KillRewarder::_RewardXP(Player* player, float rate)
             if (disparatyInGroup) {
                 xp /= group->GetMembersCount();
             }
-        }*/
+        }
 
 
         // 4.2.3. Give XP to player.

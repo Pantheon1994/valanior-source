@@ -61,7 +61,7 @@ void MythicManager::InitializeMythicDungeons()
         float o = fields[8].Get<float>();
         uint32 itemId = fields[9].Get<uint32>();
         uint32 bonus = fields[10].Get<uint32>();
-        MythicDungeon dungeon = { id, amountToKill, timeToComplete, mapId, x, y, z, o, itemId, bonus };
+        MythicDungeon dungeon = { id, amountToKill, timeToComplete, mapId, name, x, y, z, o, itemId, bonus };
         MythicDungeonStore.push_back(dungeon);
     } while (result->NextRow());
 }

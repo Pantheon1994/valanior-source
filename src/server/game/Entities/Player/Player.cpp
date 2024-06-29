@@ -7178,7 +7178,10 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
             }
 
             if (roll_chance_f(chance) && sScriptMgr->OnCastItemCombatSpell(this, target, spellInfo, item))
+            {
                 CastSpell(target, spellInfo->Id, TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD), item);
+                RegisterProc(spellInfo->Id);
+            }
         }
     }
 
@@ -7238,6 +7241,7 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 
             if (roll_chance_f(chance))
             {
+                RegisterProc(spellInfo->Id);
                 // Xinef: implement enchant charges
                 if (uint32 charges = item->GetEnchantmentCharges(EnchantmentSlot(e_slot)))
                 {

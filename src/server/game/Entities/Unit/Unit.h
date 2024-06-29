@@ -32,6 +32,7 @@
 #include "ThreatMgr.h"
 #include <functional>
 #include <utility>
+#include <queue>
 
 #define WORLD_TRIGGER   12999
 
@@ -1645,6 +1646,9 @@ public:
     uint32 GetWeaponSkillValue(WeaponAttackType attType, Unit const* target = nullptr) const;
     [[nodiscard]] float GetWeaponProcChance() const;
     float GetPPMProcChance(uint32 WeaponSpeed, float PPM,  SpellInfo const* spellProto) const;
+    void RegisterProc(uint32 spellId) const;
+
+    mutable std::unordered_map<uint32, std::queue<uint32>> ppmProcTimestamps;
 
     MeleeHitOutcome RollMeleeOutcomeAgainst (Unit const* victim, WeaponAttackType attType) const;
     MeleeHitOutcome RollMeleeOutcomeAgainst (Unit const* victim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance) const;

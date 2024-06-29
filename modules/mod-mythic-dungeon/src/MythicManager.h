@@ -40,6 +40,7 @@ struct MythicDungeon {
     uint32 amountToKill;
     uint32 timeToComplete;
     uint32 mapId;
+    std::string name;
     float x;
     float y;
     float z;

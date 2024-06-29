@@ -13392,16 +13392,39 @@ float Unit::GetWeaponProcChance() const
 
 float Unit::GetPPMProcChance(uint32 WeaponSpeed, float PPM, SpellInfo const* spellProto) const
 {
-    // proc per minute chance calculation
     if (PPM <= 0)
         return 0.0f;
 
-    // Apply chance modifer aura
-    if (spellProto)
-        if (Player* modOwner = GetSpellModOwner())
+    if (spellProto) {
+        if (Player* modOwner = GetSpellModOwner()) {
             modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_PROC_PER_MINUTE, PPM);
+        }
+    }
 
-    return floor((WeaponSpeed * PPM) / 600.0f);   // result is chance in percents (probability = Speed_in_sec * (PPM / 60))
+    float procChance = std::floor((WeaponSpeed * PPM) / 600.0f);
+
+    uint32 currentTime = static_cast<uint32>(std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count());
+
+    uint32 oneMinuteAgo = currentTime - 60000;
+
+    auto& timestamps = ppmProcTimestamps[spellProto->Id];
+
+    while (!timestamps.empty() && timestamps.front() < oneMinuteAgo) {
+        timestamps.pop();
+    }
+
+    if (timestamps.size() < static_cast<size_t>(PPM)) {
+        return procChance;
+    }
+
+    return 0.0f;
+}
+
+void Unit::RegisterProc(uint32 spellId) const {
+    uint32 currentTime = static_cast<uint32>(std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count());
+    ppmProcTimestamps[spellId].push(currentTime);
 }
 
 void Unit::Mount(uint32 mount, uint32 VehicleId, uint32 creatureEntry)

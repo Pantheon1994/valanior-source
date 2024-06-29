@@ -91,54 +91,62 @@ public:
         const int CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS_RAID = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS_RAID");
         const int CONFIG_DROP_RUNIC_DUST_MYTHIC_BOSS_RAID = sWorld->GetValue("CONFIG_DROP_RUNIC_DUST_MYTHIC_BOSS_RAID");
 
-        if (creature->IsDungeonBoss()) {
-            if (map->IsNonRaidDungeon())
-            {
-                if (map->GetDifficulty() == DUNGEON_DIFFICULTY_NORMAL)
-                {
-                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS, loot);
-                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_NORMAL_BOSS, loot);
-                }
-                if (map->GetDifficulty() == DUNGEON_DIFFICULTY_HEROIC)
-                {
-                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS, loot);
-                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS, loot);
-                }
-                if (map->GetDifficulty() == DUNGEON_DIFFICULTY_EPIC)
-                {
-                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS, loot);
-                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_MYTHIC_BOSS, loot);
-                }
-            }
 
-            if (map->IsRaid())
-            {
-                if (map->GetDifficulty() == RAID_DIFFICULTY_10_25MAN_NORMAL)
-                {
-                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_NORMAL_BOSS_RAID, loot);
-                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS_RAID, loot);
-                }
-                if (map->GetDifficulty() == RAID_DIFFICULTY_10_25MAN_HEROIC)
-                {
-                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS_RAID, loot);
-                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS_RAID, loot);
-                }
-                if (map->GetDifficulty() == RAID_DIFFICULTY_10_25MAN_MYTHIC)
-                {
-                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS_RAID, loot);
-                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS_RAID, loot);
-                }
-            }
+        if (creature->isWorldBoss()) {
+            AddRunicDustToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS_RAID, loot);
+            AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS_RAID, loot);
         }
         else {
-            if (roll_chance_i(50)) {
-                AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_NORMAL_CREATURE, loot);
-            }
+            if (creature->IsDungeonBoss()) {
+                if (map->IsNonRaidDungeon())
+                {
+                    if (map->GetDifficulty() == DUNGEON_DIFFICULTY_NORMAL)
+                    {
+                        AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS, loot);
+                        AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_NORMAL_BOSS, loot);
+                    }
+                    if (map->GetDifficulty() == DUNGEON_DIFFICULTY_HEROIC)
+                    {
+                        AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS, loot);
+                        AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS, loot);
+                    }
+                    if (map->GetDifficulty() == DUNGEON_DIFFICULTY_EPIC)
+                    {
+                        AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS, loot);
+                        AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_MYTHIC_BOSS, loot);
+                    }
+                }
 
-            if (roll_chance_i(50)) {
-                AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_NORMAL_CREATURE, loot);
+                if (map->IsRaid())
+                {
+                    if (map->GetDifficulty() == RAID_DIFFICULTY_10_25MAN_NORMAL)
+                    {
+                        AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_NORMAL_BOSS_RAID, loot);
+                        AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_NORMAL_BOSS_RAID, loot);
+                    }
+                    if (map->GetDifficulty() == RAID_DIFFICULTY_10_25MAN_HEROIC)
+                    {
+                        AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_HEROIC_BOSS_RAID, loot);
+                        AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_HEROIC_BOSS_RAID, loot);
+                    }
+                    if (map->GetDifficulty() == RAID_DIFFICULTY_10_25MAN_MYTHIC)
+                    {
+                        AddRunicDustToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS_RAID, loot);
+                        AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_MYTHIC_BOSS_RAID, loot);
+                    }
+                }
+            }
+            else {
+                if (roll_chance_i(50)) {
+                    AddRunicEssenceToLoot(CONFIG_DROP_RUNIC_ESSENCE_NORMAL_CREATURE, loot);
+                }
+
+                if (roll_chance_i(50)) {
+                    AddRunicDustToLoot(CONFIG_DROP_RUNIC_DUST_NORMAL_CREATURE, loot);
+                }
             }
         }
+       
     }
 
     void OnAfterLootTemplateProcess(Loot* loot, LootTemplate const* tab, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError, uint16 lootMode, WorldObject* source)

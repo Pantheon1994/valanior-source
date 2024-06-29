@@ -180,15 +180,6 @@ public:
             return false;
         }
 
-        Map* map = sMapMgr->FindBaseMap(foundDungeon.mapId);
-
-        if (!map) {
-            ChatHandler(player->GetSession()).SendSysMessage("You can't use that here.");
-            return false;
-        }
-
-        std::string name = map->GetMapName();
-
         if (player->GetDungeonDifficulty() != DUNGEON_DIFFICULTY_EPIC) {
             ChatHandler(player->GetSession()).SendSysMessage("You are not in Mythic Difficulty!");
             return false;
@@ -197,7 +188,7 @@ public:
         if (uint32 keyLevel = sMythicMgr->GetDungeonKeyLevelPreperation(player))
         {
             MythicMultiplier multi = sMythicMgr->GetMultplierByLevel(keyLevel);
-            sEluna->SendPreperationMythicDungeon(player, name, foundDungeon.timeToComplete, keyLevel, multi.damage, multi.hp);
+            sEluna->SendPreperationMythicDungeon(player, foundDungeon.name, foundDungeon.timeToComplete, keyLevel, multi.damage, multi.hp);
         }
         else
             ChatHandler(player->GetSession()).SendSysMessage("it seems you don't have any Mythic Key Active.");
