@@ -908,7 +908,7 @@ std::vector<std::string> RunesManager::RunesUpgradeForClient(Player* player)
 
         std::stringstream fmt;
 
-        fmt << knownRune.rune.spellId << knownRune.rune.keywords << "," << knownRune.count << "," << 3 << "," << std::to_string(knownRune.rune.quality);
+        fmt << knownRune.rune.spellId << "," << knownRune.count << "," << 3 << "," << std::to_string(knownRune.rune.quality);
 
         fmt << "|" << nextRune.spellId << "," << std::to_string(nextQuality);
 
