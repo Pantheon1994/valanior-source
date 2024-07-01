@@ -127,9 +127,8 @@ void MythicManager::InitializeRewardsItems()
         uint32 maxLevel = fields[2].Get<uint32>();
         uint32 classId = fields[3].Get<uint32>();
         uint32 subClassId = fields[4].Get<uint32>();
-        uint32 statType1 = fields[5].Get<uint32>();
-        uint32 inventoryType = fields[6].Get<uint32>();
-        MythicDungeonRewardItemsStore.push_back({ itemId, minLevel, maxLevel, classId, subClassId, statType1, inventoryType });
+        uint32 inventoryType = fields[5].Get<uint32>();
+        MythicDungeonRewardItemsStore.push_back({ itemId, minLevel, maxLevel, classId, subClassId, inventoryType });
     } while (result->NextRow());
 }
 

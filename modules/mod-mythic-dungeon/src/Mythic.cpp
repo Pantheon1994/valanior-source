@@ -264,17 +264,17 @@ void Mythic::GiveRewards()
         if (Player* player = playerIteration->GetSource())
         {
             float bonus = (BonusMultiplier / 100);
-            uint32 runicDust = reward.runicDust * bonus;
-            uint32 runicEssence = reward.runicEssence * bonus;
-            uint32 tokenCount = reward.tokenCount * bonus;
-            uint32 tokenCount2 = reward.tokenCount2 * bonus;
+            float runicDust = reward.runicDust * bonus;
+            float runicEssence = reward.runicEssence * bonus;
+            float tokenCount = reward.tokenCount * bonus;
+            float tokenCount2 = reward.tokenCount2 * bonus;
 
-            player->AddItem(70008, runicDust);
-            player->AddItem(70009, runicEssence);
-            player->AddItem(reward.tokenId, tokenCount);
+            player->AddItem(70008, std::round(runicDust));
+            player->AddItem(70009, std::round(runicEssence));
+            player->AddItem(reward.tokenId, std::round(tokenCount));
 
             if (tokenCount2 > 0) {
-                player->AddItem(reward.tokenId2, tokenCount2);
+                player->AddItem(reward.tokenId2, std::round(tokenCount2));
             }
 
             int guaranteedRewards = BonusMultiplier / 100;

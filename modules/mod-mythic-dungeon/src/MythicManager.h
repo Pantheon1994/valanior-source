@@ -75,7 +75,6 @@ struct MythicRewardItem {
     uint32 maxLevel;
     uint32 classId;
     uint32 subClassId;
-    uint32 statType1;
     uint32 inventoryType;
 };
 
