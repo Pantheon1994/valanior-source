@@ -128,7 +128,8 @@ void MythicManager::InitializeRewardsItems()
         uint32 classId = fields[3].Get<uint32>();
         uint32 subClassId = fields[4].Get<uint32>();
         uint32 statType1 = fields[5].Get<uint32>();
-        MythicDungeonRewardItemsStore.push_back({ itemId, minLevel, maxLevel, classId, subClassId, statType1 });
+        uint32 inventoryType = fields[6].Get<uint32>();
+        MythicDungeonRewardItemsStore.push_back({ itemId, minLevel, maxLevel, classId, subClassId, statType1, inventoryType });
     } while (result->NextRow());
 }
 
@@ -298,98 +299,126 @@ uint32 MythicManager::GetMythicRewardItemByLevel(Player* player, uint32 level)
     std::copy_if(MythicDungeonRewardItemsStore.begin(), MythicDungeonRewardItemsStore.end(), std::back_inserter(itemsCopy),
         [&](const MythicRewardItem& obj) { return obj.minLevel <= level && obj.maxLevel >= level;  });
 
-    uint8 currentSpec = PlayerSpecialization::GetCurrentSpecId(player);
-
-    for (auto& item : itemsCopy) {
-        if (IsItemAllowableClass(player->getClass(), item.classId, item.subClassId) && (IsStatTypeAllowableSpec(currentSpec, item.statType1) ||
-            item.statType1 == ITEM_MOD_MANA ||
-            item.statType1 == ITEM_MOD_STAMINA)) {
-            items.push_back(item.itemId);
+    if (uint32 currentSpec = PlayerSpecialization::GetCurrentSpecId(player))
+    {
+        for (auto& item : itemsCopy) {
+            if (IsItemAllowableClass(player->getClass(), currentSpec, item.classId, item.subClassId, item.inventoryType)) {
+                items.push_back(item.itemId);
+            }
         }
+
+        if (items.empty())
+            return 0;
+
+        items.erase(std::remove_if(items.begin(), items.end(),
+            [&](uint32 const& entry) { return !StatsItemMatchingTheSpec(currentSpec, entry); }), items.end());
+
+        if (items.empty())
+            return 0;
+
+        uint32 rand = urand(0, items.size() - 1);
+        return items[rand];
     }
 
-    if (items.empty())
-        return 0;
-
-    uint32 rand = urand(0, items.size() - 1);
-
-    return items[rand];
+    return 0;
 }
 
-bool MythicManager::IsItemAllowableClass(uint32 classPlayer, uint32 classId, uint32 subClassId)
+bool MythicManager::StatsItemMatchingTheSpec(uint32 currentSpec, uint32 itemEntry)
+{
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry);
+
+    bool allowed = true;
+
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
+    {
+        if (i >= proto->StatsCount)
+            break;
+
+        if (!IsStatTypeAllowableSpec(currentSpec, proto->ItemStat[i].ItemStatType))
+            allowed = false;
+    }
+
+    return allowed;
+}
+
+bool MythicManager::IsItemAllowableClass(uint32 classPlayer, uint32 spec, uint32 classId, uint32 subClassId, uint32 inventoryType)
 {
     switch (classId)
     {
     case ITEM_CLASS_WEAPON:
         switch (subClassId)
         {
-        case ITEM_SUBCLASS_WEAPON_AXE:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_SHAMAN || classPlayer == CLASS_DEATH_KNIGHT
-                || classPlayer == CLASS_ROGUE;
-        case ITEM_SUBCLASS_WEAPON_AXE2:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_PALADIN || classPlayer == CLASS_WARRIOR  || classPlayer == CLASS_SHAMAN
-                || classPlayer == CLASS_DEATH_KNIGHT;
-        case ITEM_SUBCLASS_WEAPON_BOW:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_ROGUE;
-        case ITEM_SUBCLASS_WEAPON_GUN:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_ROGUE;
-        case ITEM_SUBCLASS_WEAPON_MACE:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_ROGUE
-                || classPlayer == CLASS_PALADIN || classPlayer == CLASS_PRIEST;
-        case ITEM_SUBCLASS_WEAPON_MACE2:
-            return classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_PALADIN
-                || classPlayer == CLASS_DRUID;
-        case ITEM_SUBCLASS_WEAPON_POLEARM:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_PALADIN || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DRUID;
-        case ITEM_SUBCLASS_WEAPON_SWORD:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_WARLOCK || classPlayer == CLASS_WARRIOR
-                || classPlayer == CLASS_MAGE || classPlayer == CLASS_PALADIN
-                || classPlayer == CLASS_ROGUE;
-        case ITEM_SUBCLASS_WEAPON_SWORD2:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT
-                || classPlayer == CLASS_PALADIN;
-        case ITEM_SUBCLASS_WEAPON_STAFF:
-            return classPlayer == CLASS_PRIEST || classPlayer == CLASS_WARLOCK || classPlayer == CLASS_MAGE || classPlayer == CLASS_DRUID;
-        case ITEM_SUBCLASS_WEAPON_DAGGER:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARLOCK || classPlayer == CLASS_MAGE
-                || classPlayer == CLASS_ROGUE || classPlayer == CLASS_DRUID || classPlayer == CLASS_PRIEST;
-        case ITEM_SUBCLASS_WEAPON_THROWN:
-            return classPlayer == CLASS_ROGUE;
-        case ITEM_SUBCLASS_WEAPON_SPEAR:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_DEATH_KNIGHT
-                || classPlayer == CLASS_PALADIN || classPlayer == CLASS_DRUID;
-        case ITEM_SUBCLASS_WEAPON_CROSSBOW:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR
-                || classPlayer == CLASS_ROGUE;
-        case ITEM_SUBCLASS_WEAPON_WAND:
-            return classPlayer == CLASS_PRIEST || classPlayer == CLASS_WARLOCK
-                || classPlayer == CLASS_MAGE;
+            case ITEM_SUBCLASS_WEAPON_AXE:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_SHAMAN || classPlayer == CLASS_DEATH_KNIGHT
+                    || classPlayer == CLASS_ROGUE;
+            case ITEM_SUBCLASS_WEAPON_AXE2:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_PALADIN || classPlayer == CLASS_WARRIOR  || classPlayer == CLASS_SHAMAN
+                    || classPlayer == CLASS_DEATH_KNIGHT;
+            case ITEM_SUBCLASS_WEAPON_BOW:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_ROGUE;
+            case ITEM_SUBCLASS_WEAPON_GUN:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_ROGUE;
+            case ITEM_SUBCLASS_WEAPON_MACE:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_ROGUE
+                    || classPlayer == CLASS_PALADIN || classPlayer == CLASS_PRIEST;
+            case ITEM_SUBCLASS_WEAPON_MACE2:
+                return classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_PALADIN
+                    || classPlayer == CLASS_DRUID;
+            case ITEM_SUBCLASS_WEAPON_POLEARM:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_PALADIN || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DRUID;
+            case ITEM_SUBCLASS_WEAPON_SWORD:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_WARLOCK || classPlayer == CLASS_WARRIOR
+                    || classPlayer == CLASS_MAGE || classPlayer == CLASS_PALADIN
+                    || classPlayer == CLASS_ROGUE;
+            case ITEM_SUBCLASS_WEAPON_SWORD2:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT
+                    || classPlayer == CLASS_PALADIN;
+            case ITEM_SUBCLASS_WEAPON_STAFF:
+                return classPlayer == CLASS_PRIEST || classPlayer == CLASS_WARLOCK || classPlayer == CLASS_MAGE || classPlayer == CLASS_DRUID;
+            case ITEM_SUBCLASS_WEAPON_DAGGER:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARLOCK || classPlayer == CLASS_MAGE
+                    || classPlayer == CLASS_ROGUE || classPlayer == CLASS_DRUID || classPlayer == CLASS_PRIEST;
+            case ITEM_SUBCLASS_WEAPON_THROWN:
+                return classPlayer == CLASS_ROGUE;
+            case ITEM_SUBCLASS_WEAPON_SPEAR:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_DEATH_KNIGHT
+                    || classPlayer == CLASS_PALADIN || classPlayer == CLASS_DRUID;
+            case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_WARRIOR
+                    || classPlayer == CLASS_ROGUE;
+            case ITEM_SUBCLASS_WEAPON_WAND:
+                return classPlayer == CLASS_PRIEST || classPlayer == CLASS_WARLOCK
+                    || classPlayer == CLASS_MAGE;
         default:
             return 0;
         }
     case ITEM_CLASS_ARMOR:
         switch (subClassId)
         {
-        case ITEM_SUBCLASS_ARMOR_MISC:
-            return true;
-        case ITEM_SUBCLASS_ARMOR_CLOTH:
-            return classPlayer == CLASS_MAGE || classPlayer == CLASS_WARLOCK || classPlayer == CLASS_PRIEST;
-        case ITEM_SUBCLASS_ARMOR_LEATHER:
-            return classPlayer == CLASS_ROGUE || classPlayer == CLASS_DRUID;
-        case ITEM_SUBCLASS_ARMOR_MAIL:
-            return classPlayer == CLASS_HUNTER || classPlayer == CLASS_SHAMAN;
-        case ITEM_SUBCLASS_ARMOR_PLATE:
-            return classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_PALADIN;
-        case ITEM_SUBCLASS_ARMOR_SHIELD:
-            return classPlayer == CLASS_WARRIOR || classPlayer == CLASS_PALADIN || classPlayer == CLASS_SHAMAN;
-        case ITEM_SUBCLASS_ARMOR_LIBRAM:
-            return classPlayer == CLASS_PALADIN;
-        case ITEM_SUBCLASS_ARMOR_IDOL:
-            return classPlayer == CLASS_DRUID;
-        case ITEM_SUBCLASS_ARMOR_TOTEM:
-            return classPlayer == CLASS_SHAMAN;
-        case ITEM_SUBCLASS_ARMOR_SIGIL:
-            return classPlayer == CLASS_DEATH_KNIGHT;
+            case ITEM_SUBCLASS_ARMOR_MISC:
+                // Check for Off-hand weapons;
+                if (inventoryType == 23) {
+                    return classPlayer == CLASS_MAGE || classPlayer == CLASS_WARLOCK || classPlayer == CLASS_PRIEST || spec == PALADIN_HOLY || spec == DRUID_RESTO || spec == DRUID_BALANCE;
+                }
+                return true;
+            case ITEM_SUBCLASS_ARMOR_CLOTH:
+                return classPlayer == CLASS_MAGE || classPlayer == CLASS_WARLOCK || classPlayer == CLASS_PRIEST;
+            case ITEM_SUBCLASS_ARMOR_LEATHER:
+                return classPlayer == CLASS_ROGUE || classPlayer == CLASS_DRUID;
+            case ITEM_SUBCLASS_ARMOR_MAIL:
+                return classPlayer == CLASS_HUNTER || classPlayer == CLASS_SHAMAN;
+            case ITEM_SUBCLASS_ARMOR_PLATE:
+                return classPlayer == CLASS_WARRIOR || classPlayer == CLASS_DEATH_KNIGHT || classPlayer == CLASS_PALADIN;
+            case ITEM_SUBCLASS_ARMOR_SHIELD:
+                return classPlayer == CLASS_WARRIOR || classPlayer == CLASS_PALADIN || classPlayer == CLASS_SHAMAN;
+            case ITEM_SUBCLASS_ARMOR_LIBRAM:
+                return classPlayer == CLASS_PALADIN;
+            case ITEM_SUBCLASS_ARMOR_IDOL:
+                return classPlayer == CLASS_DRUID;
+            case ITEM_SUBCLASS_ARMOR_TOTEM:
+                return classPlayer == CLASS_SHAMAN;
+            case ITEM_SUBCLASS_ARMOR_SIGIL:
+                return classPlayer == CLASS_DEATH_KNIGHT;
         default:
             return 0;
         }
@@ -400,48 +429,53 @@ bool MythicManager::IsItemAllowableClass(uint32 classPlayer, uint32 classId, uin
 
 bool MythicManager::IsStatTypeAllowableSpec(uint32 currentSpec, uint32 statType)
 {
+    bool secondaryStat = statType == ITEM_MOD_STAMINA || statType == ITEM_MOD_HASTE_RATING || statType == ITEM_MOD_CRIT_RATING || statType == ITEM_MOD_HIT_RATING || statType == ITEM_MOD_EXPERTISE_RATING;
+    bool tankStat = statType == ITEM_MOD_DODGE_RATING || statType == ITEM_MOD_PARRY_RATING || statType == ITEM_MOD_BLOCK_RATING || statType == ITEM_MOD_BLOCK_VALUE || statType == ITEM_MOD_DEFENSE_SKILL_RATING;
+
     switch (currentSpec) {
-        case WARRIOR_ARMS: return statType == ITEM_MOD_STRENGTH;
-        case WARRIOR_FURY: return statType == ITEM_MOD_STRENGTH;
-        case WARRIOR_PROTECTION: return statType == ITEM_MOD_STRENGTH;
-        case WARRIOR_HOPLITE: return statType == ITEM_MOD_STRENGTH || statType == ITEM_MOD_AGILITY;
-        case MAGE_ARCANE: return statType == ITEM_MOD_INTELLECT;
-        case MAGE_FIRE: return statType == ITEM_MOD_INTELLECT;
-        case MAGE_FROST: return statType == ITEM_MOD_INTELLECT;
-        case MAGE_SPELLBLADE: return statType == ITEM_MOD_INTELLECT || statType == ITEM_MOD_AGILITY;
-        case DK_BLOOD: return statType == ITEM_MOD_STRENGTH;
-        case DK_FROST: return statType == ITEM_MOD_STRENGTH;
-        case DK_UNHOLY: return statType == ITEM_MOD_STRENGTH;
-        case DK_SOULWEAVER: return statType == ITEM_MOD_STRENGTH;
-        case DRUID_BALANCE: return statType == ITEM_MOD_INTELLECT;
-        case DRUID_FERAL: return statType == ITEM_MOD_AGILITY;
-        case DRUID_RESTO: return statType == ITEM_MOD_INTELLECT;
-        case DRUID_GUARDIAN: return statType == ITEM_MOD_AGILITY;
-        case HUNTER_BEAST: return statType == ITEM_MOD_AGILITY;
-        case HUNTER_MARSKMANSHIP: return statType == ITEM_MOD_AGILITY;
-        case HUNTER_SURVIVAL: return statType == ITEM_MOD_AGILITY;
-        case HUNTER_DARK_RANGER: return statType == ITEM_MOD_AGILITY;
-        case PALADIN_HOLY: return statType == ITEM_MOD_INTELLECT;
-        case PALADIN_PROTECTION: return statType == ITEM_MOD_STRENGTH;
-        case PALADIN_RETRIBUTION: return statType == ITEM_MOD_STRENGTH;
-        case PALADIN_INQUISITOR: return statType == ITEM_MOD_INTELLECT;
-        case ROGUE_ASSASSINATION: return statType == ITEM_MOD_AGILITY;
-        case ROGUE_COMBAT: return statType == ITEM_MOD_AGILITY;
-        case ROGUE_SUBTLETY: return statType == ITEM_MOD_AGILITY;
-        case ROGUE_OUTLAW: return statType == ITEM_MOD_AGILITY;
-        case SHAMAN_ELEMENTAL: return statType == ITEM_MOD_INTELLECT;
-        case SHAMAN_ENCHANCEMENT: return statType == ITEM_MOD_AGILITY;
-        case SHAMAN_RESTORATION: return statType == ITEM_MOD_INTELLECT;
-        case SHAMAN_SPIRIT_MASTER: return statType == ITEM_MOD_AGILITY || statType == ITEM_MOD_INTELLECT;
-        case WARLOCK_AFFLICTION: return statType == ITEM_MOD_INTELLECT;
-        case WARLOCK_DEMONOLOGY: return statType == ITEM_MOD_INTELLECT;
-        case WARLOCK_DESTRUCTION: return statType == ITEM_MOD_INTELLECT;
-        case WARLOCK_DEMONBOUND: return statType == ITEM_MOD_INTELLECT;
-        case PRIEST_DISCI: return statType == ITEM_MOD_INTELLECT;
-        case PRIEST_HOLY: return statType == ITEM_MOD_INTELLECT;
-        case PRIEST_SHADOW: return statType == ITEM_MOD_INTELLECT;
-        case PRIEST_ABSOLUTION: return statType == ITEM_MOD_INTELLECT;
+        case WARRIOR_ARMS: return statType == ITEM_MOD_STRENGTH || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case WARRIOR_FURY: return statType == ITEM_MOD_STRENGTH || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case WARRIOR_PROTECTION: return statType == ITEM_MOD_STRENGTH || secondaryStat || tankStat || statType == ITEM_MOD_ATTACK_POWER;
+        case WARRIOR_HOPLITE: return statType == ITEM_MOD_STRENGTH || statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case MAGE_ARCANE: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPIRIT || statType == ITEM_MOD_SPELL_POWER;
+        case MAGE_FIRE: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPIRIT || statType == ITEM_MOD_SPELL_POWER;
+        case MAGE_FROST: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPIRIT || statType == ITEM_MOD_SPELL_POWER;
+        case MAGE_SPELLBLADE: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPIRIT || statType == ITEM_MOD_ATTACK_POWER || statType == ITEM_MOD_SPELL_POWER || statType == ITEM_MOD_PARRY_RATING;
+        case DK_BLOOD: return statType == ITEM_MOD_STRENGTH || secondaryStat || statType == ITEM_MOD_PARRY_RATING || statType == ITEM_MOD_ATTACK_POWER;
+        case DK_FROST: return statType == ITEM_MOD_STRENGTH || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case DK_UNHOLY: return statType == ITEM_MOD_STRENGTH || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case DK_SOULWEAVER: return statType == ITEM_MOD_STRENGTH || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case DRUID_BALANCE: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPELL_POWER || statType == ITEM_MOD_SPIRIT;
+        case DRUID_FERAL: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case DRUID_RESTO: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPELL_POWER || statType == ITEM_MOD_SPIRIT;
+        case DRUID_GUARDIAN: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER || statType == ITEM_MOD_DODGE_RATING;
+        case HUNTER_BEAST: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case HUNTER_MARSKMANSHIP: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case HUNTER_SURVIVAL: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case HUNTER_DARK_RANGER: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER || statType == ITEM_MOD_SPELL_POWER || statType == ITEM_MOD_INTELLECT;
+        case PALADIN_HOLY: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPELL_POWER || statType == ITEM_MOD_SPIRIT;
+        case PALADIN_PROTECTION: return statType == ITEM_MOD_STRENGTH || tankStat || secondaryStat;
+        case PALADIN_RETRIBUTION: return statType == ITEM_MOD_STRENGTH || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case PALADIN_INQUISITOR: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPELL_POWER;
+        case ROGUE_ASSASSINATION: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case ROGUE_COMBAT: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_PARRY_RATING || statType == ITEM_MOD_ATTACK_POWER;
+        case ROGUE_SUBTLETY: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case ROGUE_OUTLAW: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case SHAMAN_ELEMENTAL: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPELL_POWER;
+        case SHAMAN_ENCHANCEMENT: return statType == ITEM_MOD_AGILITY || secondaryStat || statType == ITEM_MOD_ATTACK_POWER;
+        case SHAMAN_RESTORATION: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPELL_POWER || statType == ITEM_MOD_SPIRIT;
+        case SHAMAN_SPIRIT_MASTER: return statType == ITEM_MOD_AGILITY || secondaryStat || tankStat;
+        case WARLOCK_AFFLICTION: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPELL_POWER || statType == ITEM_MOD_SPIRIT;
+        case WARLOCK_DEMONOLOGY: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPELL_POWER  || statType == ITEM_MOD_SPIRIT;
+        case WARLOCK_DESTRUCTION: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPELL_POWER  || statType == ITEM_MOD_SPIRIT;
+        case WARLOCK_DEMONBOUND: return statType == ITEM_MOD_INTELLECT || statType == ITEM_MOD_DODGE_RATING || secondaryStat || statType == ITEM_MOD_SPELL_POWER;
+        case PRIEST_DISCI: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPIRIT || statType == ITEM_MOD_SPELL_POWER;
+        case PRIEST_HOLY: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPIRIT || statType == ITEM_MOD_SPELL_POWER;
+        case PRIEST_SHADOW: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPIRIT || statType == ITEM_MOD_SPELL_POWER;
+        case PRIEST_ABSOLUTION: return statType == ITEM_MOD_INTELLECT || secondaryStat || statType == ITEM_MOD_SPIRIT || statType == ITEM_MOD_SPELL_POWER;
     }
+
+    return false;
 }
 
 void MythicManager::UpdatePlayerKey(ObjectGuid guid, int8 upgrade)

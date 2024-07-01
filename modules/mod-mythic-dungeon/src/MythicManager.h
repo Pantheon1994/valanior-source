@@ -76,6 +76,7 @@ struct MythicRewardItem {
     uint32 classId;
     uint32 subClassId;
     uint32 statType1;
+    uint32 inventoryType;
 };
 
 struct MythicRewardToken {
@@ -130,7 +131,10 @@ public:
     MythicRewardToken GetMythicRewardTokenByLevel(uint32 level);
     uint32 GetMythicRewardItemByLevel(Player* player, uint32 level);
 
-    bool IsItemAllowableClass(uint32 classPlayer, uint32 classId, uint32 subClassId);
+
+    bool StatsItemMatchingTheSpec(uint32 currentSpec, uint32 itemEntry);
+
+    bool IsItemAllowableClass(uint32 classPlayer, uint32 spec, uint32 classId, uint32 subClassId, uint32 inventoryType);
     bool IsStatTypeAllowableSpec(uint32 currentSpec, uint32 statType);
 
     void Update(uint32 diff);
