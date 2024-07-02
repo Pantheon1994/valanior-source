@@ -133,7 +133,6 @@ public:
             player->TeleportTo(player->GetMapId(), dungeon.x, dungeon.y, dungeon.z, dungeon.o);
         }
 
-
         bool inLfg = sLFGMgr->inLfgDungeonMap(player->GetGUID(), player->GetMapId(), map->GetDifficulty());
 
         if (inLfg)
@@ -168,8 +167,12 @@ public:
             }
         }
 
-        if (Mythic* mythic = sMythicMgr->GetMythicPlayer(player))
+        Map* map = player->GetMap();
+
+        if (map->IsDungeon()) {
+            ChatHandler(player->GetSession()).SendSysMessage("You can't start Mythic Key while in a dungeon!");
             return false;
+        }
 
         sMythicMgr->FindMythicDungeonByItsKeyItemId(itemId, foundDungeon);
 

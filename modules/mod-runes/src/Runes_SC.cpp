@@ -327,6 +327,13 @@ public:
             player->AddItem(70002, 1);
             CloseGossipMenuFor(player);
         }
+
+        case GOSSIP_ACTION_INFO_DEF +1 :
+        {
+            player->ModifyMoney(7500000);
+            player->AddItem(70009, 1000);
+            CloseGossipMenuFor(player);
+        }
             break;
         case GOSSIP_ACTION_TRADE:
             player->GetSession()->SendListInventory(creature->GetGUID());
@@ -338,7 +345,8 @@ public:
     bool OnGossipHello(Player* player, Creature* creature) override
     {
         uint32 cost = RunesManager::CalculateGoldCostToBuyRune(player);
-        // AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "Buy a Sealed Common Rune with Gold", 50, GOSSIP_ACTION_INFO_DEF, "Are you sure want to buy a Sealed Common Rune?", cost, false);
+        // AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "Buy 1000 Cosmic Essences with 750 gold", 50, GOSSIP_ACTION_INFO_DEF + 1, "Are you sure want to buy 750 Cosmic Essence?", 7500000, false);
+        AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "Buy 5x Sealed Common Rune with Gold", 50, GOSSIP_ACTION_INFO_DEF, "Are you sure want to buy a Sealed Common Rune?", cost, false);
         AddGossipItemFor(player, GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
         SendGossipMenuFor(player, 900900, creature->GetGUID());
         return true;

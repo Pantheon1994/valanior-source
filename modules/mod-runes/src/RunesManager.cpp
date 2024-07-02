@@ -670,7 +670,6 @@ int RunesManager::GetPreviousWeekFromBuyingRuneWithGold(Player* player)
         Field* fields = result->Fetch();
         uint32 oldWeek = fields[2].Get<uint32>();
         return oldWeek;
-
     } while (result->NextRow());
 
 }

@@ -7,6 +7,7 @@
 #include "MythicManager.h"
 #include "Chat.h"
 #include "LuaEngine.h"
+#include "Unit.h"
 
 Mythic::Mythic(ObjectGuid guid, Map* map, uint32 dungeonId, uint32 level, uint32 bonusMultiplier)
 {
@@ -103,6 +104,36 @@ void Mythic::SaveMythicDungeon()
     
 }
 
+void Mythic::StopCombatAll()
+{
+    Map::PlayerList const& playerList = Dungeon->GetPlayers();
+    for (auto playerIteration = playerList.begin(); playerIteration != playerList.end(); ++playerIteration)
+    {
+        if (Player* currentPlayer = playerIteration->GetSource()) {
+
+
+            auto attackers = currentPlayer->getAttackers();
+            for (auto itr = attackers.begin(); itr != attackers.end(); ++itr)
+            {
+                if (Unit* unit = (*itr))
+                {
+                    unit->AttackStop();
+                    unit->RemoveAllAuras();
+                    unit->GetThreatMgr().ClearAllThreat();
+                    unit->CombatStop(true);
+                    unit->ToCreature()->SetReactState(REACT_PASSIVE);
+                    unit->GetMotionMaster()->Clear();
+                }
+            }
+
+            currentPlayer->GetThreatMgr().ClearAllThreat();
+            currentPlayer->CombatStop(true);
+            currentPlayer->AttackStop();
+            currentPlayer->RemoveAllAttackers();
+        }
+    }
+}
+
 void Mythic::SetBossDead(uint32 creatureId)
 {
     for (auto ij = StateBossMythicStore.begin(); ij != StateBossMythicStore.end(); ++ij)
@@ -130,6 +161,8 @@ void Mythic::OnCompleteMythicDungeon(Player* player)
 
     Done = true;
 
+    StopCombatAll();
+
     int8 upgrade = CalculateUpgradeKey();
 
     Map::PlayerList const& playerList = Dungeon->GetPlayers();
@@ -137,6 +170,7 @@ void Mythic::OnCompleteMythicDungeon(Player* player)
         if (Player* currentPlayer = playerIteration->GetSource()) {
             sEluna->SendCompletedMythicDungeon(currentPlayer, TimeToComplete - ElapsedTime, upgrade);
             currentPlayer->KilledMonsterCredit(3000);
+            currentPlayer->SetAllowTeleportation(true);
         }
 
     GiveRewards();

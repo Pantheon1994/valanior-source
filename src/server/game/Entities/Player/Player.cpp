@@ -12104,6 +12104,8 @@ bool Player::InArena() const
     return true;
 }
 
+
+
 void Player::SetBattlegroundId(uint32 id, BattlegroundTypeId bgTypeId, uint32 queueSlot, bool invited, bool isRandom, TeamId teamId)
 {
     m_bgData.bgInstanceID = id;

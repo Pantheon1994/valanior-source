@@ -1364,6 +1364,9 @@ public:
 
     CinematicMgr* GetCinematicMgr() const { return _cinematicMgr; }
 
+    bool CanUseTeleportation() const { return m_allowTeleportation; }
+    void SetAllowTeleportation(bool update) { m_allowTeleportation = update; }
+
     void UpdateEnchantTime(uint32 time);
     void UpdateSoulboundTradeItems();
     void AddTradeableItem(Item* item);
@@ -2916,6 +2919,9 @@ private:
     Item* _LoadItem(CharacterDatabaseTransaction trans, uint32 zoneId, uint32 timeDiff, Field* fields);
 
     CinematicMgr* _cinematicMgr;
+
+    bool m_allowTeleportation = false;
+
 
     typedef GuidSet RefundableItemsSet;
     RefundableItemsSet m_refundableItems;

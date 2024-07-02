@@ -50,6 +50,7 @@ private:
     bool MeetTheConditionsToCompleteTheDungeon();
     void GiveRewards();
     void SaveMythicDungeon();
+    void StopCombatAll();
     void SetBossDead(uint32 creatureId);
     uint32 GetBossIndex(uint32 creatureId);
 

@@ -116,6 +116,23 @@ namespace LuaPlayer
         return 1;
     }
 
+    int LeaveDungeon(lua_State* L, Player* player)
+    {
+        if (!player->CanUseTeleportation())
+            return 0;
+
+        if (player->GetTeamId() == TEAM_HORDE) {
+            player->TeleportTo(1, 1629.849976, -4373.640137, 31.557146, 3.697620);
+        }
+
+        if (player->GetTeamId() == TEAM_ALLIANCE) {
+            player->TeleportTo(0, -8833.379883, 628.627991, 94.006599, 0.841511);
+        }
+
+        player->SetAllowTeleportation(false);
+        return 0;
+    }
+
     int ReviveAtCapital(lua_State* L, Player* player)
     {
         if (player->isDead()) {
@@ -131,6 +148,7 @@ namespace LuaPlayer
         }
         return 0;
     }
+
 
     int UpgradeItem(lua_State* L, Player* player)
     {
